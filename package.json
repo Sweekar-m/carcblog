@@ -2,6 +2,9 @@
   "name": "carcblog",
   "version": "0.1.0",
   "description": "A production-grade, serverless-first modern publication platform",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
