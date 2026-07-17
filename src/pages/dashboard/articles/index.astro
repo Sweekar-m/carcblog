@@ -10,138 +10,249 @@ const user = await getCurrentUser(Astro.locals);
 const articles = user ? await getArticlesByAuthor(user.id) : [];
 ---
 <Layout title="My Articles - Dashboard" description="Manage your published articles and drafts">
-  <div class="min-h-screen bg-background">
-    <div class="flex min-h-screen">
-      {/* Sidebar would be included in a real implementation */}
-      <aside class="w-64 bg-border/50 border-r border-muted/50">
-        <div class="px-4 py-6">
-          <div class="flex items-center space-x-3 mb-6">
-            <div class="h-10 w-10 bg-primary/20 rounded-lg flex items-center justify-center">
-              <span class="text-primary font-bold">C</span>
-            </div>
-            <span class="font-semibold text-lg text-foreground">Carcblog</span>
-          </div>
 
-          <nav class="space-y-2">
-            <a href="/dashboard" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
-              <span class="mr-3">🏠</span>
-              <span>Overview</span>
-            </a>
+  <div class="page-content">
 
-            <a href="/dashboard/articles" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary font-semibold">
-              <span class="mr-3">📝</span>
-              <span>Articles</span>
-            </a>
-
-            <a href="/dashboard/analytics" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
-              <span class="mr-3">📊</span>
-              <span>Analytics</span>
-            </a>
-          </nav>
-
-          <div class="mt-8 pt-4 border-t border-muted/50">
-            <div class="flex items-center space-x-3 mb-4">
-              <div class="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center text-sm font-medium">
-                U
-              </div>
-              <div>
-                <p class="font-medium">Welcome</p>
-                <p class="text-xs text-muted-foreground">Writer</p>
-              </div>
-            </div>
-
-            <a href="/dashboard/profile" class="w-full flex items-center px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary">
-              <span class="mr-3">⚙️</span>
-              <span>Profile</span>
-            </a>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main content */}
-      <main class="flex-1 p-6">
-        <header class="mb-6">
-          <h1 class="text-2xl font-bold">My Articles</h1>
-          <p class="text-muted-foreground mt-2">
-            Manage your published articles and drafts.
-          </p>
-          <div class="mt-4 flex items-center space-x-4">
-            <a href="/dashboard/articles/new" class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-              New article
-            </a>
-          </div>
-        </header>
-
-        <div class="space-y-6">
-          {/* Published articles */}
-          <section>
-            <h2 class="text-xl font-bold mb-4">Published</h2>
-            <div class="space-y-4">
-              {articles.length > 0 ? (
-                <>
-                  {articles.map((article) => (
-                    <article key={article._id} class="bg-background border border-muted/50 rounded-lg p-6 hover:border-primary/20 transition-colors cursor-pointer">
-                      <div class="flex items-start space-x-4">
-                        {article.coverImage ? (
-                          <div class="h-12 w-12 flex-shrink-0">
-                            <img
-                              src={article.coverImage}
-                              alt={article.title}
-                              class="w-full h-full object-cover rounded-lg"
-                            />
-                          </div>
-                        ) : (
-                          <div class="h-12 w-12 flex-shrink-0 bg-primary/20 rounded-flex flex items-center justify-center">
-                            <span class="text-primary font-bold">{article.title.charAt(0).toUpperCase()}</span>
-                          </div>
-                        )}
-                        <div>
-                          <h3 class="font-semibold text-lg">{article.title}</h3>
-                          <p class="text-sm text-muted-foreground truncate max-w-xs">
-                            {article.excerpt || 'No preview available'}
-                          </p>
-                          <div class="mt-2 flex items-center space-x-4 text-sm text-muted-foreground">
-                            <span>
-                              <time datetime={article.publishedAt}>
-                                {new Date(article.publishedAt).toLocaleDateString(undefined, {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric'
-                                })}
-                              </time>
-                            </span>
-                            <span>•</span>
-                            <span>{article.author?.name || 'Anonymous'} Author</span>
-                          </div>
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </>
-              ) : (
-                <div class="bg-background border border-muted/50 rounded-lg p-6">
-                  <p class="text-center text-muted-foreground py-8">
-                    No published articles yet. <a href="/dashboard/articles/new" class="font-medium text-primary hover:text-primary/90">Create your first article</a> to get started!
-                  </p>
-                </div>
-              )}
-            </div>
-          </section>
-
-          {/* Drafts */}
-          <section>
-            <h2 class="text-xl font-bold mb-4">Drafts</h2>
-            <div class="space-y-4">
-              {/* In a real app, you'd filter for articles with publishedAt: null */}
-              <div class="bg-background border border-muted/50 rounded-lg p-6">
-                <p class="text-center text-muted-foreground py-8">
-                  No drafts yet. Ideas waiting to be written?
-                </p>
-              </div>
-            </div>
-          </section>
-        </div>
-      </main>
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Articles</h1>
+        <p class="page-sub">Manage your published articles and drafts.</p>
+      </div>
+      <a href="/dashboard/articles/new" class="btn-primary">New Article</a>
     </div>
+
+    <!-- Published articles -->
+    <section class="section">
+      <h2 class="section-title">Published</h2>
+
+      {articles.length > 0 ? (
+        <div class="article-list">
+          {articles.map((article) => (
+            <article class="article-card">
+              <div class="article-thumb-wrap">
+                {article.coverImage ? (
+                  <img src={article.coverImage} alt={article.title} class="article-thumb-img" />
+                ) : (
+                  <div class="article-thumb-placeholder">
+                    <span>{article.title.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+              <div class="article-body">
+                <h3 class="article-title">{article.title}</h3>
+                <p class="article-excerpt">{article.excerpt || 'No preview available'}</p>
+                <div class="article-meta">
+                  <time datetime={article.publishedAt}>
+                    {new Date(article.publishedAt).toLocaleDateString(undefined, {
+                      month: 'short', day: 'numeric', year: 'numeric'
+                    })}
+                  </time>
+                  <span class="meta-dot">·</span>
+                  <span>{article.author?.name || 'Anonymous'}</span>
+                </div>
+              </div>
+              <a href={`/dashboard/articles/${article._id}`} class="article-edit-btn">Edit</a>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state">
+          <p>No published articles yet. <a href="/dashboard/articles/new" class="link">Create your first article</a> to get started!</p>
+        </div>
+      )}
+    </section>
+
+    <!-- Drafts -->
+    <section class="section">
+      <h2 class="section-title">Drafts</h2>
+      <div class="empty-state">
+        <p>No drafts yet. Ideas waiting to be written?</p>
+      </div>
+    </section>
+
   </div>
+
 </Layout>
+
+<style>
+  .page-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .page-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0 0 4px;
+    letter-spacing: -0.02em;
+  }
+
+  .page-sub {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 14px;
+    color: #86868b;
+    margin: 0;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 20px;
+    background: #0066cc;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 200ms ease, transform 150ms ease;
+    flex-shrink: 0;
+  }
+  .btn-primary:hover { background: #0071e3; }
+  .btn-primary:active { transform: scale(0.97); }
+
+  /* ── Section ── */
+  .section { display: flex; flex-direction: column; gap: 12px; }
+
+  .section-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Article list ── */
+  .article-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .article-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+  .article-card:hover {
+    border-color: rgba(0,102,204,0.25);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .article-thumb-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid #e0e0e0;
+  }
+
+  .article-thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .article-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(0,102,204,0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #0066cc;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+  }
+
+  .article-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .article-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .article-excerpt {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 13px;
+    color: #86868b;
+    margin: 0 0 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 480px;
+  }
+
+  .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 12px;
+    color: #86868b;
+  }
+
+  .meta-dot { color: #c7c7cc; }
+
+  .article-edit-btn {
+    flex-shrink: 0;
+    padding: 6px 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 9999px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d1d1f;
+    text-decoration: none;
+    background: #ffffff;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .article-edit-btn:hover {
+    background: #f5f5f7;
+    border-color: #c7c7cc;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    padding: 40px 24px;
+    background: #ffffff;
+    border: 1px dashed #e0e0e0;
+    border-radius: 12px;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 14px;
+    color: #86868b;
+  }
+  .empty-state p { margin: 0; }
+
+  .link { color: #0066cc; text-decoration: none; font-weight: 500; }
+  .link:hover { color: #0071e3; text-decoration: underline; }
+</style>

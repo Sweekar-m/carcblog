@@ -7,6 +7,9 @@ export default defineConfig({
   site: 'https://carcblog.com',
   output: 'hybrid',
   adapter: vercel(),
+  devToolbar: {
+    enabled: false
+  },
   integrations: [
     clerk({
       signInUrl: '/auth/sign-in',

@@ -1,0 +1,39 @@
+---
+// StatCard.astro — Modular card for overview metrics using the global Card component
+import Card from '@/components/ui/Card.astro';
+
+interface Props {
+  title: string;
+  value: string | number;
+  icon: 'article' | 'views' | 'time';
+}
+
+const { title, value, icon } = Astro.props;
+---
+
+<Card variant="elevated" padding="md" class="hover:border-primary/20 transition-all duration-200">
+  <div class="flex items-center space-x-3 mb-4">
+    <!-- Icon Wrapper (consistent style & color) -->
+    <div class="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-md shrink-0">
+      {icon === 'article' && (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a9 9 0 11-18 0 9 9 0 0018 0z" />
+        </svg>
+      )}
+      {icon === 'views' && (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+      )}
+      {icon === 'time' && (
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+        </svg>
+      )}
+    </div>
+    <!-- Baseline Aligned Label -->
+    <h3 class="font-sans text-sm font-semibold text-foreground tracking-tight self-center leading-none">{title}</h3>
+  </div>
+  <!-- Large Bold Sans-Serif Value -->
+  <p class="font-sans text-3.5xl font-bold tracking-tight text-foreground leading-none">{value}</p>
+</Card>

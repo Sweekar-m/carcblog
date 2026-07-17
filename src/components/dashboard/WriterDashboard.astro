@@ -1,0 +1,335 @@
+---
+// WriterDashboard.astro — Dashboard overview panel with scoped CSS
+interface Props {
+  stats: {
+    articleCount: number;
+    viewCount: number;
+    readTime: number;
+  };
+  recentActivity: Array<{
+    type: 'article' | 'engagement' | 'follow';
+    title?: string;
+    description?: string;
+    timestamp: string;
+  }>;
+  userName?: string;
+}
+
+const { stats, recentActivity, userName = 'Writer' } = Astro.props;
+
+function formatDate(ts: string) {
+  return new Date(ts).toLocaleString(undefined, {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+---
+
+<div class="dashboard-content">
+
+  <!-- Welcome header: serif font only for greeting headline -->
+  <div class="welcome-block">
+    <h1 class="welcome-heading">Welcome back, {userName}!</h1>
+    <p class="welcome-sub">Here's your writing dashboard. Keep creating amazing content.</p>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+    <!-- Articles -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
+        </div>
+        <span class="stat-label">Articles Published</span>
+      </div>
+      <p class="stat-value">{stats.articleCount}</p>
+    </div>
+
+    <!-- Views -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </div>
+        <span class="stat-label">Total Views</span>
+      </div>
+      <p class="stat-value">{stats.viewCount}</p>
+    </div>
+
+    <!-- Read time -->
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+          </svg>
+        </div>
+        <span class="stat-label">Read Time (mins)</span>
+      </div>
+      <p class="stat-value">{stats.readTime}</p>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="section">
+    <h2 class="section-title">Recent Activity</h2>
+
+    {recentActivity.length > 0 ? (
+      <div class="activity-list">
+        {recentActivity.map((activity) => (
+          <div class="activity-item">
+            <div class={`activity-icon activity-icon--${activity.type}`}>
+              {activity.type === 'article' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              )}
+              {activity.type === 'engagement' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
+              {activity.type === 'follow' && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+              )}
+            </div>
+            <div class="activity-body">
+              <p class="activity-title">{activity.title || activity.description}</p>
+              <p class="activity-time">{formatDate(activity.timestamp)}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="empty-state">
+        <p>No recent activity yet. Start writing to see your activity here.</p>
+      </div>
+    )}
+  </div>
+
+  <!-- CTA card -->
+  <div class="cta-card">
+    <h2 class="cta-title">Ready to write your next story?</h2>
+    <p class="cta-body">Dive back into your workflow and let AI enhance your creativity.</p>
+    <a href="/dashboard/articles/new" class="cta-btn">Start Writing →</a>
+  </div>
+
+</div>
+
+<style>
+  .dashboard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  /* ── Welcome ── */
+  .welcome-block { display: flex; flex-direction: column; gap: 6px; }
+
+  .welcome-heading {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .welcome-sub {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 15px;
+    color: #86868b;
+    margin: 0;
+  }
+
+  /* ── Stats grid ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    transition: border-color 200ms ease, box-shadow 200ms ease;
+  }
+  .stat-card:hover {
+    border-color: rgba(0,102,204,0.25);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,102,204,0.08);
+    border-radius: 8px;
+    color: #0066cc;
+    flex-shrink: 0;
+  }
+
+  .stat-label {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #86868b;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+  }
+
+  /* Large bold sans-serif — not serif — for numbers */
+  .stat-value {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  /* ── Section ── */
+  .section { display: flex; flex-direction: column; gap: 12px; }
+
+  .section-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Activity list ── */
+  .activity-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: border-color 150ms ease;
+  }
+  .activity-item:hover { border-color: rgba(0,102,204,0.2); }
+
+  .activity-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+    /* Neutral background for all types */
+    background: #f5f5f7;
+    color: #0066cc;
+  }
+
+  .activity-body { flex: 1; min-width: 0; }
+
+  .activity-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1d1d1f;
+    margin: 0 0 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .activity-time {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 12px;
+    color: #86868b;
+    margin: 0;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 32px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    color: #86868b;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+  }
+  .empty-state p { margin: 0; }
+
+  /* ── CTA card ── */
+  .cta-card {
+    text-align: center;
+    padding: 40px 24px;
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
+  }
+
+  .cta-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin: 0 0 10px;
+    letter-spacing: -0.02em;
+  }
+
+  /* Crucially: this paragraph must NOT be inside a narrow flex container */
+  .cta-body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 15px;
+    color: #86868b;
+    margin: 0 auto 24px;
+    max-width: 480px;
+    /* block display, no flex/min-width collapse */
+    display: block;
+    line-height: 1.5;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    background: #0066cc;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: background 200ms ease, transform 150ms ease;
+  }
+  .cta-btn:hover { background: #0071e3; }
+  .cta-btn:active { transform: scale(0.97); }
+  .cta-btn:focus-visible { outline: 2px solid #0066cc; outline-offset: 3px; }
+</style>

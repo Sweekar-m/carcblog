@@ -5,6 +5,9 @@ import Footer from '@/components/layout/Footer.astro';
 import '@/styles/globals.css';
 
 const { title, description, children, className } = Astro.props;
+
+const currentPath = new URL(Astro.request.url).pathname;
+const showFooter = !currentPath.startsWith('/dashboard') && !currentPath.startsWith('/onboarding');
 ---
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-theme="light">
@@ -13,7 +16,7 @@ const { title, description, children, className } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} | Carcblog</title>
     <meta name="description" content={description} />
-    <link rel="icon" href="/favicon.svg" />
+    <link class="favicon" rel="icon" href="/favicon.svg" />
 
     <!-- Fonts: Inter (UI) + Cormorant Garamond (brand/editorial) + Fira Code (code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,6 +31,6 @@ const { title, description, children, className } = Astro.props;
     <main class="flex-grow w-full">
       <slot />
     </main>
-    <Footer />
+    {showFooter && <Footer />}
   </body>
 </html>

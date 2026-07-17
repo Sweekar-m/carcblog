@@ -5,37 +5,9 @@ import { SignIn } from '@clerk/astro/components';
 ---
 <Layout title="Sign In — Carcblog" description="Sign in to your Carcblog account">
   <div class="auth-container">
-    <SignIn forceRedirectUrl="/onboarding" />
+    <SignIn forceRedirectUrl="/dashboard" />
   </div>
 </Layout>
-
-<script is:inline>
-  // Clean up stale sessions / cookies from old Clerk keys if they are causing a redirect loop
-  if (!window.location.search.includes('cleared')) {
-    // Delete session cookies
-    document.cookie.split(";").forEach((c) => {
-      const name = c.split("=")[0].trim();
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
-    });
-    
-    // Clear localStorage keys relating to Clerk
-    for (let i = localStorage.length - 1; i >= 0; i--) {
-      const key = localStorage.key(i);
-      if (key && (key.toLowerCase().includes('clerk') || key.startsWith('__clerk'))) {
-        localStorage.removeItem(key);
-      }
-    }
-    
-    // Clear sessionStorage
-    sessionStorage.clear();
-    
-    // Reload the page once with '?cleared=1' to load the new Clerk app cleanly
-    const url = new URL(window.location.href);
-    url.searchParams.set('cleared', '1');
-    window.location.href = url.toString();
-  }
-</script>
 
 <style>
   .auth-container {
