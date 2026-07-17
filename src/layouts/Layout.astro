@@ -1,6 +1,7 @@
 ---
 // Dashboard layout
 import Layout from '@/components/layout/Layout.astro';
+import { hasCompletedOnboarding } from '@/lib/supabase';
 export const prerender = false;
 
 // Get auth data safely
@@ -13,6 +14,12 @@ if (typeof Astro.locals?.auth === 'function') {
 // Redirect to sign-in if not authenticated
 if (!userId) {
   return Astro.redirect('/sign-in');
+}
+
+// Redirect to onboarding if profile setup is not complete
+const onboardingDone = await hasCompletedOnboarding(userId);
+if (!onboardingDone) {
+  return Astro.redirect('/onboarding');
 }
 
 const pathname = new URL(Astro.request.url).pathname;

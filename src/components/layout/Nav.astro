@@ -80,24 +80,20 @@ const isActive = (href: string) =>
         </div>
       </div>
 
-      <!-- Auth: signed-in avatar OR sign-in link -->
+      <!-- Auth: signed-in avatar + Write, OR single Get started CTA -->
       {userId ? (
-        <a href="/dashboard" class="nav-avatar-link" aria-label="Your dashboard">
-          <img
-            src={user?.imageUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
-            alt="Your profile"
-            class="nav-avatar"
-            width="28"
-            height="28"
-          />
-        </a>
-      ) : (
-        <a href="/auth/sign-in" class="nav-sign-in">Sign in</a>
-      )}
-
-      <!-- CTA button -->
-      {userId ? (
-        <a href="/dashboard/articles/new" class="nav-cta">Write</a>
+        <>
+          <a href="/dashboard" class="nav-avatar-link" aria-label="Your dashboard">
+            <img
+              src={user?.imageUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
+              alt="Your profile"
+              class="nav-avatar"
+              width="28"
+              height="28"
+            />
+          </a>
+          <a href="/dashboard/articles/new" class="nav-cta">Write</a>
+        </>
       ) : (
         <a href="/auth/sign-up" class="nav-cta">Get started</a>
       )}
@@ -138,10 +134,7 @@ const isActive = (href: string) =>
       {userId ? (
         <a href="/dashboard/articles/new" class="mobile-cta">Write an article →</a>
       ) : (
-        <>
-          <a href="/auth/sign-in" class="mobile-link">Sign in</a>
-          <a href="/auth/sign-up" class="mobile-cta">Get started free →</a>
-        </>
+        <a href="/auth/sign-up" class="mobile-cta">Get started free →</a>
       )}
     </nav>
   </div>
