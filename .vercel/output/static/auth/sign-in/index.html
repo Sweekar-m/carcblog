@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="en" dir="ltr" data-theme="light"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sign In — Carcblog | Carcblog</title><meta name="description" content="Sign in to your Carcblog account"><link rel="icon" href="/favicon.svg"><!-- Fonts: Inter (UI) + Cormorant Garamond (brand/editorial) + Fira Code (code) --><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/analytics.DQC2sLsu.css">
+<style>.auth-container[data-astro-cid-xtl7enqh]{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 120px);padding:24px;background-color:var(--color-background)}
+</style><script type="module" src="/_astro/hoisted.BMjDOam_.js"></script>
+<script type="module" src="/_astro/page.Dby-pjoX.js"></script></head> <body class="bg-background text-foreground antialiased min-h-screen flex flex-col"> <header class="nav-root" role="banner" data-astro-cid-afdttjsk> <div class="nav-inner" data-astro-cid-afdttjsk> <!-- ── Logo ── --> <a href="/" class="nav-logo" aria-label="Carcblog home" data-astro-cid-afdttjsk> <span class="logo-mark" aria-hidden="true" data-astro-cid-afdttjsk>C</span> <span class="logo-text" data-astro-cid-afdttjsk>arcblog</span> </a> <!-- ── Primary nav links (desktop) ── --> <nav class="nav-links" aria-label="Primary navigation" data-astro-cid-afdttjsk> <a href="/feed" class="nav-link " data-astro-cid-afdttjsk> Feed </a><a href="/discover" class="nav-link " data-astro-cid-afdttjsk> Discover </a><a href="/topics" class="nav-link " data-astro-cid-afdttjsk> Topics </a><a href="/writers" class="nav-link " data-astro-cid-afdttjsk> Writers </a><a href="/about" class="nav-link " data-astro-cid-afdttjsk> About </a> </nav> <!-- ── Right cluster ── --> <div class="nav-actions" data-astro-cid-afdttjsk> <!-- Search — expands on click --> <div class="search-wrap" id="search-wrap" data-astro-cid-afdttjsk> <button class="search-trigger" id="search-trigger" aria-label="Open search" aria-expanded="false" aria-controls="search-input" data-astro-cid-afdttjsk> <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-afdttjsk> <circle cx="11" cy="11" r="8" data-astro-cid-afdttjsk></circle> <path d="m21 21-4.35-4.35" data-astro-cid-afdttjsk></path> </svg> </button> <div class="search-input-wrap" id="search-input-wrap" aria-hidden="true" data-astro-cid-afdttjsk> <input id="search-input" type="search" placeholder="Search articles…" class="search-input" autocomplete="off" tabindex="-1" data-astro-cid-afdttjsk> </div> </div> <!-- Auth: signed-in avatar OR sign-in link --> <a href="/auth/sign-in" class="nav-sign-in" data-astro-cid-afdttjsk>Sign in</a> <!-- CTA button --> <a href="/auth/sign-up" class="nav-cta" data-astro-cid-afdttjsk>Get started</a> <!-- Mobile hamburger --> <button class="nav-burger" id="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="nav-mobile" data-astro-cid-afdttjsk> <span class="burger-bar" data-astro-cid-afdttjsk></span> <span class="burger-bar" data-astro-cid-afdttjsk></span> <span class="burger-bar" data-astro-cid-afdttjsk></span> </button> </div> </div> <!-- ── Mobile drawer ── --> <div class="nav-mobile" id="nav-mobile" aria-hidden="true" data-astro-cid-afdttjsk> <nav aria-label="Mobile navigation" data-astro-cid-afdttjsk> <a href="/feed" class="mobile-link " data-astro-cid-afdttjsk> Feed </a><a href="/discover" class="mobile-link " data-astro-cid-afdttjsk> Discover </a><a href="/topics" class="mobile-link " data-astro-cid-afdttjsk> Topics </a><a href="/writers" class="mobile-link " data-astro-cid-afdttjsk> Writers </a><a href="/about" class="mobile-link " data-astro-cid-afdttjsk> About </a> <div class="mobile-sep" data-astro-cid-afdttjsk></div>  <a href="/auth/sign-in" class="mobile-link" data-astro-cid-afdttjsk>Sign in</a> <a href="/auth/sign-up" class="mobile-cta" data-astro-cid-afdttjsk>Get started free →</a>  </nav> </div> </header> <!-- ── Interaction script (vanilla, no island needed) ── -->   <main class="flex-grow w-full">  <div class="auth-container" data-astro-cid-xtl7enqh> <div data-clerk-id="clerk-sign-in-tgRNdDEQpH"></div> <script>(function(){const props = {"data-astro-cid-xtl7enqh":true};
+const component = "sign-in";
+const safeId = "tgRNdDEQpH";
+
+  /**
+   * Store the id and the props for the Astro component in order to mount the correct UI component once clerk is loaded.
+   * The above is handled by `mountAllClerkAstroJSComponents`.
+   */
+  const setOrCreatePropMap = ({ category, id, props }) => {
+    if (!window.__astro_clerk_component_props) {
+      window.__astro_clerk_component_props = new Map();
+    }
+
+    if (!window.__astro_clerk_component_props.has(category)) {
+      const _ = new Map();
+      _.set(id, props);
+      window.__astro_clerk_component_props.set(category, _);
+    }
+
+    window.__astro_clerk_component_props.get(category)?.set(id, props);
+  };
+
+  setOrCreatePropMap({
+    category: component,
+    id: `clerk-${component}-${safeId}`,
+    props,
+  });
+})();</script> </div>  </main> <footer class="footer" data-astro-cid-35ed7um5> <div class="max-w-[1024px] mx-auto px-6" data-astro-cid-35ed7um5> <!-- Grid Stacks --> <div class="footer-grid" data-astro-cid-35ed7um5> <!-- Logo column --> <div class="footer-logo-col" data-astro-cid-35ed7um5> <span class="footer-brand" data-astro-cid-35ed7um5>Carcblog</span> <p class="footer-tagline" data-astro-cid-35ed7um5>
+The premium platform for thoughtful writers who demand excellence.
+</p> </div> <!-- Links columns --> <div data-astro-cid-35ed7um5> <h5 class="footer-header" data-astro-cid-35ed7um5>Explore</h5> <div class="footer-links" data-astro-cid-35ed7um5> <a href="/" class="footer-link" data-astro-cid-35ed7um5>Home</a> <a href="/feed" class="footer-link" data-astro-cid-35ed7um5>Feed</a> <a href="/discover" class="footer-link" data-astro-cid-35ed7um5>Discover</a> <a href="/topics" class="footer-link" data-astro-cid-35ed7um5>Topics</a> <a href="/about" class="footer-link" data-astro-cid-35ed7um5>About</a> </div> </div> <div data-astro-cid-35ed7um5> <h5 class="footer-header" data-astro-cid-35ed7um5>Create</h5> <div class="footer-links" data-astro-cid-35ed7um5> <a href="/dashboard" class="footer-link" data-astro-cid-35ed7um5>Write</a> <a href="/dashboard/articles" class="footer-link" data-astro-cid-35ed7um5>Manage Articles</a> <a href="/dashboard/analytics" class="footer-link" data-astro-cid-35ed7um5>Analytics</a> <a href="/dashboard/settings" class="footer-link" data-astro-cid-35ed7um5>Settings</a> </div> </div> <div data-astro-cid-35ed7um5> <h5 class="footer-header" data-astro-cid-35ed7um5>Company</h5> <div class="footer-links" data-astro-cid-35ed7um5> <a href="#" class="footer-link" data-astro-cid-35ed7um5>Careers</a> <a href="#" class="footer-link" data-astro-cid-35ed7um5>Blog</a> <a href="#" class="footer-link" data-astro-cid-35ed7um5>Press</a> <a href="#" class="footer-link" data-astro-cid-35ed7um5>Contact</a> </div> </div> <div data-astro-cid-35ed7um5> <h5 class="footer-header" data-astro-cid-35ed7um5>Legal</h5> <div class="footer-links" data-astro-cid-35ed7um5> <a href="/terms" class="footer-link" data-astro-cid-35ed7um5>Terms</a> <a href="/privacy" class="footer-link" data-astro-cid-35ed7um5>Privacy</a> <a href="/copyright" class="footer-link" data-astro-cid-35ed7um5>Copyright</a> <a href="/accessibility" class="footer-link" data-astro-cid-35ed7um5>Accessibility</a> </div> </div> </div> <!-- Bottom Row --> <div class="footer-bottom" data-astro-cid-35ed7um5> <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4" data-astro-cid-35ed7um5> <span data-astro-cid-35ed7um5>Copyright &copy; 2026 Carcblog Inc. All rights reserved.</span> <div class="flex space-x-4" data-astro-cid-35ed7um5> <a href="/privacy" class="footer-legal-link" data-astro-cid-35ed7um5>Privacy Policy</a> <span class="text-ink/20" data-astro-cid-35ed7um5>|</span> <a href="/terms" class="footer-legal-link" data-astro-cid-35ed7um5>Terms of Use</a> </div> </div> </div> </div> </footer>  </body></html> <script>
+  // Clean up stale sessions / cookies from old Clerk keys if they are causing a redirect loop
+  if (!window.location.search.includes('cleared')) {
+    // Delete session cookies
+    document.cookie.split(";").forEach((c) => {
+      const name = c.split("=")[0].trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+    });
+    
+    // Clear localStorage keys relating to Clerk
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.toLowerCase().includes('clerk') || key.startsWith('__clerk'))) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    // Reload the page once with '?cleared=1' to load the new Clerk app cleanly
+    const url = new URL(window.location.href);
+    url.searchParams.set('cleared', '1');
+    window.location.href = url.toString();
+  }
+</script> 

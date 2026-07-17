@@ -1,14 +1,12 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@tailwindcss/vite';
-import node from '@astrojs/node';
+import vercel from '@astrojs/vercel/serverless';
 import clerk from '@clerk/astro';
 
 export default defineConfig({
   site: 'https://carcblog.com',
   output: 'hybrid',
-  adapter: node({
-    mode: 'standalone',
-  }),
+  adapter: vercel(),
   integrations: [
     clerk({
       signInUrl: '/auth/sign-in',

@@ -1,0 +1,1 @@
+import{r as n}from"../index.BPtabhhS.js";import"../external-DHTxQaok.BzGBULKT.js";await n({signInUrl:"/auth/sign-in",signUpUrl:"/auth/sign-up",sdkMetadata:{version:"3.4.18",name:"@clerk/astro",environment:"production"}});
