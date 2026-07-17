@@ -1,0 +1,123 @@
+@import "./colors_and_type.css";
+@import "./tailwind.css";
+
+/* Base styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-2);
+  line-height: var(--leading-relaxed);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-osmoothing: grayscale;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--leading-tight);
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+  color: var(--color-foreground);
+}
+
+h1 { font-size: var(--font-size-8); }
+h2 { font-size: var(--font-size-7); }
+h3 { font-size: var(--font-size-6); }
+h4 { font-size: var(--font-size-5); }
+h5 { font-size: var(--font-size-4); }
+h6 { font-size: var(--font-size-2); }
+
+p {
+  margin-bottom: var(--space-4);
+  line-height: var(--leading-relaxed);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--duration-200) var(--ease-in-out);
+}
+
+a:hover {
+  color: var(--color-primary);
+  opacity: 0.8;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+/* Breakpoints */
+@media (min-width: 640px) {
+  .container { max-width: 640px; }
+}
+@media (min-width: 768px) {
+  .container { max-width: 768px; }
+}
+@media (min-width: 1024px) {
+  .container { max-width: 1024px; }
+}
+@media (min-width: 1280px) {
+  .container { max-width: 1280px; }
+}
+@media (min-width: 1536px) {
+  .container { max-width: 1536px; }
+}
+
+/* Hero gradient background */
+.bg-gradient-hero {
+  position: relative;
+  overflow: hidden;
+  /* bg-gradient-hero:
+     - Start: rgba(15, 23, 42, 0.03) -> var(--color-primary) at 3% opacity
+     - End: rgba(14, 165, 234, 0.03) -> var(--color-accent) at 3% opacity
+   */
+  background-image: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.03) 0%,
+    rgba(14, 165, 234, 0.03) 100%
+  );
+}
+
+.bg-gradient-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  /* bg-gradient-hero::before:
+     - Start: transparent
+     - 30%: rgba(14, 165, 234, 0.05) -> var(--color-accent) at 5% opacity
+     - 70%: rgba(124, 58, 237, 0.05) -> var(--color-accent-2) at 5% opacity
+     - End: transparent
+   */
+  background-image: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(14, 165, 234, 0.05) 30%,
+    rgba(124, 58, 237, 0.05) 70%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}

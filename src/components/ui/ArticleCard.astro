@@ -1,0 +1,231 @@
+---
+// ArticleCard component — premium card with always-visible cover area
+interface Props {
+  title: string;
+  excerpt: string | null;
+  publishedAt: string;
+  authorName: string;
+  authorImage: string | null;
+  slug: string;
+  coverImage: string | null;
+}
+
+const { title, excerpt, publishedAt, authorName, authorImage, slug, coverImage } = Astro.props;
+
+// Initial of author name for avatar fallback
+const authorInitial = authorName ? authorName.charAt(0).toUpperCase() : '?';
+---
+<article class="store-card group">
+  <a href={`/article/${slug}`} class="store-card-link">
+
+    <!-- Cover image area — always rendered, falls back gracefully -->
+    <div class="store-card-img-box">
+      {coverImage ? (
+        <img
+          src={coverImage}
+          alt={title}
+          class="store-card-img"
+          loading="lazy"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+      ) : null}
+      <!-- SVG placeholder shown when no image or image fails -->
+      <div class="store-card-placeholder" style={coverImage ? 'display:none' : 'display:flex'}>
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="40" height="40" rx="8" fill="rgba(255,255,255,0.08)"/>
+          <path d="M8 28l9-10 6 7 5-5 8 8H8z" fill="rgba(255,255,255,0.2)"/>
+          <circle cx="26" cy="14" r="3" fill="rgba(255,255,255,0.25)"/>
+        </svg>
+        <span class="placeholder-label">{title.substring(0, 24)}{title.length > 24 ? '…' : ''}</span>
+      </div>
+    </div>
+
+    <!-- Card details -->
+    <div class="store-card-details">
+      <time class="store-card-time">
+        {new Date(publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+      </time>
+
+      <h3 class="store-card-title">
+        {title}
+      </h3>
+
+      {excerpt && (
+        <p class="store-card-excerpt">
+          {excerpt}
+        </p>
+      )}
+
+      <!-- Footer: Author + CTA -->
+      <div class="store-card-footer">
+        <div class="card-author-row">
+          {authorImage ? (
+            <img
+              src={authorImage}
+              alt={authorName}
+              class="card-avatar"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+            />
+          ) : null}
+          <div class="card-avatar-fallback" style={authorImage ? 'display:none' : 'display:flex'}>
+            {authorInitial}
+          </div>
+          <span class="store-card-author">{authorName}</span>
+        </div>
+        <span class="store-card-action">Read →</span>
+      </div>
+    </div>
+  </a>
+</article>
+
+<style>
+  /* ── Card chassis ── */
+  .store-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e8;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all 240ms cubic-bezier(0.4, 1.3, 0.65, 1);
+  }
+  .store-card:hover {
+    transform: translateY(-4px);
+    border-color: #c8c8d0;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.1);
+  }
+  .store-card:active { transform: translateY(-1px); }
+
+  .store-card-link {
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-grow: 1;
+  }
+
+  /* ── Cover image box ── */
+  .store-card-img-box {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 40%, #0f3460 100%);
+    flex-shrink: 0;
+  }
+  .store-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 350ms ease;
+  }
+  .store-card:hover .store-card-img { transform: scale(1.04); }
+
+  /* Placeholder */
+  .store-card-placeholder {
+    position: absolute;
+    inset: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e3a5f 100%);
+  }
+  .placeholder-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    text-align: center;
+    padding: 0 16px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Details area ── */
+  .store-card-details {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    padding: 20px 22px;
+  }
+
+  .store-card-time {
+    font-size: 10px;
+    font-weight: 700;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .store-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1d1d1f;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .store-card-excerpt {
+    font-size: 13px;
+    color: #6e6e73;
+    line-height: 1.55;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* ── Footer ── */
+  .store-card-footer {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .card-author-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .card-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #e0e0e0;
+    display: block;
+  }
+  .card-avatar-fallback {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #e8e8ed;
+    border: 1px solid #d0d0d8;
+    font-size: 11px;
+    font-weight: 700;
+    color: #1d1d1f;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .store-card-author {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d1d1f;
+  }
+
+  .store-card-action {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0066cc;
+  }
+</style>

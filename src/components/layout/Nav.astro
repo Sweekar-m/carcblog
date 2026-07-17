@@ -1,0 +1,578 @@
+---
+// Nav.astro — Single cohesive navigation bar for CarcBlog
+// Replaces the old two-tier Header with one premium, glassy strip.
+
+let userId = null;
+let user   = null;
+
+if (typeof Astro.locals.auth === 'function') {
+  try {
+    const auth = await Astro.locals.auth();
+    userId = auth?.userId;
+    if (userId && typeof Astro.locals.currentUser === 'function') {
+      user = await Astro.locals.currentUser();
+    }
+  } catch (e) {
+    console.warn('Auth check failed in Nav:', e);
+  }
+}
+
+// Resolve current path for active-link highlighting
+const currentPath = new URL(Astro.request.url).pathname;
+const isActive = (href: string) =>
+  href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+---
+
+<header class="nav-root" role="banner">
+  <div class="nav-inner">
+
+    <!-- ── Logo ── -->
+    <a href="/" class="nav-logo" aria-label="Carcblog home">
+      <span class="logo-mark" aria-hidden="true">C</span>
+      <span class="logo-text">arcblog</span>
+    </a>
+
+    <!-- ── Primary nav links (desktop) ── -->
+    <nav class="nav-links" aria-label="Primary navigation">
+      {[
+        { href: '/feed',     label: 'Feed'     },
+        { href: '/discover', label: 'Discover' },
+        { href: '/topics',   label: 'Topics'   },
+        { href: '/writers',  label: 'Writers'  },
+        { href: '/about',    label: 'About'    },
+      ].map(({ href, label }) => (
+        <a
+          href={href}
+          class={`nav-link ${isActive(href) ? 'nav-link--active' : ''}`}
+          aria-current={isActive(href) ? 'page' : undefined}
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
+
+    <!-- ── Right cluster ── -->
+    <div class="nav-actions">
+
+      <!-- Search — expands on click -->
+      <div class="search-wrap" id="search-wrap">
+        <button
+          class="search-trigger"
+          id="search-trigger"
+          aria-label="Open search"
+          aria-expanded="false"
+          aria-controls="search-input"
+        >
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+        <div class="search-input-wrap" id="search-input-wrap" aria-hidden="true">
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Search articles…"
+            class="search-input"
+            autocomplete="off"
+            tabindex="-1"
+          />
+        </div>
+      </div>
+
+      <!-- Auth: signed-in avatar OR sign-in link -->
+      {userId ? (
+        <a href="/dashboard" class="nav-avatar-link" aria-label="Your dashboard">
+          <img
+            src={user?.imageUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
+            alt="Your profile"
+            class="nav-avatar"
+            width="28"
+            height="28"
+          />
+        </a>
+      ) : (
+        <a href="/auth/sign-in" class="nav-sign-in">Sign in</a>
+      )}
+
+      <!-- CTA button -->
+      {userId ? (
+        <a href="/dashboard/articles/new" class="nav-cta">Write</a>
+      ) : (
+        <a href="/auth/sign-up" class="nav-cta">Get started</a>
+      )}
+
+      <!-- Mobile hamburger -->
+      <button
+        class="nav-burger"
+        id="nav-burger"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="nav-mobile"
+      >
+        <span class="burger-bar"></span>
+        <span class="burger-bar"></span>
+        <span class="burger-bar"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Mobile drawer ── -->
+  <div class="nav-mobile" id="nav-mobile" aria-hidden="true">
+    <nav aria-label="Mobile navigation">
+      {[
+        { href: '/feed',     label: 'Feed'     },
+        { href: '/discover', label: 'Discover' },
+        { href: '/topics',   label: 'Topics'   },
+        { href: '/writers',  label: 'Writers'  },
+        { href: '/about',    label: 'About'    },
+      ].map(({ href, label }) => (
+        <a
+          href={href}
+          class={`mobile-link ${isActive(href) ? 'mobile-link--active' : ''}`}
+        >
+          {label}
+        </a>
+      ))}
+      <div class="mobile-sep"></div>
+      {userId ? (
+        <a href="/dashboard/articles/new" class="mobile-cta">Write an article →</a>
+      ) : (
+        <>
+          <a href="/auth/sign-in" class="mobile-link">Sign in</a>
+          <a href="/auth/sign-up" class="mobile-cta">Get started free →</a>
+        </>
+      )}
+    </nav>
+  </div>
+</header>
+
+<!-- ── Interaction script (vanilla, no island needed) ── -->
+<script>
+  // ── Search expand ──────────────────────────────────────
+  const searchWrap    = document.getElementById('search-wrap') as HTMLElement;
+  const searchTrigger = document.getElementById('search-trigger') as HTMLButtonElement;
+  const searchInputWrap = document.getElementById('search-input-wrap') as HTMLElement;
+  const searchInput   = document.getElementById('search-input') as HTMLInputElement;
+
+  function openSearch() {
+    searchWrap.classList.add('search-open');
+    searchTrigger.setAttribute('aria-expanded', 'true');
+    searchInputWrap.removeAttribute('aria-hidden');
+    searchInput.removeAttribute('tabindex');
+    searchInput.focus();
+  }
+  function closeSearch() {
+    searchWrap.classList.remove('search-open');
+    searchTrigger.setAttribute('aria-expanded', 'false');
+    searchInputWrap.setAttribute('aria-hidden', 'true');
+    searchInput.setAttribute('tabindex', '-1');
+    searchInput.value = '';
+  }
+
+  searchTrigger.addEventListener('click', () => {
+    searchWrap.classList.contains('search-open') ? closeSearch() : openSearch();
+  });
+  // Close on Escape or click outside
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+  document.addEventListener('click', (e) => {
+    if (!searchWrap.contains(e.target as Node)) closeSearch();
+  });
+
+  // ── Mobile menu ────────────────────────────────────────
+  const burger    = document.getElementById('nav-burger') as HTMLButtonElement;
+  const mobileNav = document.getElementById('nav-mobile') as HTMLElement;
+
+  burger.addEventListener('click', () => {
+    const isOpen = mobileNav.classList.toggle('nav-mobile--open');
+    burger.setAttribute('aria-expanded', String(isOpen));
+    mobileNav.setAttribute('aria-hidden', String(!isOpen));
+    burger.classList.toggle('burger--open', isOpen);
+  });
+
+  // Close mobile menu on link click
+  mobileNav.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileNav.classList.remove('nav-mobile--open');
+      burger.setAttribute('aria-expanded', 'false');
+      mobileNav.setAttribute('aria-hidden', 'true');
+      burger.classList.remove('burger--open');
+    });
+  });
+</script>
+
+<style>
+/* ════════════════════════════════════════════════════════
+   NAV ROOT — single sticky bar
+════════════════════════════════════════════════════════ */
+.nav-root {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+
+  /* Glass effect over any page background */
+  background: rgba(10, 10, 15, 0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+
+  /* Hairline border for depth */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+  /* Dark mode: same token-driven values work as-is */
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ── Inner layout: logo | links | actions ── */
+.nav-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* ════════════════════════════════════════════════════════
+   LOGO
+════════════════════════════════════════════════════════ */
+.nav-logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 1px;
+  text-decoration: none;
+  margin-right: 36px;
+  flex-shrink: 0;
+  /* Prevent global a { color } from overriding */
+  color: inherit;
+}
+
+/* "C" in accent blue — the brand mark */
+.logo-mark {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #0066cc;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* "arcblog" in serif, white */
+.logo-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.nav-logo:hover .logo-text { color: rgba(255, 255, 255, 0.85); }
+
+/* ════════════════════════════════════════════════════════
+   DESKTOP NAV LINKS
+════════════════════════════════════════════════════════ */
+.nav-links {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .nav-links { display: flex; }
+}
+
+.nav-link {
+  position: relative;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: color 150ms ease, background 150ms ease;
+  white-space: nowrap;
+}
+
+/* Active underline indicator */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #0066cc;
+  border-radius: 9999px;
+  transform: translateX(-50%);
+  transition: width 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link:hover::after {
+  width: calc(100% - 20px);
+}
+
+/* Active / current-page state */
+.nav-link--active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.07);
+}
+.nav-link--active::after {
+  width: calc(100% - 20px);
+  background: #0066cc;
+}
+
+/* ════════════════════════════════════════════════════════
+   RIGHT CLUSTER
+════════════════════════════════════════════════════════ */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ── Search ── */
+.search-wrap {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.search-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.58);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.search-trigger:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Expanding input container */
+.search-input-wrap {
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width 280ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity   200ms ease;
+}
+
+.search-open .search-input-wrap {
+  max-width: 220px;
+  opacity: 1;
+}
+
+.search-input {
+  width: 220px;
+  height: 32px;
+  padding: 0 12px 0 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 400;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.search-input::placeholder { color: rgba(255, 255, 255, 0.3); }
+.search-input:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.22);
+}
+/* Hide browser's native clear button */
+.search-input::-webkit-search-cancel-button { display: none; }
+
+/* ── Sign-in link ── */
+.nav-sign-in {
+  display: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.58);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: color 150ms ease, background 150ms ease;
+  white-space: nowrap;
+}
+@media (min-width: 640px) { .nav-sign-in { display: inline-flex; } }
+.nav-sign-in:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Avatar ── */
+.nav-avatar-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.nav-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+.nav-avatar-link:hover .nav-avatar {
+  border-color: #0066cc;
+  transform: scale(1.06);
+}
+
+/* ── CTA button ── */
+.nav-cta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  background: #0066cc;
+  text-decoration: none;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  /* Spring scale on hover */
+  transition: all 200ms cubic-bezier(0.4, 1.3, 0.65, 1);
+}
+.nav-cta:hover {
+  background: #0071e3;
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px rgba(0, 102, 204, 0.38);
+}
+.nav-cta:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+
+/* ── Burger button (mobile) ── */
+.nav-burger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 150ms ease;
+  padding: 4px;
+}
+@media (min-width: 768px) { .nav-burger { display: none; } }
+.nav-burger:hover { background: rgba(255, 255, 255, 0.08); }
+
+.burger-bar {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 9999px;
+  transition: transform 220ms ease, opacity 180ms ease, width 200ms ease;
+  transform-origin: center;
+}
+
+/* Animate bars into ✕ when open */
+.burger--open .burger-bar:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+.burger--open .burger-bar:nth-child(2) {
+  opacity: 0;
+  width: 0;
+}
+.burger--open .burger-bar:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+/* ════════════════════════════════════════════════════════
+   MOBILE DRAWER
+════════════════════════════════════════════════════════ */
+.nav-mobile {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 0;
+  background: rgba(10, 10, 15, 0.97);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  transition: max-height 280ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 768px) { .nav-mobile { display: none; } }
+
+.nav-mobile--open { max-height: 480px; }
+
+.nav-mobile nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 20px 20px;
+  gap: 2px;
+}
+
+.mobile-link {
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: color 150ms ease, background 150ms ease;
+}
+.mobile-link:hover,
+.mobile-link--active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.07);
+}
+.mobile-link--active {
+  color: #fff;
+}
+
+.mobile-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  margin: 8px 0;
+}
+
+.mobile-cta {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: #0066cc;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  margin-top: 4px;
+  transition: background 200ms ease, transform 200ms ease;
+}
+.mobile-cta:hover {
+  background: #0071e3;
+  transform: translateX(2px);
+}
+
+/* ════════════════════════════════════════════════════════
+   GOOGLE FONTS — load Cormorant for the logo
+════════════════════════════════════════════════════════ */
+</style>

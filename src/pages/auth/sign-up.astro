@@ -1,0 +1,49 @@
+---
+// Standard Clerk Sign-Up Page
+import Layout from '@/components/layout/Layout.astro';
+import { SignUp } from '@clerk/astro/components';
+---
+<Layout title="Sign Up — Carcblog" description="Create a new Carcblog account">
+  <div class="auth-container">
+    <SignUp />
+  </div>
+</Layout>
+
+<script is:inline>
+  // Clean up stale sessions / cookies from old Clerk keys if they are causing a redirect loop
+  if (!window.location.search.includes('cleared')) {
+    // Delete session cookies
+    document.cookie.split(";").forEach((c) => {
+      const name = c.split("=")[0].trim();
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname;
+    });
+    
+    // Clear localStorage keys relating to Clerk
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && (key.toLowerCase().includes('clerk') || key.startsWith('__clerk'))) {
+        localStorage.removeItem(key);
+      }
+    }
+    
+    // Clear sessionStorage
+    sessionStorage.clear();
+    
+    // Reload the page once with '?cleared=1' to load the new Clerk app cleanly
+    const url = new URL(window.location.href);
+    url.searchParams.set('cleared', '1');
+    window.location.href = url.toString();
+  }
+</script>
+
+<style>
+  .auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 120px);
+    padding: 24px;
+    background-color: var(--color-background);
+  }
+</style>

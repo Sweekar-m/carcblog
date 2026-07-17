@@ -1,0 +1,45 @@
+---
+interface Props {
+  src?: string;
+  name: string;
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  src,
+  name,
+  size = 'md',
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const initials = name
+  .split(' ')
+  .map((word) => word.charAt(0))
+  .join('')
+  .substring(0, 2)
+  .toUpperCase();
+
+const sizes = {
+  xs: 'h-4 w-4 text-xs',
+  sm: 'h-6 w-6 text-sm',
+  md: 'h-8 w-8 text-base',
+  lg: 'h-10 w-10 text-lg',
+  xl: 'h-12 w-12 text-xl'
+};
+
+---
+<div class:list={['relative shrink-0 flex items-center justify-center rounded-full overflow-hidden border border-border bg-gradient-to-tr from-primary to-accent text-white font-medium select-none', sizes[size], className]} {...rest}>
+  {src ? (
+    <img
+      src={src}
+      alt={name}
+      class="h-full w-full object-cover"
+      loading="lazy"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+  ) : null}
+  <span class="initials flex items-center justify-center">{initials}</span>
+</div>

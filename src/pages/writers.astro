@@ -1,0 +1,649 @@
+---
+// Writers page
+import Layout from '@/components/layout/Layout.astro';
+---
+<Layout title="Writers — Carcblog" description="Discover talented writers crafting ideas on Carcblog">
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 1: HERO
+  ═══════════════════════════════════════════════ -->
+  <section class="writers-hero">
+    <div class="container">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-dot"></span>
+        Our Writers
+      </div>
+      <h1 class="hero-title">Words Worth Reading</h1>
+      <p class="hero-sub">Meet the writers who make Carcblog worth visiting every day — from deep dives to sharp takes.</p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 2: FEATURED WRITERS GRID
+  ═══════════════════════════════════════════════ -->
+  <section class="section section--white">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Featured Writers</h2>
+        <p class="section-sub">Meet authors crafting detailed content on Carcblog.</p>
+      </div>
+
+      <div class="writers-grid">
+        <!-- Jane Doe -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--blue">JD</div>
+            <div class="writer-stats">
+              <span class="stat-badge">12.4K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Jane Doe</h3>
+            <p class="writer-spec">Technology writer</p>
+            <p class="writer-bio">Exploring the intersection of technology and human experience through thoughtful analysis and storytelling.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">AI</span>
+              <span class="w-tag">UX</span>
+              <span class="w-tag">Future</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+
+        <!-- Michael Smith -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--purple">MS</div>
+            <div class="writer-stats">
+              <span class="stat-badge">8.9K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Michael Smith</h3>
+            <p class="writer-spec">Culture critic</p>
+            <p class="writer-bio">Examining societal trends, modern arts, and the evolving landscape of contemporary human culture.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">Culture</span>
+              <span class="w-tag">Art</span>
+              <span class="w-tag">Society</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+
+        <!-- Alex Kumar -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--teal">AK</div>
+            <div class="writer-stats">
+              <span class="stat-badge">15.2K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Alex Kumar</h3>
+            <p class="writer-spec">Science journalist</p>
+            <p class="writer-bio">Making complex scientific concepts and space discoveries accessible and engaging for curious readers.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">Space</span>
+              <span class="w-tag">Physics</span>
+              <span class="w-tag">Science</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+
+        <!-- Nina Gupta -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--rose">NG</div>
+            <div class="writer-stats">
+              <span class="stat-badge">6.1K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Nina Gupta</h3>
+            <p class="writer-spec">Environmental scientist</p>
+            <p class="writer-bio">Bridging climate science and policy to create actionable narratives about the future of our planet.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">Climate</span>
+              <span class="w-tag">Nature</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+
+        <!-- Diego Castillo -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--amber">DC</div>
+            <div class="writer-stats">
+              <span class="stat-badge">4.3K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Diego Castillo</h3>
+            <p class="writer-spec">Digital culture</p>
+            <p class="writer-bio">Exploring how digital spaces reshape identity, community, and the way we form lasting connections.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">Digital</span>
+              <span class="w-tag">Identity</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+
+        <!-- Taylor Smith -->
+        <div class="writer-card">
+          <div class="writer-card-top">
+            <div class="writer-avatar wa--indigo">TS</div>
+            <div class="writer-stats">
+              <span class="stat-badge">18.5K followers</span>
+            </div>
+          </div>
+          <div class="writer-info">
+            <h3 class="writer-name">Taylor Smith</h3>
+            <p class="writer-spec">AI & Machine Learning</p>
+            <p class="writer-bio">Decoding the algorithms shaping our world — from recommendation engines to large language models.</p>
+          </div>
+          <div class="writer-footer">
+            <div class="writer-tags">
+              <span class="w-tag">ML</span>
+              <span class="w-tag">AI</span>
+              <span class="w-tag">Data</span>
+            </div>
+            <a href="#" class="follow-btn">Follow</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 3: BROWSE BY EXPERTISE
+  ═══════════════════════════════════════════════ -->
+  <section class="section section--parchment">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Browse by Expertise</h2>
+        <p class="section-sub">Explore leaders in specific fields and disciplines.</p>
+      </div>
+
+      <div class="expertise-pills">
+        <span class="ep ep--blue">Technology</span>
+        <span class="ep ep--purple">Science</span>
+        <span class="ep ep--teal">Culture</span>
+        <span class="ep ep--indigo">Politics</span>
+        <span class="ep ep--amber">Business</span>
+        <span class="ep ep--rose">Health</span>
+        <span class="ep ep--blue">Personal Growth</span>
+        <span class="ep ep--purple">Design</span>
+      </div>
+
+      <div class="leaderboard-grid">
+        <!-- Tech leaders -->
+        <div class="leaderboard-panel">
+          <h3 class="panel-title">Top technology writers</h3>
+          <div class="panel-rows">
+            <div class="panel-row">
+              <div class="pr-rank">01</div>
+              <div class="pr-avatar pr-blue">TS</div>
+              <div class="pr-info">
+                <p class="pr-name">Taylor Smith</p>
+                <p class="pr-meta">AI & Machine Learning</p>
+              </div>
+              <span class="pr-stat">18.5K views</span>
+            </div>
+            <div class="panel-row">
+              <div class="pr-rank">02</div>
+              <div class="pr-avatar pr-teal">LR</div>
+              <div class="pr-info">
+                <p class="pr-name">Linda Rodriguez</p>
+                <p class="pr-meta">Software Engineering</p>
+              </div>
+              <span class="pr-stat">14.2K views</span>
+            </div>
+            <div class="panel-row">
+              <div class="pr-rank">03</div>
+              <div class="pr-avatar pr-purple">JD</div>
+              <div class="pr-info">
+                <p class="pr-name">Jane Doe</p>
+                <p class="pr-meta">Interface & AI</p>
+              </div>
+              <span class="pr-stat">12.4K views</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emerging voices -->
+        <div class="leaderboard-panel">
+          <h3 class="panel-title">Emerging voices</h3>
+          <div class="panel-rows">
+            <div class="panel-row">
+              <div class="pr-rank">01</div>
+              <div class="pr-avatar pr-rose">NG</div>
+              <div class="pr-info">
+                <p class="pr-name">Nina Gupta</p>
+                <p class="pr-meta">Environmental Science</p>
+              </div>
+              <span class="pr-badge pr-badge--new">New this month</span>
+            </div>
+            <div class="panel-row">
+              <div class="pr-rank">02</div>
+              <div class="pr-avatar pr-amber">DC</div>
+              <div class="pr-info">
+                <p class="pr-name">Diego Castillo</p>
+                <p class="pr-meta">Digital Culture</p>
+              </div>
+              <span class="pr-badge pr-badge--rising">Rising star</span>
+            </div>
+            <div class="panel-row">
+              <div class="pr-rank">03</div>
+              <div class="pr-avatar pr-indigo">PW</div>
+              <div class="pr-info">
+                <p class="pr-name">Priya Williams</p>
+                <p class="pr-meta">Health & Wellness</p>
+              </div>
+              <span class="pr-badge pr-badge--new">New this month</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 4: DARK JOIN CTA
+  ═══════════════════════════════════════════════ -->
+  <section class="section section--dark">
+    <div class="container container--narrow">
+      <p class="cta-eyebrow">Join the community</p>
+      <h2 class="cta-title">Ready to share your expertise?</h2>
+      <p class="cta-body">Join our growing community of writers and connect with readers who value your insights and perspective.</p>
+      <div class="cta-buttons">
+        <a href="/sign-up" class="btn-primary">Join as a Writer</a>
+        <a href="/about" class="btn-ghost">Learn more</a>
+      </div>
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+/* ════════════════════════════════════════════
+   CONTAINER — sole centering mechanism
+════════════════════════════════════════════ */
+.container {
+  max-width: 1100px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+.container--narrow {
+  max-width: 680px;
+  text-align: center;
+}
+
+/* ════════════════════════════════════════════
+   HERO
+════════════════════════════════════════════ */
+.writers-hero {
+  background: #0a0a0f;
+  padding: 100px 0 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.writers-hero::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(0,102,204,0.3) 0%, transparent 70%);
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  margin-bottom: 24px;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px;
+  background: #60a5fa;
+  border-radius: 50%;
+}
+.hero-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.hero-sub {
+  font-size: 17px;
+  color: rgba(255,255,255,0.5);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.65;
+}
+
+/* ════════════════════════════════════════════
+   SECTIONS
+════════════════════════════════════════════ */
+.section {
+  width: 100%;
+  padding: 80px 0;
+  border-bottom: 1px solid #e8e8ed;
+}
+.section--white     { background: #fff; }
+.section--parchment { background: #f5f5f7; }
+.section--dark      { background: #0a0a0f; border-bottom: none; }
+
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+}
+.section-sub { font-size: 15px; color: #6e6e73; }
+
+/* ════════════════════════════════════════════
+   WRITER CARDS GRID
+════════════════════════════════════════════ */
+.writers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+@media (max-width: 900px) { .writers-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .writers-grid { grid-template-columns: 1fr; } }
+
+.writer-card {
+  background: #fff;
+  border: 1px solid #e0e0e8;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 240ms cubic-bezier(0.4,1.3,0.65,1);
+}
+.writer-card:hover {
+  border-color: #c0c0c8;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+  transform: translateY(-4px);
+}
+
+.writer-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.writer-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wa--blue   { background: #dbeafe; color: #1d4ed8; }
+.wa--purple { background: #ede9fe; color: #6d28d9; }
+.wa--teal   { background: #ccfbf1; color: #0f766e; }
+.wa--rose   { background: #ffe4e6; color: #be123c; }
+.wa--amber  { background: #fef3c7; color: #b45309; }
+.wa--indigo { background: #e0e7ff; color: #3730a3; }
+
+.stat-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6e6e73;
+  background: #f5f5f7;
+  border: 1px solid #e8e8ed;
+  padding: 3px 10px;
+  border-radius: 9999px;
+}
+
+.writer-info { flex: 1; }
+.writer-name { font-size: 16px; font-weight: 700; color: #1d1d1f; margin-bottom: 2px; }
+.writer-spec { font-size: 12px; color: #86868b; margin-bottom: 8px; }
+.writer-bio  { font-size: 13px; color: #6e6e73; line-height: 1.55; }
+
+.writer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #f0f0f5;
+  margin-top: auto;
+}
+.writer-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.w-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0066cc;
+  background: #eff6ff;
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+.follow-btn {
+  background: #0066cc;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 200ms ease;
+  white-space: nowrap;
+}
+.follow-btn:hover { background: #0071e3; transform: scale(1.04); }
+
+/* ════════════════════════════════════════════
+   EXPERTISE PILLS
+════════════════════════════════════════════ */
+.expertise-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+.ep {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 200ms ease;
+  border: 1.5px solid transparent;
+}
+.ep--blue   { color: #1d4ed8; background: #dbeafe; border-color: #bfdbfe; }
+.ep--purple { color: #6d28d9; background: #ede9fe; border-color: #ddd6fe; }
+.ep--teal   { color: #0f766e; background: #ccfbf1; border-color: #99f6e4; }
+.ep--indigo { color: #3730a3; background: #e0e7ff; border-color: #c7d2fe; }
+.ep--amber  { color: #b45309; background: #fef3c7; border-color: #fde68a; }
+.ep--rose   { color: #be123c; background: #ffe4e6; border-color: #fecdd3; }
+.ep:hover { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+/* ════════════════════════════════════════════
+   LEADERBOARD PANELS
+════════════════════════════════════════════ */
+.leaderboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+@media (max-width: 640px) { .leaderboard-grid { grid-template-columns: 1fr; } }
+
+.leaderboard-panel {
+  background: #fff;
+  border: 1px solid #e0e0e8;
+  border-radius: 16px;
+  padding: 24px;
+}
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f5;
+}
+.panel-rows { display: flex; flex-direction: column; gap: 10px; }
+.panel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 180ms ease;
+}
+.panel-row:hover { background: #f9f9fb; }
+
+.pr-rank {
+  font-size: 11px;
+  font-weight: 800;
+  color: #c0c0c8;
+  letter-spacing: 0.04em;
+  width: 20px;
+  flex-shrink: 0;
+}
+.pr-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pr-blue   { background: #dbeafe; color: #1d4ed8; }
+.pr-purple { background: #ede9fe; color: #6d28d9; }
+.pr-teal   { background: #ccfbf1; color: #0f766e; }
+.pr-rose   { background: #ffe4e6; color: #be123c; }
+.pr-amber  { background: #fef3c7; color: #b45309; }
+.pr-indigo { background: #e0e7ff; color: #3730a3; }
+
+.pr-info { flex: 1; }
+.pr-name { font-size: 13px; font-weight: 700; color: #1d1d1f; }
+.pr-meta { font-size: 11px; color: #86868b; }
+
+.pr-stat {
+  font-size: 11px;
+  font-weight: 700;
+  color: #0066cc;
+  white-space: nowrap;
+}
+.pr-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+.pr-badge--new    { background: #d1fae5; color: #065f46; }
+.pr-badge--rising { background: #fef3c7; color: #92400e; }
+
+/* ════════════════════════════════════════════
+   DARK CTA
+════════════════════════════════════════════ */
+.cta-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  margin-bottom: 16px;
+}
+.cta-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.cta-body {
+  font-size: 16px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.65;
+  margin-bottom: 36px;
+}
+.cta-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  background: #0066cc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 26px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 220ms ease;
+}
+.btn-primary:hover {
+  background: #0071e3;
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0,102,204,0.4);
+}
+.btn-ghost {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.16);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 220ms ease;
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,0.13);
+  color: #fff;
+}
+</style>

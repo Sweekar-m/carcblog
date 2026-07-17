@@ -1,0 +1,230 @@
+---
+// Feed page
+import Layout from '@/components/layout/Layout.astro';
+import { getRecentArticles } from '@/lib/sanity';
+import ArticleCard from '@/components/ui/ArticleCard.astro';
+
+const recentArticles = await getRecentArticles(12);
+---
+<Layout title="Your Feed — Carcblog" description="Discover new articles from writers you follow">
+
+  <div class="feed-page">
+
+    <!-- ─── Page header ─── -->
+    <div class="feed-header">
+      <div class="container">
+        <div class="fh-inner">
+          <div>
+            <h1 class="feed-title">Your Feed</h1>
+            <p class="feed-sub">Curated stories from writers and topics you care about.</p>
+          </div>
+          <div class="feed-filters">
+            <button class="filter-btn filter-btn--active">All</button>
+            <button class="filter-btn">Following</button>
+            <button class="filter-btn">Trending</button>
+            <button class="filter-btn">New</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── Articles ─── -->
+    <div class="feed-body">
+      <div class="container">
+
+        {recentArticles.length > 0 ? (
+          <>
+            <div class="articles-grid">
+              {recentArticles.map((article) => (
+                <ArticleCard
+                  title={article.title}
+                  excerpt={article.excerpt}
+                  publishedAt={article.publishedAt}
+                  authorName={article.author.name}
+                  authorImage={article.author.image}
+                  slug={article.slug.current}
+                  coverImage={article.coverImage}
+                />
+              ))}
+            </div>
+
+            <div class="load-more">
+              <button class="load-btn">
+                Load more stories
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </>
+        ) : (
+          <!-- Empty state -->
+          <div class="empty-state">
+            <div class="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                <rect width="48" height="48" rx="12" fill="#f0f6ff"/>
+                <path d="M14 18h20M14 24h14M14 30h10" stroke="#0066cc" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h2 class="empty-title">Your feed is empty</h2>
+            <p class="empty-desc">
+              Follow writers and explore topics to start seeing articles here. There's a lot of great writing waiting.
+            </p>
+            <div class="empty-actions">
+              <a href="/discover" class="btn-primary">Explore topics</a>
+              <a href="/dashboard/articles/new" class="btn-ghost">Write your first article</a>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  </div>
+
+</Layout>
+
+<style>
+/* ════════════════════════════════════════════
+   CONTAINER
+════════════════════════════════════════════ */
+.container {
+  max-width: 1100px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
+}
+
+/* ════════════════════════════════════════════
+   PAGE LAYOUT
+════════════════════════════════════════════ */
+.feed-page { min-height: 60vh; background: #f5f5f7; }
+
+/* ─── Header ─── */
+.feed-header {
+  background: #fff;
+  border-bottom: 1px solid #e8e8ed;
+  padding: 36px 0;
+}
+.fh-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.feed-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+.feed-sub { font-size: 14px; color: #86868b; }
+
+/* Filters */
+.feed-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 8px 18px;
+  border-radius: 9999px;
+  border: 1.5px solid #e0e0e8;
+  background: #fff;
+  color: #6e6e73;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+.filter-btn:hover { border-color: #0066cc; color: #0066cc; }
+.filter-btn--active {
+  background: #0066cc;
+  border-color: #0066cc;
+  color: #fff;
+}
+
+/* ─── Body ─── */
+.feed-body { padding: 48px 0 80px; }
+
+/* Articles grid */
+.articles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
+  gap: 20px;
+  justify-content: center;
+  margin-bottom: 48px;
+}
+
+/* Load more */
+.load-more { text-align: center; }
+.load-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1.5px solid #e0e0e8;
+  color: #1d1d1f;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 28px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 220ms ease;
+}
+.load-btn:hover {
+  border-color: #0066cc;
+  color: #0066cc;
+  box-shadow: 0 4px 16px rgba(0,102,204,0.12);
+}
+
+/* ─── Empty state ─── */
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.empty-icon { margin-bottom: 24px; }
+.empty-title {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 12px;
+}
+.empty-desc {
+  font-size: 15px;
+  color: #6e6e73;
+  max-width: 420px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+}
+.empty-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.btn-primary {
+  background: #0066cc;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 220ms ease;
+}
+.btn-primary:hover { background: #0071e3; transform: scale(1.03); }
+.btn-ghost {
+  background: transparent;
+  color: #0066cc;
+  border: 1.5px solid #d0dff5;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 11px 24px;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 220ms ease;
+}
+.btn-ghost:hover { background: #f0f6ff; border-color: #0066cc; }
+</style>

@@ -1,0 +1,58 @@
+---
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger' | 'link';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+  disabled?: boolean;
+  loading?: boolean;
+  href?: string;
+  [key: string]: any;
+}
+
+const {
+  variant = 'primary',
+  size = 'md',
+  type = 'button',
+  class: className = '',
+  disabled = false,
+  loading = false,
+  href,
+  ...rest
+} = Astro.props;
+
+// Base styles & micro-interactions using design system via Tailwind
+const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus-ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+
+const variants = {
+  primary: 'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-press',
+  secondary: 'bg-background text-foreground hover:bg-background-muted active:bg-border border border-border',
+  ghost: 'bg-transparent text-foreground hover:bg-background-muted active:bg-border',
+  outline: 'bg-transparent text-foreground border border-border hover:bg-background-muted active:bg-border',
+  danger: 'bg-error text-error-foreground hover:bg-error-hover active:bg-error-press',
+  link: 'bg-transparent text-accent hover:text-accent-hover active:text-accent-press underline-offset-2 hover:underline'
+};
+
+const sizes = {
+  xs: 'px-2 py-1 text-xs rounded-xs gap-1',
+  sm: 'px-3 py-1.5 text-sm rounded-sm gap-1.5',
+  md: 'px-4 py-2 text-base rounded-md gap-2',
+  lg: 'px-6 py-3 text-lg rounded-lg gap-2.5',
+  xl: 'px-8 py-4 text-xl rounded-xl gap-3'
+};
+
+const Element = href ? 'a' : 'button';
+const elementProps = href ? { href, ...rest } : { type, disabled: disabled || loading, ...rest };
+---
+
+<Element class:list={[baseStyles, variants[variant], sizes[size], className]} {...elementProps}>
+  {loading && (
+    <svg class="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+  )}
+  <slot name="left-icon" />
+  <slot />
+  <slot name="right-icon" />
+</Element>

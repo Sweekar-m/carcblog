@@ -1,0 +1,70 @@
+---
+interface Props {
+  tabs: { id: string; label: string; active?: boolean }[];
+  class?: string;
+  [key: string]: any;
+}
+
+const {
+  tabs,
+  class: className = '',
+  ...rest
+} = Astro.props;
+
+const id = `tabs-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<div id={id} class:list={['flex flex-col gap-4 w-full', className]} {...rest}>
+  <!-- Tab Buttons -->
+  <div class="flex border-b border-border/80 overflow-x-auto no-scrollbar gap-2">
+    {tabs.map((tab) => (
+      <button
+        data-tab-trigger={tab.id}
+        class:list={[
+          'px-4 py-2 text-sm font-medium border-b-2 transition-all duration-200 focus:outline-none whitespace-nowrap cursor-pointer',
+          tab.active
+            ? 'border-primary text-foreground'
+            : 'border-transparent text-foreground-muted hover:text-foreground hover:border-border-muted'
+        ]}
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+
+  <!-- Tab Content Slot Wrapper -->
+  <div class="tab-panels w-full">
+    <slot />
+  </div>
+</div>
+
+<script define:vars={{ id }}>
+  const container = document.getElementById(id);
+  if (container) {
+    const triggers = container.querySelectorAll('[data-tab-trigger]');
+    
+    triggers.forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        const tabId = trigger.getAttribute('data-tab-trigger');
+        
+        // Update tab buttons style
+        triggers.forEach((btn) => {
+          btn.classList.remove('border-primary', 'text-foreground');
+          btn.classList.add('border-transparent', 'text-foreground-muted');
+        });
+        trigger.classList.add('border-primary', 'text-foreground');
+        trigger.classList.remove('border-transparent', 'text-foreground-muted');
+
+        // Hide all panels inside the tabs container
+        const panels = container.querySelectorAll('[data-tab-panel]');
+        panels.forEach((panel) => {
+          if (panel.getAttribute('data-tab-panel') === tabId) {
+            panel.classList.remove('hidden');
+          } else {
+            panel.classList.add('hidden');
+          }
+        });
+      });
+    });
+  }
+</script>

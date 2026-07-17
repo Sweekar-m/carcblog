@@ -1,0 +1,19 @@
+/* Animation Delays */
+.delay-50 { animation-delay: var(--duration-50); }
+.delay-75 { animation-delay: var(--duration-75); }
+.delay-100 { animation-delay: var(--duration-100); }
+.delay-150 { animation-delay: var(--duration-150); }
+.delay-200 { animation-delay: var(--duration-200); }
+.delay-300 { animation-delay: var(--duration-300); }
+.delay-500 { animation-delay: var(--duration-500); }
+.delay-700 { animation-delay: var(--duration-700); }
+.delay-1000 { animation-delay: var(--duration-1000); }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in var(--duration-200) var(--ease-in-out);
+}

@@ -1,0 +1,256 @@
+---
+// Dashboard index
+import Layout from '@/layouts/Layout.astro';
+import { supabase } from '@/lib/supabase';
+import { getRecentArticles } from '@/lib/sanity';
+import { getUserProfile } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/auth';
+
+export const prerender = false;
+
+// Get user's article stats
+async function getUserStats(userId) {
+  try {
+    // Get articles count
+    const articles = await getRecentArticles(100); // Get a reasonable number
+
+    // Filter articles by this user (assuming we have author info in articles)
+    const userArticles = articles.filter(article =>
+      article.author?.id === userId || article.author?._id === userId
+    );
+
+    // Calculate stats (in a real app, these would come from analytics/Supabase)
+    const articleCount = userArticles.length;
+    // These would typically come from analytics service
+    const viewCount = Math.floor(Math.random() * 1000) + 200; // Placeholder
+    const readTime = Math.floor(Math.random() * 500) + 100;   // Placeholder
+
+    return {
+      articleCount,
+      viewCount,
+      readTime
+    };
+  } catch (error) {
+    console.error('Failed to fetch user stats:', error);
+    return { articleCount: 0, viewCount: 0, readTime: 0 };
+  }
+}
+
+// Get recent activity for user
+async function getRecentActivity(userId) {
+  try {
+    // Get recent articles
+    const articles = await getRecentArticles(5);
+    const userArticles = articles.filter(article =>
+      article.author?.id === userId || article.author?._id === userId
+    ).map(article => ({
+      type: 'article',
+      action: 'published',
+      title: article.title,
+      timestamp: article.publishedAt || new Date().toISOString()
+    }));
+
+    // In a real app, you'd also get likes, follows, comments from activity feed
+    // For now, we'll return what we have plus some mock activity
+    const mockActivity = [
+      {
+        type: 'engagement',
+        action: 'liked',
+        description: 'Your article "Understanding TypeScript Generics" received 12 new likes',
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
+      },
+      {
+        type: 'follow',
+        action: 'followed',
+        description: 'You gained 3 new followers',
+        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
+      }
+    ];
+
+    return [...userArticles, ...mockActivity].sort((a, b) =>
+      new Date(b.timestamp) - new Date(a.timestamp)
+    ).slice(0, 3); // Return top 3 activities
+  } catch (error) {
+    console.error('Failed to fetch recent activity:', error);
+    return [];
+  }
+}
+
+const user = await getCurrentUser(Astro.locals);
+const stats = user ? await getUserStats(user.id) : { articleCount: 0, viewCount: 0, readTime: 0 };
+const recentActivity = user ? await getRecentActivity(user.id) : [];
+---
+<Layout title="Dashboard - Carcblog" description="Your writer dashboard">
+  {user ? (
+    <div class="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <aside class="w-64 border-r border-border">
+        <div class="flex-shrink-0 flex items-center h-16 border-b border-border px-4">
+          <span class="text-xl font-bold text-primary">Carcblog</span>
+        </div>
+        <nav class="mt-6 space-y-2 px-4">
+          <a href="/dashboard" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
+            <span class="mr-3 h-5 w-5 flex items-center justify-center">
+              <!-- Home icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 100-2z" />
+              </svg>
+            </span>
+            Overview
+          </a>
+          <a href="/dashboard/articles" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
+            <span class="mr-3 h-5 w-5 flex items-center justify-center">
+              <!-- Article icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" data-not-first="" d="M14 3.41a4 4 0 011.41 5.59L7 16V6h4v9.41a6 6 0 00-2.41-.59L12 3.41zM17 14h-1v3a1 1 0 01-2 0v-3H7v1h8a1 1 0 011 1v3a1 1 0 01-1 1v-3H6v-1h12a1 1 0 011-1z" />
+              </svg>
+            </span>
+            Articles
+          </a>
+          <a href="/dashboard/profile" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
+            <span class="mr-3 h-5 w-5 flex items-center justify-center">
+              <!-- Profile icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M12 5l7 7-7 7-7-7 7-7z" />
+              </svg>
+            </span>
+            Profile
+          </a>
+          <a href="/dashboard/settings" class="flex items-center px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:bg-primary/10 hover:text-primary">
+            <span class="mr-3 h-5 w-5 flex items-center justify-center">
+              <!-- Settings icon -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-1.756.426-2.924.426-3.35 0a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 00-2.573 1.066c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573z" />
+              </svg>
+            </span>
+            Settings
+          </a>
+        </nav>
+      </aside>
+
+      {/* Main content */}
+      <main class="flex-1 p-6 overflow-y-auto">
+        {/* Welcome header */}
+        <div class="mb-6">
+          <h1 class="font-serif text-4xl font-bold text-foreground mb-2">Welcome back, {user?.firstName || 'Writer'}!</h1>
+          <p class="text-lg text-foreground-muted">
+            Here's your writing dashboard. Keep creating amazing content.
+          </p>
+        </div>
+
+        {/* Stats cards */}
+        <div class="grid gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Articles count */}
+          <div class="bg-background-alt border border-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center space-x-3 mb-3">
+              <div class="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m2 0a9 9 0 11-18 0 9 9 0 0018 0z" />
+                </svg>
+              </div>
+              <h3 class="font-semibold text-foreground">Articles Published</h3>
+            </div>
+            <p class="text-3xl font-bold text-foreground">{stats.articleCount}</p>
+          </div>
+
+          {/* Views count */}
+          <div class="bg-background-alt border border-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center space-x-3 mb-3">
+              <div class="h-8 w-8 flex items-center justify-center bg-accent/10 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <h3 class="font-semibold text-foreground">Total Views</h3>
+            </div>
+            <p class="text-3xl font-bold text-foreground">{stats.viewCount}</p>
+          </div>
+
+          {/* Read time */}
+          <div class="bg-background-alt border border-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center space-x-3 mb-3">
+              <div class="h-8 w-8 flex items-center justify-center bg-accent-2/10 rounded-md">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3" />
+                </svg>
+              </div>
+              <h3 class="font-semibold text-foreground">Read Time (mins)</h3>
+            </div>
+            <p class="text-3xl font-bold text-foreground">{stats.readTime}</p>
+          </div>
+        </div>
+
+        {/* Recent activity */}
+        <div class="space-y-6">
+          <h2 class="font-serif text-3xl font-bold text-foreground mb-4">Recent Activity</h2>
+
+          {recentActivity.length > 0 ? (
+            <div class="space-y-4">
+              {recentActivity.map((activity, index) => (
+                <div key={index} class="flex items-start space-x-3 p-4 bg-background-alt border border-border rounded-lg">
+                  <div class="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-md shrink-0">
+                    {activity.type === 'article' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m2 0a9 9 0 11-18 0 9 9 0 0018 0z" />
+                      </svg>
+                    )}
+                    {activity.type === 'engagement' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 3v1h16V3H4zm1 14a2 2 0 100-4 2 2 0 000 4zm4-6a2 2 0 100-4 2 2 0 000 4zm4 0a2 2 0 100-4 2 2 0 000 4z" />
+                      </svg>
+                    )}
+                    {activity.type === 'follow' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-accent-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 22s8-4 8-10V5c0-6-2-8-5-8-5 0-5 2-5 8v7c0 6 2 6 8 4z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div class="flex-1">
+                    <p class="font-medium text-foreground">{activity.title || activity.description}</p>
+                    <p class="text-sm text-foreground-muted">
+                      {new Date(activity.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="text-center py-8 bg-background-alt rounded-lg border border-border">
+              <p class="text-foreground-muted">No recent activity yet. Start writing to see your activity here.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Call to action */}
+        <div class="mt-8 text-center py-8 bg-background-alt rounded-xl border border-border">
+          <h2 class="font-serif text-3xl font-bold text-foreground mb-4">Ready to write your next story?</h2>
+          <p class="text-lg text-foreground-muted mx-auto max-w-xl mb-6">
+            Dive back into your workflow and let AI enhance your creativity.
+          </p>
+          <a href="/dashboard/articles/new" class="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary-hover">
+            Start Writing →
+          </a>
+        </div>
+      </main>
+    </div>
+  ) : (
+    <Layout title="Carcblog" description="Sign in to continue">
+      <div class="min-h-screen flex items-center justify-center bg-background">
+        <div class="w-full max-w-md p-6 bg-background-alt rounded-xl border border-border">
+          <h2 class="font-serif text-3xl font-bold text-foreground mb-6 text-center">Sign in to access your dashboard</h2>
+          <p class="text-foreground-muted mb-6 text-center">
+            Please sign in to continue to your writer dashboard.
+          </p>
+          <div class="space-y-4">
+            <a href="/sign-in" class="w-full inline-flex items-center px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary-hover">
+              Sign In
+            </a>
+            <a href="/sign-up" class="w-full inline-flex items-center px-4 py-2 text-sm font-medium rounded-md border border-border bg-transparent text-foreground hover:text-foreground">
+              Sign Up
+            </a>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  )}
+</Layout>
