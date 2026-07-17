@@ -1,13 +1,23 @@
 ---
 // Home page
 import Layout from '@/components/layout/Layout.astro';
-import { getFeaturedArticles } from '@/lib/sanity';
+import { getPublishedArticlesWithFallback } from '@/lib/supabase';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
 
-const featuredArticles = await getFeaturedArticles(6);
-const heroArticle = featuredArticles[0] || null;
-const gridArticles = featuredArticles.slice(1);
+const articles = await getPublishedArticlesWithFallback(6);
+const articleData = articles.map(article => ({
+  title: article.title,
+  excerpt: article.excerpt ?? article.content?.substring(0, 150) + '...',
+  publishedAt: article.published_at,
+  authorName: article.author?.full_name ?? article.author?.username ?? 'Unknown',
+  authorImage: article.author?.avatar_url,
+  slug: article.slug,
+  coverImage: article.cover_image_url
+}));
+const heroArticle = articleData[0] || null;
+const gridArticles = articleData.slice(1);
 ---
+
 <Layout title="Carcblog — AI-Native Publishing" description="Discover thoughtful writing from insightful writers on Carcblog">
 
   <!-- ═══════════════════════════════════════════════

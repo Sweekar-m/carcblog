@@ -1,18 +1,31 @@
 ---
 // Article detail page
 import Layout from '@/components/layout/Layout.astro';
-import { getArticleBySlug } from '@/lib/sanity';
+import { getArticleBySlugWithFallback } from '@/lib/supabase';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
 const articleSlug = slug.join('/');
-const article = await getArticleBySlug(articleSlug);
+const articleRaw = await getArticleBySlugWithFallback(articleSlug);
 
-if (!article) {
+if (!articleRaw) {
   return Astro.redirect('/404');
 }
+
+const article = {
+  title: articleRaw.title,
+  excerpt: articleRaw.excerpt ?? articleRaw.content?.substring(0, 150) + '...',
+  publishedAt: articleRaw.published_at,
+  author: {
+    name: articleRaw.author?.full_name ?? articleRaw.author?.username ?? 'Unknown',
+    image: articleRaw.author?.avatar_url
+  },
+  coverImage: articleRaw.cover_image_url,
+  body: articleRaw.content
+};
 ---
+
 <Layout title={`${article.title} - Carcblog`} description={article.excerpt}>
   <div class="min-h-[calc(100vh-var(--header-height))] flex flex-col">
     {/* Article Header */}

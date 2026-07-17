@@ -2,22 +2,7 @@
 // Nav.astro — Single cohesive navigation bar for CarcBlog
 // Replaces the old two-tier Header with one premium, glassy strip.
 
-let userId = null;
-let user   = null;
-
-if (typeof Astro.locals.auth === 'function') {
-  try {
-    const auth = await Astro.locals.auth();
-    userId = auth?.userId;
-    if (userId && typeof Astro.locals.currentUser === 'function') {
-      user = await Astro.locals.currentUser();
-    }
-  } catch (e) {
-    console.warn('Auth check failed in Nav:', e);
-  }
-}
-
-// Resolve current path for active-link highlighting
+const user = Astro.locals.user;\nconst userId = user?.userId;\n\n// Resolve current path for active-link highlighting
 const currentPath = new URL(Astro.request.url).pathname;
 const isActive = (href: string) =>
   href === '/' ? currentPath === '/' : currentPath.startsWith(href);
@@ -85,7 +70,7 @@ const isActive = (href: string) =>
         <>
           <a href="/dashboard" class="nav-avatar-link" aria-label="Your dashboard">
             <img
-              src={user?.imageUrl || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
+              src={user?.avatar_url || 'https://api.dicebear.com/7.x/initials/svg?seed=User'}
               alt="Your profile"
               class="nav-avatar"
               width="28"
@@ -569,3 +554,5 @@ const isActive = (href: string) =>
    GOOGLE FONTS — load Cormorant for the logo
 ════════════════════════════════════════════════════════ */
 </style>
+
+

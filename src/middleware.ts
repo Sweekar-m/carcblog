@@ -1,5 +1,6 @@
+@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server';
-import { hasCompletedOnboarding } from '@/lib/supabase';
+import { hasCompletedOnboarding, getUserProfile } from '@/lib/supabase';
 
 // Match dashboard routes
 const isProtectedRoute = createRouteMatcher([
@@ -21,18 +22,26 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
     });
   }
 
-  // If authenticated and accessing a route that requires onboarding,
-  // check if onboarding is complete — redirect to /onboarding if not
-  if (userId && isOnboardingRequired(context.request)) {
-    try {
-      const completed = await hasCompletedOnboarding(userId);
-      if (!completed) {
-        return context.redirect('/onboarding');
-      }
-    } catch {
-      // If the check fails (e.g. table doesn't exist yet), allow through
+  // If authenticated and accessing a protected route
+  if (userId && isProtectedRoute(context.request)) {
+    // Check onboarding completion
+    const completed = await hasCompletedOnboarding(userId);
+    if (!completed) {
+      return context.redirect('/onboarding');
     }
+    // Check if user is a writer
+    const profile = await getUserProfile(userId);
+    if (!profile || profile.role !== 'writer') {
+      // Redirect to home if not a writer
+      return context.redirect('/ ');
+    }
+    // Set user data in context.locals for use in endpoints and components
+    context.locals.user = {
+      userId,
+      ...profile
+    };
   }
 
   return next();
 });
+

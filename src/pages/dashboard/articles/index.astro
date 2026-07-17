@@ -1,14 +1,27 @@
 ---
 // Dashboard articles listing
 import Layout from '@/layouts/Layout.astro';
-import { getArticlesByAuthor } from '@/lib/sanity';
+import { getArticlesByAuthorWithFallback } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
 const user = await getCurrentUser(Astro.locals);
-const articles = user ? await getArticlesByAuthor(user.id) : [];
+const rawArticles = user ? await getArticlesByAuthorWithFallback(user.id) : [];
+const articles = rawArticles.map(article => ({
+  ...article,
+  _id: article.id,
+  coverImage: article.cover_image_url,
+  excerpt: article.excerpt ?? article.content?.substring(0, 150) + '...',
+  publishedAt: article.published_at,
+  author: {
+    name: article.author?.full_name ?? article.author?.username ?? 'Unknown',
+    image: article.author?.avatar_url
+  }
+}));
 ---
+
+
 <Layout title="My Articles - Dashboard" description="Manage your published articles and drafts">
 
   <div class="page-content">
@@ -256,3 +269,4 @@ const articles = user ? await getArticlesByAuthor(user.id) : [];
   .link { color: #0066cc; text-decoration: none; font-weight: 500; }
   .link:hover { color: #0071e3; text-decoration: underline; }
 </style>
+

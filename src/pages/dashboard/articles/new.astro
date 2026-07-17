@@ -1,115 +1,7 @@
----
-// New article form
+'' // New article form
 import Layout from '@/layouts/Layout.astro';
-import { sanityClient } from '@/lib/sanity';
 
 export const prerender = false;
-
-// Handle form submission
-export async function POST({ request, locals }) {
-  try {
-    const { userId, sessionId, getToken } = await locals.auth();
-
-    if (!userId) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    const formData = await request.formData();
-    const data = Object.fromEntries(formData);
-
-    // Validate required fields
-    if (!data.title || !data.content) {
-      return new Response(JSON.stringify({ error: 'Title and content are required' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Prepare article data for Sanity
-    const articleData = {
-      title: data.title,
-      slug: {
-        current: data.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)+/g, '')
-          .substring(0, 60) // Limit slug length
-      },
-      publishedAt: data['publish-immediately'] ? new Date().toISOString() : null,
-      excerpt: data.subtitle || data.content.substring(0, 150) + '...',
-      body: [
-        {
-          _type: 'block',
-          style: 'normal',
-          children: [
-            {
-              _type: 'span',
-              text: data.content,
-              marks: []
-            }
-          ]
-        }
-      ],
-      author: {
-        _type: 'reference',
-        _ref: userId // Assuming user ID in Clerk matches author ID in Sanity
-      }
-    };
-
-    // Add cover image if provided
-    if (data.coverImageUrl) {
-      articleData.coverImage = {
-        _type: 'image',
-        asset: {
-          _type: 'reference',
-          _ref: await uploadImageToSanity(data.coverImageUrl)
-        }
-      };
-    }
-
-    // Add topics if provided
-    if (data.topics) {
-      const topics = data.topics.split(',').map(t => t.trim()).filter(t => t.length > 0);
-      // Note: In a real implementation, you'd need to handle topics properly
-      // This would require a topic schema in Sanity and proper references
-    }
-
-    // Create article in Sanity
-    const result = await sanityClient.create({
-      _type: 'article',
-      ...articleData
-    });
-
-    // Redirect to the article page
-    return new Response(JSON.stringify({
-      success: true,
-      articleId: result._id,
-      slug: result.slug.current
-    }), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    console.error('Error creating article:', error);
-    return new Response(JSON.stringify({ error: 'Failed to create article' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
-
-// Helper function to upload image to Sanity (simplified - in reality you'd upload the file)
-async function uploadImageToSanity(url) {
-  // This is a simplified version - in production you'd:
-  // 1. Fetch the image from the URL
-  // 2. Upload it to Sanity assets
-  // 3. Return the asset ID
-  // For now, we'll return a placeholder or skip image upload
-  return null;
-}
 
 ---
 <Layout title="New Article - Dashboard" description="Create a new article">
@@ -120,7 +12,7 @@ async function uploadImageToSanity(url) {
     </p>
   </header>
 
-  <form id="articleForm" class="space-y-6" method="POST">
+  <form id="articleForm" action="/api/articles" method="POST">
     <div>
       <label class="block text-sm font-medium text-foreground mb-2">Title</label>
       <input type="text" name="title" required
@@ -129,10 +21,10 @@ async function uploadImageToSanity(url) {
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Subtitle (optional)</label>
-      <input type="text" name="subtitle"
+      <label class="block text-sm font-medium text-foreground mb-2">Slug (optional)</label>
+      <input type="text" name="slug" id="slugInput"
              class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-             placeholder="Enter subtitle" />
+             placeholder="Leave blank to auto-generate from title" />
     </div>
 
     <div>
@@ -143,27 +35,22 @@ async function uploadImageToSanity(url) {
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Topics (comma-separated)</label>
-      <input type="text" name="topics"
-             class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-             placeholder="technology, science, ai" />
+      <label class="block text-sm font-medium text-foreground mb-2">Excerpt (optional)</label>
+      <textarea name="excerpt" rows="3"
+                class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
+                placeholder="Enter a short summary"></textarea>
     </div>
 
-    <div class="border-t border-muted/50 pt-4">
+    <div>
       <label class="block text-sm font-medium text-foreground mb-2">Content</label>
-      <div class="relative">
-        <textarea id="content" name="content" rows="20"
-                  class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-                  placeholder="Write your article here..." required></textarea>
-        <div class="absolute bottom-2 right-2 text-xs text-muted-foreground">
-          <span id="word-count">0</span> words
-        </div>
-      </div>
+      <textarea name="body" id="content" rows="20"
+                class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
+                placeholder="Write your article here..." required></textarea>
     </div>
 
     <div class="flex items-center space-x-4">
       <label class="flex items-center space-x-2 text-sm font-medium text-foreground cursor-pointer">
-        <input type="checkbox" name="publish-immediately" id="publish-immediate" checked class="rounded border-muted/50 text-primary bg-background focus:ring-primary h-4 w-4" />
+        <input type="checkbox" name="status" value="published" id="publish-immediate" checked class="rounded border-muted/50 text-primary bg-background focus:ring-primary h-4 w-4" />
         <span>Publish immediately</span>
       </label>
     </div>
@@ -171,7 +58,7 @@ async function uploadImageToSanity(url) {
     <div class="mt-6">
       <button type="submit"
               id="submitButton"
-              class="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors duration-200">
+              class="w-level flex justify-center py-2 px-4 border border-transparent text-sm font-md rounded-md shadow-sm text-white bg-primary hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors duration-200">
         Publish article
       </button>
     </div>
@@ -182,69 +69,92 @@ async function uploadImageToSanity(url) {
 
 <script>
   // Handle form submission via AJAX
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('articleForm');
-    const submitButton = document.getElementById('submitButton');
-    const responseDiv = document.getElementById('formResponse');
-    const wordCount = document.getElementById('word-count');
-    const textarea = document.getElementById('content');
+  document.addEventListener(''DOMContentLoaded'', () => {
+    const form = document.getElementById(''articleForm'');
+    const submitButton = document.getElementById(''submitButton'');
+    const responseDiv = document.getElementById(''formResponse'');
+    const titleInput = form.querySelector(''input[name="title"]'');
+    const slugInput = document.getElementById(''slugInput'');
+    const contentInput = document.getElementById(''content'');
+    const wordCount = document.createElement(''span'');
+    wordCount.id = ''word-count'';
+    wordCount.className = ''absolute bottom-2 right-2 text-xs text-muted-foreground'';
+    contentInput.parentNode.position = ''relative'';
+    contentInput.parentNode.appendChild(wordCount);
+
+    // Auto-generate slug from title
+    const generateSlug = (title) => {
+      return title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ''-'')
+        .replace(/(^-|-$)+/g, '''')
+        .substring(0, 60);
+    };
+
+    const updateSlug = () => {
+      if (!slugInput.value.trim()) {
+        slugInput.value = generateSlug(titleInput.value);
+      }
+    };
+
+    titleInput.addEventListener(''input'', updateSlug);
+    // Also update on submit if empty
+    form.addEventListener(''submit'', updateSlug);
 
     // Word counter
-    if (textarea && wordCount) {
-      const updateWordCount = () => {
-        const text = textarea.value.trim();
-        const count = text === '' ? 0 : text.split(/\s+/).length;
-        wordCount.textContent = count;
-      };
+    const updateWordCount = () => {
+      const text = contentInput.value.trim();
+      const count = text === ''''.length ? 0 : text.split(/\\s+/).length;
+      wordCount.textContent = \`${count} words\`;
+    };
 
-      textarea.addEventListener('input', updateWordCount);
-      updateWordCount(); // Initial count
-    }
+    contentInput.addEventListener(''input'', updateWordCount);
+    updateWordCount(); // Initial count
 
     // Form submission
     if (form && submitButton && responseDiv) {
-      form.addEventListener('asyncsubmit', async (e) => {
+      form.addEventListener(''submit'', async (e) => {
         e.preventDefault();
 
         // Disable button and show loading state
         submitButton.disabled = true;
-        submitButton.innerHTML = '<span class="mr-2">&#9654;</span> Publishing...';
-        responseDiv.classList.add('hidden');
-        responseDiv.classList.remove('text-green-600', 'text-red-600');
-        responseDiv.textContent = '';
+        submitButton.innerHTML = ''<span class=\\"mr-2\\">&#9654;</span> Publishing...'';
+        responseDiv.classList.add(''hidden'');
+        responseDiv.classList.remove(''text-green-600'', ''text-red-600'');
+        responseDiv.textContent = '''';
 
         try {
           const formData = new FormData(form);
           const response = await fetch(form.action, {
-            method: 'POST',
+            method: ''POST'',
             body: formData
           });
 
           const result = await response.json();
 
           if (response.ok && result.success) {
-            responseDiv.classList.remove('hidden');
-            responseDiv.classList.add('text-green-600');
-            responseDiv.textContent = 'Article published successfully!';
+            responseDiv.classList.remove(''hidden'');
+            responseDiv.classList.add(''text-green-600'');
+            responseDiv.textContent = ''Article published successfully!'';
 
             // Redirect to the article page after a short delay
             setTimeout(() => {
-              window.location.href = `/article/${result.slug}`;
+              window.location.href = \`/article/${result.article.slug}\`;
             }, 1500);
           } else {
-            responseDiv.classList.remove('hidden');
-            responseDiv.classList.add('text-red-600');
-            responseDiv.textContent = result.error || 'Failed to publish article';
+            responseDiv.classList.remove(''hidden'');
+            responseDiv.classList.add(''text-red-600'');
+            responseDiv.textContent = result.error || ''Failed to publish article'';
           }
         } catch (error) {
-          responseDiv.classList.remove('hidden');
-          responseDiv.classList.add('text-red-600');
-          responseDiv.textContent = 'An error occurred while publishing the article.';
-          console.error('Error:', error);
+          responseDiv.classList.remove(''hidden'');
+          responseDiv.classList.add(''text-red-600'');
+          responseDiv.textContent = ''An error occurred while publishing the article.'';
+          console.error(''Error:'', error);
         } finally {
           // Re-enable button
           submitButton.disabled = false;
-          submitButton.textContent = 'Publish article';
+          submitButton.textContent = ''Publish article'';
         }
       });
     }
