@@ -1,1 +1,0 @@
-import"./hoisted.BUxFFoJd.js";const o=document.getElementById("progressBar");o&&window.addEventListener("scroll",()=>{const t=window.innerHeight,e=document.documentElement.scrollHeight-t,n=window.scrollY,s=e>0?n/e*100:0;o.style.width=`${s}%`});
