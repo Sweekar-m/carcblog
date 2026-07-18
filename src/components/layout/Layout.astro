@@ -4,8 +4,9 @@ import Nav from '@/components/layout/Nav.astro';
 import Footer from '@/components/layout/Footer.astro';
 import '@/styles/globals.css';
 // Dynamically import ParticlesBackground to avoid large initial bundle
-const { ParticlesBackground } = await import('@/components/islands/ParticlesBackground');
+// const { ParticlesBackground } = await import('@/components/islands/ParticlesBackground');
 // Note: The original static import is removed to avoid bundling the large three.js code in the initial chunk.
+import { ParticlesBackground } from '../islands/ParticlesBackground.tsx';
 import { ViewTransitions } from 'astro:transitions';
 
 
