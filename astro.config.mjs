@@ -1,13 +1,13 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@tailwindcss/vite';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 import clerk from '@clerk/astro';
 
 import react from '@astrojs/react';
 
 export default defineConfig({
   site: 'https://carcblog.com',
-  output: 'hybrid',
+  output: 'static',
   adapter: vercel(),
   devToolbar: {
     enabled: false
