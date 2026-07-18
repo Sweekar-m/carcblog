@@ -1,4 +1,3 @@
-@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/astro/server';
 import { hasCompletedOnboarding, getUserProfile } from '@/lib/supabase';
 
@@ -7,41 +6,45 @@ const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
 ]);
 
-// Routes that require onboarding to be completed
-const isOnboardingRequired = createRouteMatcher([
-  '/dashboard(.*)',
-]);
-
 export const onRequest = clerkMiddleware(async (auth, context, next) => {
   const { userId, redirectToSignIn } = auth();
 
-  // If user is not authenticated and is trying to access a protected route
-  if (!userId && isProtectedRoute(context.request)) {
-    return redirectToSignIn({
-      returnBackUrl: context.url.href,
-    });
+  // 1. If authenticated, fetch profile and set context.locals.user for ALL pages
+  if (userId) {
+    try {
+      const profile = await getUserProfile(userId);
+      if (profile) {
+        context.locals.user = {
+          userId,
+          ...profile
+        };
+      }
+    } catch (e) {
+      console.warn('Failed to fetch user profile in middleware:', e);
+    }
   }
 
-  // If authenticated and accessing a protected route
-  if (userId && isProtectedRoute(context.request)) {
+  // 2. Route gating for protected routes (/dashboard/*)
+  if (isProtectedRoute(context.request)) {
+    // If not authenticated
+    if (!userId) {
+      return redirectToSignIn({
+        returnBackUrl: context.url.href,
+      });
+    }
+
     // Check onboarding completion
     const completed = await hasCompletedOnboarding(userId);
     if (!completed) {
       return context.redirect('/onboarding');
     }
-    // Check if user is a writer
-    const profile = await getUserProfile(userId);
-    if (!profile || profile.role !== 'writer') {
-      // Redirect to home if not a writer
-      return context.redirect('/ ');
+
+    // Check if user is a writer (readers redirected to home)
+    const user = context.locals.user;
+    if (!user || user.role !== 'writer') {
+      return context.redirect('/');
     }
-    // Set user data in context.locals for use in endpoints and components
-    context.locals.user = {
-      userId,
-      ...profile
-    };
   }
 
   return next();
 });
-

@@ -18,7 +18,12 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 .env.development
-
+#agent files
+.agents
+.claude 
+.antigravity
+.astro
+.vercel
 # OS files
 .DS_Store
 Thumbs.db

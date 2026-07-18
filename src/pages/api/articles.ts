@@ -1,1 +1,60 @@
-import type { APIRoute } from 'astro';\nimport { supabase } from '@/lib/supabase';\nimport { getUserProfile } from '@/lib/supabase';\n\nexport const prerender = false;\n\nexport const POST: APIRoute = async ({ locals, request }) => {\n  // Auth check\n  const auth = await (locals as any).auth();\n  if (!auth?.userId) {\n    return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });\n  }\n\n  // Get user profile to check role\n  let profile;\n  try {\n    profile = await getUserProfile(auth.userId);\n  } catch (err) {\n    return new Response(JSON.stringify({ error: 'Failed to fetch user profile' }), { status: 500 });\n  }\n\n  if (!profile || profile.role !== 'writer') {\n    return new Response(JSON.stringify({ error: 'Only writers can create articles' }), { status: 403 });\n  }\n\n  // Parse body\n  let body;\n  try {\n    body = await request.json();\n  } catch {\n    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });\n  }\n\n  const { title, slug, coverImage, excerpt, body: content, status } = body;\n\n  // Validation\n  if (!title || !slug || !content) {\n    return new Response(JSON.stringify({ error: 'Title, slug, and content are required' }), { status: 400 });\n  }\n\n  // Determine published_at based on status\n  const publishedAt = status === 'published' ? new Date().toISOString() : null;\n\n  // Create article\n  try {\n    const article = await supabase.createArticle({\n      title,\n      slug,\n      coverImage: coverImage || null,\n      excerpt: excerpt || null,\n      content,\n      author_id: auth.userId,\n      published_at: publishedAt,\n    });\n\n    // Redirect to the article page or dashboard\n    // We'll redirect to the article page for now\n    return new Response(JSON.stringify({ success: true, article }), { status: 201 });\n  } catch (err: any) {\n    console.error('Error creating article:', err);\n    return new Response(JSON.stringify({ error: err?.message || 'Failed to create article' }), { status: 500 });\n  }\n};
+import type { APIRoute } from 'astro';
+import { createArticle, getUserProfile } from '@/lib/supabase';
+
+export const prerender = false;
+
+export const POST: APIRoute = async ({ locals, request }) => {
+  // Auth check
+  const auth = await (locals as any).auth();
+  if (!auth?.userId) {
+    return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
+  }
+
+  // Get user profile to check role
+  let profile;
+  try {
+    profile = await getUserProfile(auth.userId);
+  } catch (err) {
+    return new Response(JSON.stringify({ error: 'Failed to fetch user profile' }), { status: 500 });
+  }
+
+  if (!profile || profile.role !== 'writer') {
+    return new Response(JSON.stringify({ error: 'Only writers can create articles' }), { status: 403 });
+  }
+
+  // Parse body
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
+  }
+
+  const { title, slug, coverImage, excerpt, body: content, status } = body;
+
+  // Validation
+  if (!title || !slug || !content) {
+    return new Response(JSON.stringify({ error: 'Title, slug, and content are required' }), { status: 400 });
+  }
+
+  // Determine published_at based on status
+  const publishedAt = status === 'published' ? new Date().toISOString() : null;
+
+  // Create article in Supabase
+  try {
+    const article = await createArticle({
+      title,
+      slug,
+      cover_image_url: coverImage || null,
+      excerpt: excerpt || null,
+      content,
+      author_id: auth.userId,
+      published_at: publishedAt,
+    });
+
+    return new Response(JSON.stringify({ success: true, article }), { status: 201 });
+  } catch (err: any) {
+    console.error('Error creating article:', err);
+    return new Response(JSON.stringify({ error: err?.message || 'Failed to create article' }), { status: 500 });
+  }
+};

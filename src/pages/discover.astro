@@ -1,221 +1,151 @@
 ---
-// Discover page
+// Discover page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 ---
-<Layout title="Discover — Carcblog" description="Explore trending topics, featured writers, and curated reading lists">
+<Layout title="Discover — Carcblog" description="Explore trending topics, featured writers, and curated reading lists on Carcblog">
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 1: TRENDING TOPICS
+       SECTION 1: HERO — Trending Topics
+       canvas bg, display-mega headline, atmospheric orbs
   ═══════════════════════════════════════════════ -->
-  <section class="section section--parchment">
-    <div class="container">
-      <div class="section-header">
-        <h1 class="section-title">Trending Topics</h1>
-        <p class="section-sub">Explore what the community is reading and writing about.</p>
-      </div>
-
-      <div class="topics-grid">
-        <a href="/topics#technology" class="topic-card topic-card--blue">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Technology</h3>
-            <p class="topic-count">1.2M articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
-
-        <a href="/topics#science" class="topic-card topic-card--purple">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Science</h3>
-            <p class="topic-count">850K articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
-
-        <a href="/topics#culture" class="topic-card topic-card--teal">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Culture</h3>
-            <p class="topic-count">620K articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
-
-        <a href="/topics#politics" class="topic-card topic-card--indigo">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Politics</h3>
-            <p class="topic-count">410K articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
-
-        <a href="/topics#art" class="topic-card topic-card--rose">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Art</h3>
-            <p class="topic-count">380K articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
-
-        <a href="/topics#business" class="topic-card topic-card--amber">
-          <div class="topic-icon">#</div>
-          <div class="topic-info">
-            <h3 class="topic-name">Business</h3>
-            <p class="topic-count">295K articles</p>
-          </div>
-          <div class="topic-arrow">→</div>
-        </a>
+  <section class="discover-hero">
+    <!-- Atmospheric orbs — decoration only -->
+    <div class="atm-orb discover-orb-mint"     aria-hidden="true"></div>
+    <div class="atm-orb discover-orb-peach"    aria-hidden="true"></div>
+    <div class="page-container">
+      <div class="discover-hero-text">
+        <h1 class="discover-title">Discover</h1>
+        <p class="discover-sub">
+          Explore trending topics, inspiring voices, and curated reading paths across the startup ecosystem.
+        </p>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 2: FEATURED WRITERS
+       SECTION 2: TRENDING TOPICS
+       feature-card grid with badge-pill labels
   ═══════════════════════════════════════════════ -->
-  <section class="section section--white">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Featured Writers</h2>
-        <p class="section-sub">Voices that inspire and challenge perspectives.</p>
+  <section class="discover-section discover-section--soft">
+    <div class="page-container">
+      <div class="sec-header">
+        <h2 class="sec-title">Trending Topics</h2>
+        <p class="sec-sub">What the community is reading and writing about.</p>
       </div>
 
-      <div class="writers-grid">
-        <!-- Writer 1 -->
-        <div class="writer-card">
-          <div class="writer-avatar writer-avatar--blue">JD</div>
-          <div class="writer-body">
-            <h3 class="writer-name">Jane Doe</h3>
-            <p class="writer-meta">Technology writer · 12.4K followers</p>
-            <p class="writer-bio">Exploring the future of AI, interface aesthetics, and machine learning at the edge.</p>
-          </div>
-          <a href="/writers" class="writer-follow-btn">Follow</a>
-        </div>
-
-        <!-- Writer 2 -->
-        <div class="writer-card">
-          <div class="writer-avatar writer-avatar--purple">MS</div>
-          <div class="writer-body">
-            <h3 class="writer-name">Michael Smith</h3>
-            <p class="writer-meta">Culture critic · 8.9K followers</p>
-            <p class="writer-bio">Writing about society, modern art, and the human-computer connection in daily life.</p>
-          </div>
-          <a href="/writers" class="writer-follow-btn">Follow</a>
-        </div>
-
-        <!-- Writer 3 -->
-        <div class="writer-card">
-          <div class="writer-avatar writer-avatar--teal">AK</div>
-          <div class="writer-body">
-            <h3 class="writer-name">Alex Kumar</h3>
-            <p class="writer-meta">Science journalist · 15.2K followers</p>
-            <p class="writer-bio">Making complex scientific discoveries and astrophysics accessible to everyone.</p>
-          </div>
-          <a href="/writers" class="writer-follow-btn">Follow</a>
-        </div>
-      </div>
-
-      <div class="writers-cta-row">
-        <a href="/writers" class="see-all-link">See all writers →</a>
+      <div class="topics-grid reveal-grid">
+        {[
+          { href: '/topics#startups',   label: 'Startups',     count: '1.2M', orb: 'mint' },
+          { href: '/topics#funding',    label: 'Funding',      count: '850K', orb: 'peach' },
+          { href: '/topics#founders',   label: 'Founders',     count: '620K', orb: 'lavender' },
+          { href: '/topics#technology', label: 'Technology',   count: '410K', orb: 'sky' },
+          { href: '/topics#product',    label: 'Product',      count: '380K', orb: 'rose' },
+          { href: '/topics#growth',     label: 'Growth',       count: '295K', orb: 'mint' },
+        ].map(({ href, label, count, orb }) => (
+          <a href={href} class={`topic-card topic-card--${orb}`} aria-label={`Browse ${label} — ${count} articles`}>
+            <div class={`topic-orb topic-orb--${orb}`} aria-hidden="true"></div>
+            <div class="topic-content">
+              <span class="badge-pill topic-badge">#</span>
+              <h3 class="topic-name">{label}</h3>
+              <p class="topic-count">{count} articles</p>
+            </div>
+          </a>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 3: READING LISTS
+       SECTION 3: FEATURED WRITERS
+       voice-row style: circular avatar, Inter body
   ═══════════════════════════════════════════════ -->
-  <section class="section section--parchment">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">Curated Reading Lists</h2>
-        <p class="section-sub">Handpicked article guides to get you started.</p>
+  <section class="discover-section">
+    <div class="page-container">
+      <div class="sec-header sec-header--split">
+        <div>
+          <h2 class="sec-title">Featured Writers</h2>
+          <p class="sec-sub">Voices that inspire and challenge perspectives.</p>
+        </div>
+        <a href="/writers" class="btn-outline" id="discover-see-writers">See all writers</a>
       </div>
 
-      <div class="lists-grid">
-        <!-- List 1 -->
-        <a href="#" class="list-card">
-          <div class="list-card-inner">
-            <div class="list-num">01</div>
-            <div class="list-body">
-              <h3 class="list-title">Getting started with AI</h3>
-              <p class="list-desc">A beginner's guide to artificial intelligence and editorial creation.</p>
-              <div class="list-tags">
-                <span class="tag">Beginner</span>
-                <span class="tag">Free</span>
-                <span class="tag">6 articles</span>
+      <div class="writers-grid reveal-grid">
+        {[
+          { initials: 'JD', name: 'Jane Doe',       beat: 'Technology',   followers: '12.4K', bio: 'Exploring the future of AI, interface aesthetics, and machine learning at the edge.' },
+          { initials: 'MS', name: 'Michael Smith',  beat: 'Culture',      followers: '8.9K',  bio: 'Writing about society, modern art, and the human-computer connection in daily life.' },
+          { initials: 'AK', name: 'Alex Kumar',     beat: 'Science',      followers: '15.2K', bio: 'Making complex scientific discoveries and astrophysics accessible to everyone.' },
+        ].map(({ initials, name, beat, followers, bio }) => (
+          <div class="writer-card feature-card">
+            <div class="writer-top">
+              <!-- voice-icon-circular spec: surface-strong, full radius -->
+              <div class="writer-avatar" aria-hidden="true">{initials}</div>
+              <div class="writer-info">
+                <h3 class="writer-name">{name}</h3>
+                <p class="writer-meta">
+                  <span class="badge-pill">{beat}</span>
+                  <span class="writer-followers">{followers} followers</span>
+                </p>
               </div>
             </div>
+            <p class="writer-bio">{bio}</p>
+            <a href="/writers" class="btn-outline writer-follow" id={`follow-${name.replace(/\s+/g, '-').toLowerCase()}`}>Follow</a>
           </div>
-          <div class="list-card-arrow">→</div>
-        </a>
-
-        <!-- List 2 -->
-        <a href="#" class="list-card">
-          <div class="list-card-inner">
-            <div class="list-num">02</div>
-            <div class="list-body">
-              <h3 class="list-title">The future of remote work</h3>
-              <p class="list-desc">How digital workspace platforms are changing cooperation in the modern era.</p>
-              <div class="list-tags">
-                <span class="tag">Intermediate</span>
-                <span class="tag">Free</span>
-                <span class="tag">8 articles</span>
-              </div>
-            </div>
-          </div>
-          <div class="list-card-arrow">→</div>
-        </a>
-
-        <!-- List 3 -->
-        <a href="#" class="list-card">
-          <div class="list-card-inner">
-            <div class="list-num">03</div>
-            <div class="list-body">
-              <h3 class="list-title">Creative writing techniques</h3>
-              <p class="list-desc">Improve your storytelling skills and narrative pacing for every audience.</p>
-              <div class="list-tags">
-                <span class="tag">All levels</span>
-                <span class="tag">Free</span>
-                <span class="tag">10 articles</span>
-              </div>
-            </div>
-          </div>
-          <div class="list-card-arrow">→</div>
-        </a>
-
-        <!-- List 4 -->
-        <a href="#" class="list-card">
-          <div class="list-card-inner">
-            <div class="list-num">04</div>
-            <div class="list-body">
-              <h3 class="list-title">Startup stories from the trenches</h3>
-              <p class="list-desc">First-hand accounts from founders who built something from nothing.</p>
-              <div class="list-tags">
-                <span class="tag">Advanced</span>
-                <span class="tag">Free</span>
-                <span class="tag">12 articles</span>
-              </div>
-            </div>
-          </div>
-          <div class="list-card-arrow">→</div>
-        </a>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 4: DARK CTA
+       SECTION 4: READING LISTS
+       product-card-stack style: hairline rows
   ═══════════════════════════════════════════════ -->
-  <section class="section section--dark">
-    <div class="container container--narrow">
-      <p class="cta-eyebrow">Discover more every week</p>
+  <section class="discover-section discover-section--soft">
+    <div class="page-container">
+      <div class="sec-header">
+        <h2 class="sec-title">Curated Reading Lists</h2>
+        <p class="sec-sub">Handpicked guides to help you navigate what matters.</p>
+      </div>
+
+      <div class="lists-grid reveal-grid">
+        {[
+          { num: '01', title: 'Getting started with fundraising',    desc: 'A founder\'s guide to seed rounds, term sheets, and investor relations.',     tags: ['Beginner', 'Free', '6 articles'] },
+          { num: '02', title: 'Building in public',                  desc: 'How transparency and community can become your most powerful growth lever.',   tags: ['Intermediate', 'Free', '8 articles'] },
+          { num: '03', title: 'Startup storytelling',                desc: 'Craft narratives that resonate with customers, investors, and recruits.',       tags: ['All levels', 'Free', '10 articles'] },
+          { num: '04', title: 'From 0 to 1: founder stories',        desc: 'First-hand accounts from founders who built something from nothing.',          tags: ['Advanced', 'Free', '12 articles'] },
+        ].map(({ num, title, desc, tags }) => (
+          <a href="#" class="list-card">
+            <div class="list-num">{num}</div>
+            <div class="list-body">
+              <h3 class="list-title">{title}</h3>
+              <p class="list-desc">{desc}</p>
+              <div class="list-tags">
+                {tags.map(tag => (
+                  <span class="badge-pill">{tag}</span>
+                ))}
+              </div>
+            </div>
+            <span class="list-arrow" aria-hidden="true">→</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 5: CTA BAND
+       cta-band spec: canvas bg, display-lg, ink pill
+  ═══════════════════════════════════════════════ -->
+  <section class="discover-cta-band">
+    <div class="atm-orb discover-cta-orb-lavender" aria-hidden="true"></div>
+    <div class="page-container discover-cta-inner reveal-single">
+      <span class="badge-pill cta-eyebrow">Discover more every week</span>
       <h2 class="cta-title">Never miss what matters.</h2>
-      <p class="cta-body">Get the best of Carcblog — curated stories, trending topics, and new writers — delivered to your inbox weekly.</p>
+      <p class="cta-desc">
+        Get the best of Carcblog — curated stories, trending topics, and new writers — delivered to your inbox weekly.
+      </p>
       <div class="cta-buttons">
-        <a href="/sign-up" class="btn-primary">Subscribe free</a>
-        <a href="/about" class="btn-ghost">Learn more</a>
+        <a href="/auth/sign-up" class="btn-primary" id="discover-cta-subscribe">Subscribe free</a>
+        <a href="/about" class="btn-outline" id="discover-cta-learn">Learn more</a>
       </div>
     </div>
   </section>
@@ -223,63 +153,101 @@ import Layout from '@/components/layout/Layout.astro';
 </Layout>
 
 <style>
-/* ════════════════════════════════════════════
-   BASE CONTAINER — the ONLY centering mechanism
-   (never use Tailwind mx-auto on these pages)
-════════════════════════════════════════════ */
-.container {
-  max-width: 1100px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
-  box-sizing: border-box;
+/* ════════════════════════════════════════════════════════════
+   DISCOVER HERO — canvas, display-mega, atmospheric orbs
+════════════════════════════════════════════════════════════ */
+.discover-hero {
+  background: var(--color-canvas);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
+  position: relative;
+  overflow: hidden;
 }
-.container--narrow {
+.discover-orb-mint {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.4) 0%, transparent 70%);
+  top: -150px; right: -80px;
+}
+.discover-orb-peach {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(244, 197, 168, 0.35) 0%, transparent 70%);
+  bottom: -80px; left: -40px;
+}
+.discover-hero-text {
+  position: relative;
+  z-index: 2;
   max-width: 680px;
-  text-align: center;
+}
+/* display-mega: EB Garamond 300, 64px */
+.discover-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-mega);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-mega);
+  letter-spacing: var(--ls-display-mega);
+  margin-bottom: var(--space-md);
+}
+.discover-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  font-weight: var(--fw-regular);
+  color: var(--color-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  max-width: 540px;
 }
 
-/* ════════════════════════════════════════════
+/* ════════════════════════════════════════════════════════════
    SECTIONS
-════════════════════════════════════════════ */
-.section {
-  width: 100%;
-  padding: 80px 0;
-  border-bottom: 1px solid #e8e8ed;
+════════════════════════════════════════════════════════════ */
+.discover-section {
+  background: var(--color-surface-card);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
 }
-.section--parchment { background: #f5f5f7; }
-.section--white     { background: #ffffff; }
-.section--dark      { background: #0a0a0f; border-bottom: none; }
+.discover-section--soft {
+  background: var(--color-canvas-soft);
+}
 
 /* Section header */
-.section-header {
+.sec-header {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: var(--space-xl);          /* 32px */
 }
-.section-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: #1d1d1f;
-  line-height: 1.1;
-  margin-bottom: 10px;
+.sec-header--split {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  text-align: left;
+  flex-wrap: wrap;
+  gap: var(--space-md);
 }
-.section-sub {
-  font-size: 16px;
-  color: #6e6e73;
+/* display-lg: EB Garamond 300, 36px */
+.sec-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-xs);
 }
-.section--dark .section-title { color: #fff; }
-.section--dark .section-sub   { color: rgba(255,255,255,0.5); }
+.sec-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-muted);
+  line-height: var(--lh-body-sm);
+}
 
-/* ════════════════════════════════════════════
-   TRENDING TOPICS GRID
-════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   TOPICS GRID — feature-card with atmospheric orb accent
+   NO saturated colors — only pastel orbs as atmosphere
+════════════════════════════════════════════════════════════ */
 .topics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: var(--space-md);
 }
 @media (max-width: 768px) {
   .topics-grid { grid-template-columns: repeat(2, 1fr); }
@@ -289,325 +257,265 @@ import Layout from '@/components/layout/Layout.astro';
 }
 
 .topic-card {
-  background: #ffffff;
-  border: 1px solid #e0e0e8;
-  border-radius: 16px;
-  padding: 24px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
   display: flex;
-  align-items: center;
-  gap: 14px;
+  flex-direction: column;
+  gap: var(--space-sm);
   text-decoration: none;
-  transition: all 220ms cubic-bezier(0.4,1.3,0.65,1);
   position: relative;
   overflow: hidden;
-}
-.topic-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  transition: opacity 220ms ease;
+  transition: box-shadow var(--duration-200) var(--ease-out), border-color var(--duration-200) var(--ease-out);
 }
 .topic-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
-  border-color: transparent;
-}
-.topic-card:hover::before { opacity: 1; }
-.topic-card:active { transform: translateY(0); }
-
-/* Colour variants */
-.topic-card--blue   { --t-clr: #0066cc; --t-bg: #eff6ff; }
-.topic-card--purple { --t-clr: #7c3aed; --t-bg: #f5f3ff; }
-.topic-card--teal   { --t-clr: #0d9488; --t-bg: #f0fdfa; }
-.topic-card--indigo { --t-clr: #4f46e5; --t-bg: #eef2ff; }
-.topic-card--rose   { --t-clr: #e11d48; --t-bg: #fff1f2; }
-.topic-card--amber  { --t-clr: #d97706; --t-bg: #fffbeb; }
-.topic-card:hover { background: var(--t-bg); }
-
-.topic-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: var(--t-bg, #eff6ff);
-  color: var(--t-clr, #0066cc);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 800;
-  flex-shrink: 0;
-  transition: background 220ms ease;
-}
-.topic-card:hover .topic-icon {
-  background: var(--t-clr);
-  color: #fff;
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--color-hairline-strong);
 }
 
-.topic-info { flex: 1; }
+/* Atmospheric orb inside card — pure decoration, NOT the card bg */
+.topic-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(35px);
+  width: 160px; height: 160px;
+  top: -40px; right: -40px;
+  opacity: 0.9;
+}
+.topic-orb--mint     { background: radial-gradient(circle, rgba(167, 229, 211, 0.6) 0%, transparent 70%); }
+.topic-orb--peach    { background: radial-gradient(circle, rgba(244, 197, 168, 0.6) 0%, transparent 70%); }
+.topic-orb--lavender { background: radial-gradient(circle, rgba(200, 184, 224, 0.6) 0%, transparent 70%); }
+.topic-orb--sky      { background: radial-gradient(circle, rgba(168, 200, 232, 0.6) 0%, transparent 70%); }
+.topic-orb--rose     { background: radial-gradient(circle, rgba(232, 184, 196, 0.6) 0%, transparent 70%); }
+
+.topic-content {
+  position: relative;
+  z-index: 1;
+}
+.topic-badge {
+  font-size: 10px;
+  margin-bottom: var(--space-xs);
+}
+/* title-md: Inter 500, 20px */
 .topic-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1d1d1f;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-md);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  line-height: var(--lh-title-md);
   margin-bottom: 2px;
 }
+/* caption: Inter 400, 14px, muted */
 .topic-count {
-  font-size: 12px;
-  color: #86868b;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  color: var(--color-muted);
 }
 
-.topic-arrow {
-  font-size: 16px;
-  color: #c0c0c8;
-  transition: all 220ms ease;
-}
-.topic-card:hover .topic-arrow {
-  color: var(--t-clr);
-  transform: translateX(4px);
-}
-
-/* ════════════════════════════════════════════
-   FEATURED WRITERS GRID
-════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   WRITERS GRID — feature-card spec
+════════════════════════════════════════════════════════════ */
 .writers-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-bottom: 32px;
+  gap: var(--space-lg);
 }
 @media (max-width: 768px) {
   .writers-grid { grid-template-columns: 1fr; }
 }
 
 .writer-card {
-  background: #fff;
-  border: 1px solid #e0e0e8;
-  border-radius: 16px;
-  padding: 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  transition: all 240ms ease;
-}
-.writer-card:hover {
-  border-color: #c0c0c8;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-  transform: translateY(-2px);
+  gap: var(--space-sm);
 }
 
+.writer-top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+/* voice-icon-circular: surface-strong, full radius, 40px */
 .writer-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  width: 40px; height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
   flex-shrink: 0;
 }
-.writer-avatar--blue   { background: #eff6ff; color: #0066cc; }
-.writer-avatar--purple { background: #f5f3ff; color: #7c3aed; }
-.writer-avatar--teal   { background: #f0fdfa; color: #0d9488; }
 
-.writer-body { flex: 1; }
+.writer-info {
+  flex: 1;
+  min-width: 0;
+}
+/* title-sm: Inter 500, 18px */
 .writer-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1d1d1f;
-  margin-bottom: 3px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  margin-bottom: var(--space-xs);
 }
 .writer-meta {
-  font-size: 12px;
-  color: #86868b;
-  margin-bottom: 10px;
-}
-.writer-bio {
-  font-size: 13px;
-  color: #6e6e73;
-  line-height: 1.55;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.writer-follow-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  background: #0066cc;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 18px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 200ms ease;
-  width: fit-content;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  margin-bottom: 0;
 }
-.writer-follow-btn:hover {
-  background: #0071e3;
-  transform: scale(1.03);
+.writer-followers {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  color: var(--color-muted);
+}
+/* body-sm: Inter 400, 15px, body color */
+.writer-bio {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  margin-bottom: 0;
+  flex: 1;
+}
+.writer-follow {
+  align-self: flex-start;
+  font-size: var(--fs-caption);
+  height: auto;
+  padding: 6px 16px;
 }
 
-.writers-cta-row {
-  text-align: center;
-}
-.see-all-link {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0066cc;
-  text-decoration: none;
-}
-.see-all-link:hover { text-decoration: underline; }
-
-/* ════════════════════════════════════════════
-   READING LISTS GRID
-════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   READING LISTS — hairline-row layout
+════════════════════════════════════════════════════════════ */
 .lists-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-@media (max-width: 640px) {
-  .lists-grid { grid-template-columns: 1fr; }
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--color-surface-card);
 }
 
 .list-card {
-  background: #fff;
-  border: 1px solid #e0e0e8;
-  border-radius: 16px;
-  padding: 28px;
-  text-decoration: none;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  transition: all 220ms cubic-bezier(0.4,1.3,0.65,1);
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-hairline);
+  text-decoration: none;
+  transition: background var(--duration-150) var(--ease-out);
 }
-.list-card:hover {
-  border-color: #0066cc;
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px rgba(0,102,204,0.1);
-}
+.list-card:last-child { border-bottom: none; }
+.list-card:hover { background: var(--color-canvas-soft); }
 
-.list-card-inner { display: flex; gap: 16px; flex: 1; }
-
+/* Sequence number — display-sm EB Garamond 300 */
 .list-num {
-  font-size: 28px;
-  font-weight: 800;
-  color: #e8e8ed;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-md);
+  font-weight: var(--fw-light);
+  color: var(--color-hairline-strong);
   line-height: 1;
   flex-shrink: 0;
-  letter-spacing: -0.03em;
-  transition: color 220ms ease;
+  width: 40px;
 }
-.list-card:hover .list-num { color: #bfd4f0; }
 
 .list-body { flex: 1; }
+/* title-md: Inter 500, 20px */
 .list-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1d1d1f;
-  margin-bottom: 6px;
-  line-height: 1.3;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-md);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  line-height: var(--lh-title-md);
+  margin-bottom: var(--space-xs);
 }
 .list-desc {
-  font-size: 13px;
-  color: #6e6e73;
-  line-height: 1.5;
-  margin-bottom: 14px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  margin-bottom: var(--space-sm);
 }
 .list-tags {
   display: flex;
-  gap: 6px;
+  gap: var(--space-xs);
   flex-wrap: wrap;
 }
-.tag {
-  font-size: 11px;
-  font-weight: 700;
-  color: #0066cc;
-  background: #eff6ff;
-  padding: 3px 8px;
-  border-radius: 9999px;
-}
 
-.list-card-arrow {
-  font-size: 18px;
-  color: #c0c0c8;
+.list-arrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-muted);
   flex-shrink: 0;
-  transition: all 220ms ease;
-}
-.list-card:hover .list-card-arrow {
-  color: #0066cc;
-  transform: translateX(4px);
 }
 
-/* ════════════════════════════════════════════
-   DARK CTA SECTION
-════════════════════════════════════════════ */
-.cta-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #60a5fa;
-  margin-bottom: 16px;
+/* ════════════════════════════════════════════════════════════
+   CTA BAND — cta-band spec
+════════════════════════════════════════════════════════════ */
+.discover-cta-band {
+  background: var(--color-canvas);
+  padding: var(--space-section) 0;
+  position: relative;
+  overflow: hidden;
 }
+.discover-cta-orb-lavender {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(200, 184, 224, 0.4) 0%, transparent 70%);
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+}
+.discover-cta-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cta-eyebrow { margin-bottom: var(--space-lg); }
+/* display-lg: EB Garamond 300, 36px */
 .cta-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.1;
-  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-md);
 }
-.cta-body {
-  font-size: 16px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.65;
-  margin-bottom: 36px;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
+.cta-desc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-body);
+  line-height: var(--lh-body);
+  max-width: 500px;
+  margin-bottom: var(--space-xl);
 }
 .cta-buttons {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
+  justify-content: center;
 }
-.btn-primary {
-  background: #0066cc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 13px 26px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
-}
-.btn-primary:hover {
-  background: #0071e3;
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,102,204,0.4);
-}
-.btn-ghost {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.75);
-  border: 1px solid rgba(255,255,255,0.16);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
-}
-.btn-ghost:hover {
-  background: rgba(255,255,255,0.14);
-  color: #fff;
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .discover-title { font-size: var(--fs-display-md); }
+  .discover-hero, .discover-section, .discover-cta-band {
+    padding-top: var(--space-xxl);
+    padding-bottom: var(--space-xxl);
+  }
+  .list-num { display: none; }
+  .sec-header--split { flex-direction: column; align-items: flex-start; }
 }
 </style>

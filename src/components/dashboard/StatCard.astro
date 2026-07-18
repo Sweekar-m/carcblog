@@ -1,7 +1,6 @@
 ---
-// StatCard.astro — Modular card for overview metrics using the global Card component
-import Card from '@/components/ui/Card.astro';
-
+// StatCard.astro — Modular card for overview metrics
+// surface-card bg, hairline border, xl radius, single shadow
 interface Props {
   title: string;
   value: string | number;
@@ -11,29 +10,80 @@ interface Props {
 const { title, value, icon } = Astro.props;
 ---
 
-<Card variant="elevated" padding="md" class="hover:border-primary/20 transition-all duration-200">
-  <div class="flex items-center space-x-3 mb-4">
-    <!-- Icon Wrapper (consistent style & color) -->
-    <div class="h-8 w-8 flex items-center justify-center bg-primary/10 rounded-md shrink-0">
+<div class="stat-card">
+  <div class="stat-header">
+    <!-- voice-icon-circular: surface-strong bg -->
+    <div class="stat-icon" aria-hidden="true">
       {icon === 'article' && (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m2 0a9 9 0 11-18 0 9 9 0 0018 0z" />
         </svg>
       )}
       {icon === 'views' && (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
       )}
       {icon === 'time' && (
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
         </svg>
       )}
     </div>
-    <!-- Baseline Aligned Label -->
-    <h3 class="font-sans text-sm font-semibold text-foreground tracking-tight self-center leading-none">{title}</h3>
+    <!-- caption-uppercase -->
+    <h3 class="stat-label">{title}</h3>
   </div>
-  <!-- Large Bold Sans-Serif Value -->
-  <p class="font-sans text-3.5xl font-bold tracking-tight text-foreground leading-none">{value}</p>
-</Card>
+  <!-- EB Garamond 300 display number -->
+  <p class="stat-value">{value}</p>
+</div>
+
+<style>
+  .stat-card {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    transition: box-shadow var(--duration-200) var(--ease-out);
+  }
+  .stat-card:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+
+  .stat-icon {
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface-strong);
+    border-radius: var(--radius-md);
+    color: var(--color-muted);
+    flex-shrink: 0;
+  }
+
+  .stat-label {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-caption-upper);
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  .stat-value {
+    font-family: var(--font-serif);
+    font-size: var(--fs-display-xl);        /* 48px */
+    font-weight: var(--fw-light);           /* 300 */
+    color: var(--color-ink);
+    margin: 0;
+    line-height: 1;
+    letter-spacing: var(--ls-display-xl);
+  }
+</style>

@@ -3,11 +3,18 @@
 import Nav from '@/components/layout/Nav.astro';
 import Footer from '@/components/layout/Footer.astro';
 import '@/styles/globals.css';
+import { ViewTransitions } from 'astro:transitions';
+import { ParticlesBackground } from '@/components/islands/ParticlesBackground';
 
 const { title, description, children, className } = Astro.props;
 
 const currentPath = new URL(Astro.request.url).pathname;
 const showFooter = !currentPath.startsWith('/dashboard') && !currentPath.startsWith('/onboarding');
+
+// Single opacity lever: the shader alpha in ParticlesSwarm.ts is the only dial.
+// CSS opacity is kept at 1 so it does NOT compound with the shader alpha.
+let particlesOpacity = "1";
+let particlesMask = "none";
 ---
 <!DOCTYPE html>
 <html lang="en" dir="ltr" data-theme="light">
@@ -18,19 +25,97 @@ const showFooter = !currentPath.startsWith('/dashboard') && !currentPath.startsW
     <meta name="description" content={description} />
     <link class="favicon" rel="icon" href="/favicon.svg" />
 
-    <!-- Fonts: Inter (UI) + Cormorant Garamond (brand/editorial) + Fira Code (code) -->
+    <!-- Detect JS and prefers-reduced-motion early to prevent FOUC -->
+    <script is:inline>
+      document.documentElement.classList.add('js-enabled');
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('reduced-motion');
+      }
+    </script>
+
+    <!-- Fonts: EB Garamond 300 (display/editorial) + Inter (UI/body/nav) + Fira Code (code) -->
+    <!-- EB Garamond is the open-source substitute for Waldenburg Light per Design.md §Known Gaps -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap"
       rel="stylesheet"
     />
+    <ViewTransitions />
   </head>
-  <body class="bg-background text-foreground antialiased min-h-screen flex flex-col">
+  <body class:list={["text-foreground antialiased min-h-screen flex flex-col", className]} style={`--bg-particles-opacity: ${particlesOpacity}; --bg-particles-mask: ${particlesMask};`}>
+    <ParticlesBackground client:only="react" transition:persist />
     <Nav />
     <main class="flex-grow w-full">
       <slot />
     </main>
     {showFooter && <Footer />}
+
+    <!-- Scroll triggered reveals via Motion One -->
+    <script>
+      import { inView, animate } from 'motion';
+
+      const setupReveals = () => {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        // Staggered grid reveals
+        document.querySelectorAll('.reveal-grid').forEach((grid) => {
+          inView(grid, () => {
+            const items = Array.from(grid.children).filter(
+              (el) => el instanceof HTMLElement
+            );
+            if (items.length > 0) {
+              try {
+                animate(
+                  items,
+                  { opacity: [0, 1], y: [16, 0] },
+                  {
+                    delay: (i) => i * 0.08, // stagger by 80ms
+                    duration: 0.45,
+                    ease: 'ease-out'
+                  }
+                );
+              } catch (err) {
+                console.warn('Reveal animation failed:', err);
+              }
+            }
+            // Return cleanup function to reset state when leaving viewport so it can replay
+            return () => {
+              items.forEach((item) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(16px)';
+              });
+            };
+          });
+        });
+
+        // Single reveals
+        document.querySelectorAll('.reveal-single').forEach((el) => {
+          inView(el, () => {
+            if (el instanceof HTMLElement) {
+              try {
+                animate(
+                  el,
+                  { opacity: [0, 1], y: [16, 0] },
+                  { duration: 0.45, ease: 'ease-out' }
+                );
+              } catch (err) {
+                console.warn('Single reveal animation failed:', err);
+              }
+            }
+            // Return cleanup function to reset state when leaving viewport so it can replay
+            return () => {
+              if (el instanceof HTMLElement) {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(16px)';
+              }
+            };
+          });
+        });
+      };
+
+      // Set up reveals on initial page load and on view transitions reloads
+      document.addEventListener('astro:page-load', setupReveals);
+    </script>
   </body>
 </html>

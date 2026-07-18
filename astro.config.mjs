@@ -3,6 +3,8 @@ import tailwind from '@tailwindcss/vite';
 import vercel from '@astrojs/vercel/serverless';
 import clerk from '@clerk/astro';
 
+import react from '@astrojs/react';
+
 export default defineConfig({
   site: 'https://carcblog.com',
   output: 'hybrid',
@@ -15,6 +17,7 @@ export default defineConfig({
       signInUrl: '/auth/sign-in',
       signUpUrl: '/auth/sign-up',
     }),
+    react(),
   ],
   vite: {
     plugins: [

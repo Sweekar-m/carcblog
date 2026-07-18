@@ -1,157 +1,229 @@
 ---
-// Footer component
+// Footer — ElevenLabs editorial design system
+// footer spec: canvas bg, body text, body-sm type, 5-column, 64px×48px padding
 ---
-<footer class="footer">
-  <div class="max-w-[1024px] mx-auto px-6">
-    <!-- Grid Stacks -->
+<footer class="footer" role="contentinfo">
+  <div class="footer-container">
+    <!-- 5-column grid: 2fr brand + 4× 1fr link columns -->
     <div class="footer-grid">
-      <!-- Logo column -->
-      <div class="footer-logo-col">
-        <span class="footer-brand">Carcblog</span>
+
+      <!-- Brand column -->
+      <div class="footer-brand-col">
+        <a href="/" class="footer-wordmark" aria-label="Carcblog home">Carcblog</a>
         <p class="footer-tagline">
-          The premium platform for thoughtful writers who demand excellence.
+          The editorial platform for the startup ecosystem. News, founder stories, funding updates, and more.
         </p>
       </div>
 
-      <!-- Links columns -->
-      <div>
-        <h5 class="footer-header">Explore</h5>
-        <div class="footer-links">
+      <!-- Explore column -->
+      <div class="footer-links-col">
+        <h5 class="footer-col-head">Explore</h5>
+        <nav aria-label="Explore links">
           <a href="/" class="footer-link">Home</a>
           <a href="/feed" class="footer-link">Feed</a>
           <a href="/discover" class="footer-link">Discover</a>
           <a href="/topics" class="footer-link">Topics</a>
           <a href="/about" class="footer-link">About</a>
-        </div>
+          <a href="/labs" class="footer-link">Labs</a>
+        </nav>
       </div>
 
-      <div>
-        <h5 class="footer-header">Create</h5>
-        <div class="footer-links">
+      <!-- Create column -->
+      <div class="footer-links-col">
+        <h5 class="footer-col-head">Create</h5>
+        <nav aria-label="Create links">
           <a href="/dashboard" class="footer-link">Write</a>
           <a href="/dashboard/articles" class="footer-link">Manage Articles</a>
           <a href="/dashboard/analytics" class="footer-link">Analytics</a>
           <a href="/dashboard/settings" class="footer-link">Settings</a>
-        </div>
+        </nav>
       </div>
 
-      <div>
-        <h5 class="footer-header">Company</h5>
-        <div class="footer-links">
+      <!-- Company column -->
+      <div class="footer-links-col">
+        <h5 class="footer-col-head">Company</h5>
+        <nav aria-label="Company links">
           <a href="#" class="footer-link">Careers</a>
           <a href="#" class="footer-link">Blog</a>
           <a href="#" class="footer-link">Press</a>
           <a href="#" class="footer-link">Contact</a>
-        </div>
+        </nav>
       </div>
 
-      <div>
-        <h5 class="footer-header">Legal</h5>
-        <div class="footer-links">
+      <!-- Legal column -->
+      <div class="footer-links-col">
+        <h5 class="footer-col-head">Legal</h5>
+        <nav aria-label="Legal links">
           <a href="/terms" class="footer-link">Terms</a>
           <a href="/privacy" class="footer-link">Privacy</a>
           <a href="/copyright" class="footer-link">Copyright</a>
           <a href="/accessibility" class="footer-link">Accessibility</a>
-        </div>
+        </nav>
+      </div>
+
+    </div>
+
+    <!-- Bottom row -->
+    <div class="footer-bottom">
+      <span class="footer-copy">
+        Copyright &copy; {new Date().getFullYear()} Carcblog. All rights reserved.
+      </span>
+      <div class="footer-legal-row">
+        <a href="/privacy" class="footer-legal-link">Privacy Policy</a>
+        <span class="footer-sep" aria-hidden="true">·</span>
+        <a href="/terms" class="footer-legal-link">Terms of Use</a>
       </div>
     </div>
 
-    <!-- Bottom Row -->
-    <div class="footer-bottom">
-      <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-        <span>Copyright &copy; {new Date().getFullYear()} Carcblog Inc. All rights reserved.</span>
-        <div class="flex space-x-4">
-          <a href="/privacy" class="footer-legal-link">Privacy Policy</a>
-          <span class="text-ink/20">|</span>
-          <a href="/terms" class="footer-legal-link">Terms of Use</a>
-        </div>
-      </div>
-    </div>
   </div>
 </footer>
 
 <style>
-  .footer {
-    background-color: var(--color-canvas-parchment);
-    color: var(--color-foreground-muted);
-    padding-top: 64px;
-    padding-bottom: 64px;
-    font-family: var(--font-sans);
-    border-top: 1px solid var(--color-divider-soft);
-  }
+/* ════════════════════════════════════════════════════════════
+   FOOTER — glass treatment matching nav/card aesthetic
+   Semi-transparent canvas bg with blur, body text color
+════════════════════════════════════════════════════════════ */
+.footer {
+  background: rgba(245, 245, 245, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--color-body);
+  border-top: 1px solid rgba(231, 229, 228, 0.6);
+  font-family: var(--font-sans);
+}
 
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 48px;                      /* footer spec: 64px × 48px */
+}
+@media (max-width: 768px) {
+  .footer-container { padding: var(--space-xxl) var(--space-lg); }
+}
+
+/* ── 5-column grid ── */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, 1fr);
+  gap: var(--space-xl);                    /* 32px */
+  padding-bottom: var(--space-xxl);        /* 48px before bottom row */
+}
+@media (max-width: 768px) {
   .footer-grid {
-    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .footer-grid {
     grid-template-columns: 1fr;
-    gap: var(--spacing-xl);
-    padding-bottom: var(--spacing-xxl);
   }
+}
 
-  @media (min-width: 768px) {
-    .footer-grid {
-      grid-template-columns: 2fr repeat(4, 1fr);
-    }
-  }
+/* ── Brand column ── */
+.footer-brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  grid-column: 1;
+}
 
-  .footer-logo-col {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
+/* EB Garamond 300 — editorial wordmark, ink */
+.footer-wordmark {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-sm);         /* 24px */
+  font-weight: var(--fw-light);            /* 300 */
+  color: var(--color-ink);
+  text-decoration: none;
+  line-height: 1;
+  letter-spacing: var(--ls-display-sm);
+}
 
-  .footer-brand {
-    font-family: var(--font-serif);
-    font-size: var(--font-size-tagline);
-    font-weight: 600;
-    color: var(--color-ink);
-  }
+/* body-sm: Inter 400, 15px, body color */
+.footer-tagline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-regular);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  letter-spacing: var(--ls-body-sm);
+  max-width: 240px;
+  margin: 0;
+}
 
-  .footer-tagline {
-    font-size: var(--font-size-caption);
-    line-height: var(--leading-relaxed);
-    max-width: 240px;
-    color: var(--color-foreground-muted);
-  }
+/* ── Link columns ── */
+.footer-links-col {
+  display: flex;
+  flex-direction: column;
+}
+.footer-links-col nav {
+  display: flex;
+  flex-direction: column;
+}
 
-  .footer-header {
-    font-size: var(--font-size-caption);
-    font-weight: 600;
-    color: var(--color-ink);
-    margin-bottom: var(--spacing-sm);
-    text-transform: capitalize;
-  }
+/* caption-uppercase: column headers */
+.footer-col-head {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption-upper);      /* 12px */
+  font-weight: var(--fw-semibold);         /* 600 */
+  letter-spacing: var(--ls-caption-upper); /* 0.08em */
+  text-transform: uppercase;
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);          /* 12px */
+}
 
-  .footer-links {
-    display: flex;
-    flex-direction: column;
-  }
+/* footer-link spec: body color, body-sm type */
+.footer-link {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);            /* 15px */
+  font-weight: var(--fw-regular);
+  line-height: 2.4;                        /* generous editorial link spacing */
+  letter-spacing: var(--ls-body-sm);
+  color: var(--color-body);
+  text-decoration: none;
+  transition: color var(--duration-150) var(--ease-out);
+}
+.footer-link:hover {
+  color: var(--color-ink);
+  opacity: 1;
+}
 
-  .footer-link {
-    font-size: var(--font-size-body);
-    line-height: 2.41; /* SF Pro dense-link standard */
-    color: var(--color-foreground-muted);
-    text-decoration: none;
-    transition: color 200ms ease;
-  }
+/* ── Bottom row ── */
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding-top: var(--space-lg);            /* 24px */
+  border-top: 1px solid var(--color-hairline);
+}
 
-  .footer-link:hover {
-    color: var(--color-ink);
-  }
+.footer-copy {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);            /* 14px */
+  color: var(--color-muted-soft);
+}
 
-  .footer-bottom {
-    border-top: 1px solid var(--color-hairline);
-    padding-top: var(--spacing-lg);
-    font-size: var(--font-size-fine-print, 12px);
-    color: #7a7a7a; /* ink-muted-48 */
-  }
+.footer-legal-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
 
-  .footer-legal-link {
-    color: #7a7a7a;
-    text-decoration: none;
-    transition: color 200ms ease;
-  }
-  .footer-legal-link:hover {
-    color: var(--color-ink);
-    text-decoration: underline;
-  }
+.footer-sep {
+  color: var(--color-hairline-strong);
+  font-size: var(--fs-caption);
+}
+
+.footer-legal-link {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  color: var(--color-muted-soft);
+  text-decoration: none;
+  transition: color var(--duration-150) var(--ease-out);
+}
+.footer-legal-link:hover {
+  color: var(--color-ink);
+  opacity: 1;
+}
 </style>

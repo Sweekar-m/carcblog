@@ -1,225 +1,375 @@
-'' // New article form
+---
+// New article form page — ElevenLabs editorial design system
 import Layout from '@/layouts/Layout.astro';
 
 export const prerender = false;
-
 ---
-<Layout title="New Article - Dashboard" description="Create a new article">
-  <header class="mb-8">
-    <h1 class="text-2xl font-bold">New Article</h1>
-    <p class="text-muted-foreground">
-      Share your thoughts and ideas with the world.
-    </p>
-  </header>
+<Layout title="New Article - Dashboard" description="Create a new article on Carcblog">
+  <div class="page-content">
+    <header class="page-header">
+      <h1 class="page-title">New Article</h1>
+      <p class="page-sub">Share your thoughts and ideas with the world.</p>
+    </header>
 
-  <form id="articleForm" action="/api/articles" method="POST">
-    <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Title</label>
-      <input type="text" name="title" required
-             class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-             placeholder="Enter article title" />
+    <!-- Form container: white surface-card, hairline, xl radius -->
+    <div class="form-container">
+      <form id="articleForm" action="/api/articles" method="POST" class="article-form">
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="titleInput">Title <span class="required" aria-hidden="true">*</span></label>
+          <input type="text" name="title" id="titleInput" required
+                 class="form-input" placeholder="Enter article title" autocomplete="off" />
+        </div>
+
+        <!-- Slug -->
+        <div class="form-group">
+          <label class="form-label" for="slugInput">Slug (optional)</label>
+          <input type="text" name="slug" id="slugInput"
+                 class="form-input" placeholder="Leave blank to auto-generate from title" autocomplete="off" />
+        </div>
+
+        <!-- Cover Image URL -->
+        <div class="form-group">
+          <label class="form-label" for="coverImageUrl">Cover Image URL (optional)</label>
+          <input type="url" name="coverImageUrl" id="coverImageUrl"
+                 class="form-input" placeholder="https://example.com/image.jpg" autocomplete="off" />
+        </div>
+
+        <!-- Excerpt -->
+        <div class="form-group">
+          <label class="form-label" for="excerptInput">Excerpt (optional)</label>
+          <textarea name="excerpt" id="excerptInput" rows="3"
+                    class="form-textarea" placeholder="Enter a short summary"></textarea>
+        </div>
+
+        <!-- Content -->
+        <div class="form-group content-group">
+          <label class="form-label" for="contentInput">Content <span class="required" aria-hidden="true">*</span></label>
+          <div class="textarea-wrap">
+            <textarea name="body" id="contentInput" rows="18"
+                      class="form-textarea form-textarea--content" placeholder="Write your article here..." required></textarea>
+            <span id="word-count" class="word-counter">0 words</span>
+          </div>
+        </div>
+
+        <!-- Publish Options -->
+        <div class="form-group checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" name="status" value="published" id="publish-immediate" checked class="form-checkbox" />
+            <div class="checkbox-text">
+              <p class="checkbox-title">Publish immediately</p>
+              <p class="checkbox-desc">Make this article visible site-wide as soon as it is created.</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <div class="form-actions">
+          <button type="submit" id="submitButton" class="btn-primary">
+            Publish Article
+          </button>
+        </div>
+      </form>
+
+      <div id="formResponse" class="form-response hidden"></div>
     </div>
-
-    <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Slug (optional)</label>
-      <input type="text" name="slug" id="slugInput"
-             class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-             placeholder="Leave blank to auto-generate from title" />
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Cover Image URL (optional)</label>
-      <input type="url" name="coverImageUrl"
-             class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-             placeholder="https://example.com/image.jpg" />
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Excerpt (optional)</label>
-      <textarea name="excerpt" rows="3"
-                class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-                placeholder="Enter a short summary"></textarea>
-    </div>
-
-    <div>
-      <label class="block text-sm font-medium text-foreground mb-2">Content</label>
-      <textarea name="body" id="content" rows="20"
-                class="w-full px-4 py-2 border border-muted/50 rounded-md bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0"
-                placeholder="Write your article here..." required></textarea>
-    </div>
-
-    <div class="flex items-center space-x-4">
-      <label class="flex items-center space-x-2 text-sm font-medium text-foreground cursor-pointer">
-        <input type="checkbox" name="status" value="published" id="publish-immediate" checked class="rounded border-muted/50 text-primary bg-background focus:ring-primary h-4 w-4" />
-        <span>Publish immediately</span>
-      </label>
-    </div>
-
-    <div class="mt-6">
-      <button type="submit"
-              id="submitButton"
-              class="w-level flex justify-center py-2 px-4 border border-transparent text-sm font-md rounded-md shadow-sm text-white bg-primary hover:bg-primary-focus focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-colors duration-200">
-        Publish article
-      </button>
-    </div>
-  </form>
-
-  <div id="formResponse" class="mt-4 hidden"></div>
+  </div>
 </Layout>
 
 <script>
-  // Handle form submission via AJAX
-  document.addEventListener(''DOMContentLoaded'', () => {
-    const form = document.getElementById(''articleForm'');
-    const submitButton = document.getElementById(''submitButton'');
-    const responseDiv = document.getElementById(''formResponse'');
-    const titleInput = form.querySelector(''input[name="title"]'');
-    const slugInput = document.getElementById(''slugInput'');
-    const contentInput = document.getElementById(''content'');
-    const wordCount = document.createElement(''span'');
-    wordCount.id = ''word-count'';
-    wordCount.className = ''absolute bottom-2 right-2 text-xs text-muted-foreground'';
-    contentInput.parentNode.position = ''relative'';
-    contentInput.parentNode.appendChild(wordCount);
+  document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('articleForm') as HTMLFormElement;
+    const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
+    const responseDiv = document.getElementById('formResponse') as HTMLDivElement;
+    const titleInput = document.getElementById('titleInput') as HTMLInputElement;
+    const slugInput = document.getElementById('slugInput') as HTMLInputElement;
+    const contentInput = document.getElementById('contentInput') as HTMLTextAreaElement;
+    const wordCount = document.getElementById('word-count') as HTMLSpanElement;
+
+    if (!form || !submitButton || !responseDiv || !titleInput || !slugInput || !contentInput || !wordCount) return;
 
     // Auto-generate slug from title
-    const generateSlug = (title) => {
+    const generateSlug = (title: string) => {
       return title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, ''-'')
-        .replace(/(^-|-$)+/g, '''')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '')
         .substring(0, 60);
     };
 
     const updateSlug = () => {
       if (!slugInput.value.trim()) {
-        slugInput.value = generateSlug(titleInput.value);
+        slugInput.placeholder = titleInput.value ? generateSlug(titleInput.value) : 'Leave blank to auto-generate from title';
       }
     };
 
-    titleInput.addEventListener(''input'', updateSlug);
-    // Also update on submit if empty
-    form.addEventListener(''submit'', updateSlug);
+    titleInput.addEventListener('input', updateSlug);
 
-    // Word counter
-    const updateWordCount = () => {
+    // Calculate word count
+    contentInput.addEventListener('input', () => {
       const text = contentInput.value.trim();
-      const count = text === ''''.length ? 0 : text.split(/\\s+/).length;
-      wordCount.textContent = \`${count} words\`;
-    };
-
-    contentInput.addEventListener(''input'', updateWordCount);
-    updateWordCount(); // Initial count
+      const count = text ? text.split(/\s+/).length : 0;
+      wordCount.textContent = `${count} word${count === 1 ? '' : 's'}`;
+    });
 
     // Form submission
-    if (form && submitButton && responseDiv) {
-      form.addEventListener(''submit'', async (e) => {
-        e.preventDefault();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
 
-        // Disable button and show loading state
-        submitButton.disabled = true;
-        submitButton.innerHTML = ''<span class=\\"mr-2\\">&#9654;</span> Publishing...'';
-        responseDiv.classList.add(''hidden'');
-        responseDiv.classList.remove(''text-green-600'', ''text-red-600'');
-        responseDiv.textContent = '''';
+      submitButton.disabled = true;
+      const originalText = submitButton.textContent;
+      submitButton.textContent = 'Publishing…';
 
-        try {
-          const formData = new FormData(form);
-          const response = await fetch(form.action, {
-            method: ''POST'',
-            body: formData
-          });
+      responseDiv.className = 'form-response hidden';
+      responseDiv.textContent = '';
 
-          const result = await response.json();
+      const formData = new FormData(form);
+      const data = {
+        title: formData.get('title'),
+        slug: formData.get('slug') || slugInput.placeholder,
+        coverImageUrl: formData.get('coverImageUrl'),
+        excerpt: formData.get('excerpt'),
+        body: formData.get('body'),
+        status: formData.get('status') || 'draft'
+      };
 
-          if (response.ok && result.success) {
-            responseDiv.classList.remove(''hidden'');
-            responseDiv.classList.add(''text-green-600'');
-            responseDiv.textContent = ''Article published successfully!'';
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
 
-            // Redirect to the article page after a short delay
-            setTimeout(() => {
-              window.location.href = \`/article/${result.article.slug}\`;
-            }, 1500);
-          } else {
-            responseDiv.classList.remove(''hidden'');
-            responseDiv.classList.add(''text-red-600'');
-            responseDiv.textContent = result.error || ''Failed to publish article'';
-          }
-        } catch (error) {
-          responseDiv.classList.remove(''hidden'');
-          responseDiv.classList.add(''text-red-600'');
-          responseDiv.textContent = ''An error occurred while publishing the article.'';
-          console.error(''Error:'', error);
-        } finally {
-          // Re-enable button
-          submitButton.disabled = false;
-          submitButton.textContent = ''Publish article'';
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Something went wrong');
         }
-      });
-    }
+
+        responseDiv.className = 'form-response form-response--success';
+        responseDiv.textContent = 'Article published successfully!';
+        form.reset();
+        wordCount.textContent = '0 words';
+
+        // Redirect after success
+        setTimeout(() => {
+          window.location.href = '/dashboard/articles';
+        }, 1200);
+
+      } catch (err: any) {
+        responseDiv.className = 'form-response form-response--error';
+        responseDiv.textContent = err.message || 'Failed to publish article. Please try again.';
+        submitButton.disabled = false;
+        submitButton.textContent = originalText;
+      }
+    });
   });
 </script>
 
 <style>
-  /* Form styles */
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    font-size: 0.875rem;
-    color: hsl(var(--foreground));
+  .page-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);                   /* 32px */
+    max-width: 800px;
   }
 
-  input, textarea {
+  /* ── Page header ── */
+  .page-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  /* display-md: EB Garamond 300, 32px */
+  .page-title {
+    font-family: var(--font-serif);
+    font-size: var(--fs-display-md);
+    font-weight: var(--fw-light);           /* 300 */
+    color: var(--color-ink);
+    margin: 0;
+    line-height: var(--lh-display-md);
+    letter-spacing: var(--ls-display-md);
+  }
+
+  .page-sub {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  /* ── Form Card ── */
+  .form-container {
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-xl);
+    padding: var(--space-lg);
+    transition: box-shadow var(--duration-200) var(--ease-out);
+  }
+  .form-container:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .article-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .form-label {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-medium);
+    color: var(--color-body-strong);
+  }
+
+  .required {
+    color: var(--color-semantic-error);
+    margin-left: 2px;
+  }
+
+  /* text-input standard styling */
+  .form-input {
     width: 100%;
-    padding: 0.5rem 1rem;
-    border: 1px solid hsl(var(--border));
-    border-radius: 0.375rem;
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
-    font-size: 0.875rem;
+    padding: 10px var(--space-sm);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-ink);
+    background: var(--color-surface-card);
+    box-sizing: border-box;
+    transition: border-color var(--duration-150) var(--ease-out);
   }
 
-  input:focus, textarea:focus {
+  .form-textarea {
+    width: 100%;
+    padding: 12px var(--space-sm);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-ink);
+    background: var(--color-surface-card);
+    box-sizing: border-box;
+    resize: vertical;
+    transition: border-color var(--duration-150) var(--ease-out);
+  }
+
+  .form-input:focus, .form-textarea:focus {
     outline: none;
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+    border-color: var(--color-ink);
+    border-width: 1.5px;
   }
 
-  button {
-    padding: 0.5rem 1rem;
-    border: 1px solid transparent;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.375rem;
-    color: hsl(var(--primary-foreground));
-    background-color: hsl(var(--primary));
-    cursor: pointer;
-    transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* ── Content Textarea with Counter ── */
+  .textarea-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
 
-  button:hover:not(:disabled) {
-    background-color: hsl(var(--primary) / 0.9);
+  .form-textarea--content {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    line-height: 1.6;
   }
 
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Response message styles */
-  #formResponse {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: opacity 0.2s ease;
-  }
-
-  /* Hide response by default */
-  #formResponse[hidden] {
-    opacity: 0;
+  .word-counter {
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--color-muted-soft);
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-hairline-soft);
+    padding: 2px 6px;
+    border-radius: var(--radius-xs);
     pointer-events: none;
+  }
+
+  /* ── Checkbox custom layout ── */
+  .checkbox-group {
+    padding: 4px 0;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    cursor: pointer;
+  }
+
+  .form-checkbox {
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .checkbox-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .checkbox-title {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-body-strong);
+    margin: 0;
+  }
+
+  .checkbox-desc {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  /* ── Form Actions ── */
+  .form-actions {
+    margin-top: var(--space-xs);
+  }
+
+  /* ── Response banner ── */
+  .form-response {
+    margin-top: var(--space-md);
+    padding: var(--space-sm) var(--space-base);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-medium);
+  }
+
+  .form-response--success {
+    background: rgba(22, 163, 74, 0.08);
+    color: var(--color-semantic-success);
+    border: 1px solid rgba(22, 163, 74, 0.15);
+  }
+
+  .form-response--error {
+    background: rgba(220, 26, 26, 0.08);
+    color: var(--color-semantic-error);
+    border: 1px solid rgba(220, 26, 26, 0.15);
+  }
+
+  .hidden {
+    display: none !important;
   }
 </style>

@@ -1,5 +1,5 @@
 ---
-// Feed page
+// Feed page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 import { getPublishedArticlesWithFallback } from '@/lib/supabase';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
@@ -16,73 +16,70 @@ const recentArticles = articles.map(article => ({
 }));
 ---
 
-<Layout title="Your Feed — Carcblog" description="Discover new articles from writers you follow">
+<Layout title="Your Feed — Carcblog" description="Discover new articles from writers you follow on Carcblog">
 
   <div class="feed-page">
 
-    <!-- ─── Page header ─── -->
+    <!-- ── Page header: canvas bg, display-xl headline, badge-pill filters ── -->
     <div class="feed-header">
-      <div class="container">
+      <div class="page-container">
         <div class="fh-inner">
-          <div>
+          <div class="fh-text">
             <h1 class="feed-title">Your Feed</h1>
             <p class="feed-sub">Curated stories from writers and topics you care about.</p>
           </div>
-          <div class="feed-filters">
-            <button class="filter-btn filter-btn--active">All</button>
-            <button class="filter-btn">Following</button>
-            <button class="filter-btn">Trending</button>
-            <button class="filter-btn">New</button>
+          <!-- Filter badge-pills: surface-strong bg, ink text, caption-uppercase, pill radius -->
+          <div class="feed-filters" role="group" aria-label="Feed filters">
+            <button class="filter-pill filter-pill--active" id="filter-all">All</button>
+            <button class="filter-pill" id="filter-following">Following</button>
+            <button class="filter-pill" id="filter-trending">Trending</button>
+            <button class="filter-pill" id="filter-new">New</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ─── Articles ─── -->
+    <!-- ── Articles grid: 3-up → 2-up → 1-up ── -->
     <div class="feed-body">
-      <div class="container">
+      <div class="page-container">
 
         {recentArticles.length > 0 ? (
           <>
-            <div class="articles-grid">
+            <div class="articles-grid reveal-grid">
               {recentArticles.map((article) => (
                 <ArticleCard
                   title={article.title}
                   excerpt={article.excerpt}
                   publishedAt={article.publishedAt}
-                  authorName={article.author.name}
-                  authorImage={article.author.image}
-                  slug={article.slug.current}
+                  authorName={article.authorName}
+                  authorImage={article.authorImage}
+                  slug={article.slug}
                   coverImage={article.coverImage}
                 />
               ))}
             </div>
 
-            <div class="load-more">
-              <button class="load-btn">
+            <!-- Load more — outline pill -->
+            <div class="load-more reveal-single">
+              <button class="btn-outline" id="load-more-btn">
                 Load more stories
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
               </button>
             </div>
           </>
         ) : (
-          <!-- Empty state -->
-          <div class="empty-state">
-            <div class="empty-icon">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-                <rect width="48" height="48" rx="12" fill="#f0f6ff"/>
-                <path d="M14 18h20M14 24h14M14 30h10" stroke="#0066cc" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
+          <!-- Empty state — atmospheric orb decoration -->
+          <div class="empty-state reveal-single" role="status">
+            <div class="empty-orb-sky"    aria-hidden="true"></div>
+            <div class="empty-orb-rose"   aria-hidden="true"></div>
+            <span class="badge-pill empty-eyebrow">Nothing here yet</span>
             <h2 class="empty-title">Your feed is empty</h2>
             <p class="empty-desc">
-              Follow writers and explore topics to start seeing articles here. There's a lot of great writing waiting.
+              Follow writers and explore topics to start seeing articles here.
+              There's a lot of great writing waiting.
             </p>
             <div class="empty-actions">
-              <a href="/discover" class="btn-primary">Explore topics</a>
-              <a href="/dashboard/articles/new" class="btn-ghost">Write your first article</a>
+              <a href="/discover" class="btn-primary" id="feed-empty-discover">Explore topics</a>
+              <a href="/dashboard/articles/new" class="btn-outline" id="feed-empty-write">Write your first article</a>
             </div>
           </div>
         )}
@@ -94,147 +91,181 @@ const recentArticles = articles.map(article => ({
 </Layout>
 
 <style>
-/* ════════════════════════════════════════════
-   CONTAINER
-════════════════════════════════════════════ */
-.container {
-  max-width: 1100px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
-  box-sizing: border-box;
+/* ════════════════════════════════════════════════════════════
+   FEED PAGE — editorial design system
+════════════════════════════════════════════════════════════ */
+.feed-page {
+  min-height: calc(100vh - var(--h-nav));
+  background: transparent;
 }
 
-/* ════════════════════════════════════════════
-   PAGE LAYOUT
-════════════════════════════════════════════ */
-.feed-page { min-height: 60vh; background: #f5f5f7; }
-
-/* ─── Header ─── */
+/* ── Feed header — surface-card, hairline bottom ── */
 .feed-header {
-  background: #fff;
-  border-bottom: 1px solid #e8e8ed;
-  padding: 36px 0;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-hairline);
+  padding: var(--space-xl) 0;              /* 32px */
 }
 .fh-inner {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--space-lg);
   flex-wrap: wrap;
 }
+.fh-text { flex: 1; }
+
+/* display-xl: EB Garamond 300, 48px */
 .feed-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: #1d1d1f;
-  line-height: 1.1;
-  margin-bottom: 4px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-xl);
+  font-weight: var(--fw-light);            /* 300 */
+  color: var(--color-ink);
+  line-height: var(--lh-display-xl);
+  letter-spacing: var(--ls-display-xl);
+  margin-bottom: var(--space-xs);
 }
-.feed-sub { font-size: 14px; color: #86868b; }
+/* body-sm: Inter 400, 15px, body color */
+.feed-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-regular);
+  color: var(--color-muted);
+  line-height: var(--lh-body-sm);
+}
 
-/* Filters */
-.feed-filters { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-btn {
-  padding: 8px 18px;
-  border-radius: 9999px;
-  border: 1.5px solid #e0e0e8;
-  background: #fff;
-  color: #6e6e73;
-  font-size: 13px;
-  font-weight: 600;
+/* Filter badge-pills — surface-strong bg, ink text, caption-uppercase, pill radius */
+.feed-filters {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
+  align-items: flex-start;
+  padding-top: var(--space-xs);
+}
+.filter-pill {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption-upper);      /* 12px */
+  font-weight: var(--fw-semibold);         /* 600 */
+  letter-spacing: var(--ls-caption-upper); /* 0.08em */
+  text-transform: uppercase;
+  color: var(--color-ink);
+  background: var(--color-surface-strong); /* #f0efed */
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
   cursor: pointer;
-  transition: all 180ms ease;
+  transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
 }
-.filter-btn:hover { border-color: #0066cc; color: #0066cc; }
-.filter-btn--active {
-  background: #0066cc;
-  border-color: #0066cc;
-  color: #fff;
+.filter-pill:hover {
+  background: var(--color-hairline-soft);
+  border-color: var(--color-hairline-strong);
+}
+/* Active filter: ink background, on-primary text */
+.filter-pill--active {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-color: var(--color-primary);
+}
+.filter-pill--active:hover {
+  background: var(--color-primary-active);
+  border-color: var(--color-primary-active);
 }
 
-/* ─── Body ─── */
-.feed-body { padding: 48px 0 80px; }
+/* ── Feed body ── */
+.feed-body {
+  padding: var(--space-xxl) 0 var(--space-section);  /* 48px top, 96px bottom */
+}
 
-/* Articles grid */
+/* 3-up → 2-up → 1-up article grid */
 .articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
-  gap: 20px;
-  justify-content: center;
-  margin-bottom: 48px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);                    /* 24px */
+  margin-bottom: var(--space-xxl);
+}
+@media (max-width: 1024px) {
+  .articles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .articles-grid { grid-template-columns: 1fr; }
 }
 
-/* Load more */
-.load-more { text-align: center; }
-.load-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #fff;
-  border: 1.5px solid #e0e0e8;
-  color: #1d1d1f;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 13px 28px;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 220ms ease;
-}
-.load-btn:hover {
-  border-color: #0066cc;
-  color: #0066cc;
-  box-shadow: 0 4px 16px rgba(0,102,204,0.12);
+/* Load more — centered outline pill */
+.load-more {
+  text-align: center;
 }
 
-/* ─── Empty state ─── */
+/* ── Empty state — atmospheric orb decoration ── */
 .empty-state {
   text-align: center;
-  padding: 80px 24px;
+  padding: var(--space-section) var(--space-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0;
+  position: relative;
+  overflow: hidden;
+  border: 1px dashed var(--color-hairline-strong);
+  border-radius: var(--radius-xl);
 }
-.empty-icon { margin-bottom: 24px; }
+.empty-orb-sky {
+  position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(168, 200, 232, 0.4) 0%, transparent 70%);
+  filter: blur(50px);
+  border-radius: 50%;
+  top: -80px; left: 10%;
+  pointer-events: none;
+}
+.empty-orb-rose {
+  position: absolute;
+  width: 260px; height: 260px;
+  background: radial-gradient(circle, rgba(232, 184, 196, 0.35) 0%, transparent 70%);
+  filter: blur(50px);
+  border-radius: 50%;
+  bottom: -60px; right: 10%;
+  pointer-events: none;
+}
+.empty-eyebrow {
+  margin-bottom: var(--space-sm);
+  position: relative;
+  z-index: 1;
+}
 .empty-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1d1d1f;
-  margin-bottom: 12px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-md);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);
+  position: relative;
+  z-index: 1;
 }
 .empty-desc {
-  font-size: 15px;
-  color: #6e6e73;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
   max-width: 420px;
-  line-height: 1.65;
-  margin-bottom: 32px;
+  line-height: var(--lh-body);
+  margin-bottom: var(--space-xl);
+  position: relative;
+  z-index: 1;
 }
-.empty-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.btn-primary {
-  background: #0066cc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
+.empty-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
 }
-.btn-primary:hover { background: #0071e3; transform: scale(1.03); }
-.btn-ghost {
-  background: transparent;
-  color: #0066cc;
-  border: 1.5px solid #d0dff5;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 11px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .feed-title { font-size: var(--fs-display-md); }
+  .fh-inner { flex-direction: column; }
+  .feed-body {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xxl);
+  }
 }
-.btn-ghost:hover { background: #f0f6ff; border-color: #0066cc; }
 </style>

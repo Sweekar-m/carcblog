@@ -1,13 +1,13 @@
 ---
-// Dashboard articles listing
+// Dashboard articles listing — ElevenLabs editorial design system
 import Layout from '@/layouts/Layout.astro';
-import { getArticlesByAuthorWithFallback } from '@/lib/supabase';
+import { getArticlesByAuthor } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
 const user = await getCurrentUser(Astro.locals);
-const rawArticles = user ? await getArticlesByAuthorWithFallback(user.id) : [];
+const rawArticles = user ? await getArticlesByAuthor(user.id) : [];
 const articles = rawArticles.map(article => ({
   ...article,
   _id: article.id,
@@ -19,163 +19,180 @@ const articles = rawArticles.map(article => ({
     image: article.author?.avatar_url
   }
 }));
+
+const publishedArticles = articles.filter(a => a.publishedAt !== null);
+const draftArticles = articles.filter(a => a.publishedAt === null);
 ---
-
-
-<Layout title="My Articles - Dashboard" description="Manage your published articles and drafts">
-
+<Layout title="My Articles - Dashboard" description="Manage your published articles and drafts on Carcblog">
   <div class="page-content">
 
     <!-- Page header -->
     <div class="page-header">
-      <div>
+      <div class="header-text">
         <h1 class="page-title">My Articles</h1>
         <p class="page-sub">Manage your published articles and drafts.</p>
       </div>
-      <a href="/dashboard/articles/new" class="btn-primary">New Article</a>
+      <a href="/dashboard/articles/new" class="btn-primary" id="dash-new-article-btn">New Article</a>
     </div>
 
     <!-- Published articles -->
-    <section class="section">
+    <section class="dashboard-section">
       <h2 class="section-title">Published</h2>
 
-      {articles.length > 0 ? (
+      {publishedArticles.length > 0 ? (
         <div class="article-list">
-          {articles.map((article) => (
-            <article class="article-card">
+          {publishedArticles.map((article) => (
+            <article class="article-row-card">
               <div class="article-thumb-wrap">
                 {article.coverImage ? (
                   <img src={article.coverImage} alt={article.title} class="article-thumb-img" />
                 ) : (
-                  <div class="article-thumb-placeholder">
+                  <div class="article-thumb-placeholder" aria-hidden="true">
                     <span>{article.title.charAt(0).toUpperCase()}</span>
                   </div>
                 )}
               </div>
               <div class="article-body">
-                <h3 class="article-title">{article.title}</h3>
+                <h3 class="article-heading">{article.title}</h3>
                 <p class="article-excerpt">{article.excerpt || 'No preview available'}</p>
                 <div class="article-meta">
-                  <time datetime={article.publishedAt}>
-                    {new Date(article.publishedAt).toLocaleDateString(undefined, {
-                      month: 'short', day: 'numeric', year: 'numeric'
-                    })}
-                  </time>
-                  <span class="meta-dot">·</span>
+                  {article.publishedAt && (
+                    <time datetime={article.publishedAt}>
+                      {new Date(article.publishedAt).toLocaleDateString(undefined, {
+                        month: 'short', day: 'numeric', year: 'numeric'
+                      })}
+                    </time>
+                  )}
+                  <span class="meta-dot" aria-hidden="true">·</span>
                   <span>{article.author?.name || 'Anonymous'}</span>
                 </div>
               </div>
-              <a href={`/dashboard/articles/${article._id}`} class="article-edit-btn">Edit</a>
+              <a href={`/article/${article.slug}`} class="btn-outline btn-small" id={`view-article-${article.slug}`}>View</a>
             </article>
           ))}
         </div>
       ) : (
-        <div class="empty-state">
-          <p>No published articles yet. <a href="/dashboard/articles/new" class="link">Create your first article</a> to get started!</p>
+        <div class="empty-state" role="status">
+          <p>No published articles yet. <a href="/dashboard/articles/new" class="link-editorial">Create your first article</a> to get started!</p>
         </div>
       )}
     </section>
 
     <!-- Drafts -->
-    <section class="section">
+    <section class="dashboard-section">
       <h2 class="section-title">Drafts</h2>
-      <div class="empty-state">
-        <p>No drafts yet. Ideas waiting to be written?</p>
-      </div>
+
+      {draftArticles.length > 0 ? (
+        <div class="article-list">
+          {draftArticles.map((article) => (
+            <article class="article-row-card">
+              <div class="article-thumb-wrap">
+                {article.coverImage ? (
+                  <img src={article.coverImage} alt={article.title} class="article-thumb-img" />
+                ) : (
+                  <div class="article-thumb-placeholder" aria-hidden="true">
+                    <span>{article.title.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+              <div class="article-body">
+                <h3 class="article-heading">{article.title}</h3>
+                <p class="article-excerpt">{article.excerpt || 'No preview available'}</p>
+                <div class="article-meta">
+                  <span class="badge-pill">Draft</span>
+                  <span class="meta-dot" aria-hidden="true">·</span>
+                  <span>{article.author?.name || 'Anonymous'}</span>
+                </div>
+              </div>
+              <a href={`/article/${article.slug}`} class="btn-outline btn-small" id={`preview-draft-${article.slug}`}>Preview</a>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div class="empty-state" role="status">
+          <p>No drafts yet. Ideas waiting to be written?</p>
+        </div>
+      )}
     </section>
 
   </div>
-
 </Layout>
 
 <style>
   .page-content {
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: var(--space-xl);                   /* 32px */
   }
 
   /* ── Page header ── */
   .page-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: var(--space-md);
     flex-wrap: wrap;
+    padding-bottom: var(--space-lg);
+    border-bottom: 1px solid var(--color-hairline);
   }
+  .header-text { flex: 1; }
 
+  /* display-md: EB Garamond 300, 32px */
   .page-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #1d1d1f;
-    margin: 0 0 4px;
-    letter-spacing: -0.02em;
+    font-family: var(--font-serif);
+    font-size: var(--fs-display-md);
+    font-weight: var(--fw-light);           /* 300 */
+    color: var(--color-ink);
+    margin: 0 0 var(--space-xxs);
+    line-height: var(--lh-display-md);
+    letter-spacing: var(--ls-display-md);
   }
 
   .page-sub {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 14px;
-    color: #86868b;
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-muted);
     margin: 0;
   }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 9px 20px;
-    background: #0066cc;
-    color: #ffffff;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 9999px;
-    text-decoration: none;
-    white-space: nowrap;
-    transition: background 200ms ease, transform 150ms ease;
-    flex-shrink: 0;
-  }
-  .btn-primary:hover { background: #0071e3; }
-  .btn-primary:active { transform: scale(0.97); }
 
   /* ── Section ── */
-  .section { display: flex; flex-direction: column; gap: 12px; }
+  .dashboard-section { display: flex; flex-direction: column; gap: var(--space-sm); }
 
+  /* title-sm: Inter 500, 18px */
   .section-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: #1d1d1f;
+    font-family: var(--font-sans);
+    font-size: var(--fs-title-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-ink);
     margin: 0;
-    letter-spacing: -0.01em;
   }
 
   /* ── Article list ── */
-  .article-list { display: flex; flex-direction: column; gap: 10px; }
+  .article-list { display: flex; flex-direction: column; gap: var(--space-xs); }
 
-  .article-card {
+  /* Row card: white, hairline, xl radius */
+  .article-row-card {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px;
-    background: #ffffff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    transition: border-color 200ms ease, box-shadow 200ms ease;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: var(--color-surface-card);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-xl);
+    transition: box-shadow var(--duration-200) var(--ease-out), border-color var(--duration-200) var(--ease-out);
   }
-  .article-card:hover {
-    border-color: rgba(0,102,204,0.25);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  .article-row-card:hover {
+    border-color: var(--color-hairline-strong);
+    box-shadow: var(--shadow-card-hover);
   }
 
   .article-thumb-wrap {
     width: 52px;
     height: 52px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     flex-shrink: 0;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--color-hairline);
   }
 
   .article-thumb-img {
@@ -187,14 +204,14 @@ const articles = rawArticles.map(article => ({
   .article-thumb-placeholder {
     width: 100%;
     height: 100%;
-    background: rgba(0,102,204,0.08);
+    background: var(--color-surface-strong);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: var(--fw-medium);
     font-size: 18px;
-    color: #0066cc;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
   }
 
   .article-body {
@@ -202,22 +219,23 @@ const articles = rawArticles.map(article => ({
     min-width: 0;
   }
 
-  .article-title {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1d1d1f;
-    margin: 0 0 4px;
+  /* title-sm range */
+  .article-heading {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-ink);
+    margin: 0 0 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .article-excerpt {
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 13px;
-    color: #86868b;
-    margin: 0 0 6px;
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-body);
+    margin: 0 0 var(--space-xxs);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -227,46 +245,40 @@ const articles = rawArticles.map(article => ({
   .article-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
+    gap: var(--space-xs);
+    font-family: var(--font-sans);
     font-size: 12px;
-    color: #86868b;
+    color: var(--color-muted);
   }
 
-  .meta-dot { color: #c7c7cc; }
+  .meta-dot { color: var(--color-hairline-strong); }
 
-  .article-edit-btn {
-    flex-shrink: 0;
+  /* Compact button styling override */
+  .btn-small {
     padding: 6px 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 9999px;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: #1d1d1f;
-    text-decoration: none;
-    background: #ffffff;
-    transition: background 150ms ease, border-color 150ms ease;
-  }
-  .article-edit-btn:hover {
-    background: #f5f5f7;
-    border-color: #c7c7cc;
+    height: auto;
+    font-size: var(--fs-caption);
   }
 
   /* ── Empty state ── */
   .empty-state {
-    padding: 40px 24px;
-    background: #ffffff;
-    border: 1px dashed #e0e0e0;
-    border-radius: 12px;
+    padding: var(--space-xl) var(--space-lg);
+    background: var(--color-surface-card);
+    border: 1px dashed var(--color-hairline-strong);
+    border-radius: var(--radius-xl);
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', sans-serif;
-    font-size: 14px;
-    color: #86868b;
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-muted);
   }
   .empty-state p { margin: 0; }
 
-  .link { color: #0066cc; text-decoration: none; font-weight: 500; }
-  .link:hover { color: #0071e3; text-decoration: underline; }
+  .link-editorial {
+    color: var(--color-ink);
+    text-decoration: underline;
+    font-weight: var(--fw-medium);
+  }
+  .link-editorial:hover {
+    color: var(--color-primary-active);
+  }
 </style>
-

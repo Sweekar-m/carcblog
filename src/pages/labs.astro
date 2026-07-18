@@ -1,0 +1,86 @@
+---
+// Labs page - Three.js experimental canvas
+import Layout from '@/components/layout/Layout.astro';
+---
+
+<Layout title="Labs — Behind the Build" description="Experimental holographic WebGL particle swarm torus knot at Carcblog.">
+  <div class="labs-page">
+    <!-- Overlaid Editorial Info -->
+    <div class="labs-overlay">
+      <div class="labs-content">
+        <span class="badge-pill labs-eyebrow">Carcblog Labs</span>
+        <h1 class="labs-title">Behind the Build</h1>
+        <p class="labs-desc">
+          An impossible 3D interlocking toroidal knot and quantum stardust particle swarm simulation.
+          Engineered using custom fresnel shaders, bloom post-processing, and instanced mesh rendering.
+        </p>
+        <div class="labs-actions">
+          <a href="/" class="btn-outline">Back to stories</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .labs-page {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - var(--h-nav));
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+  }
+
+  .labs-overlay {
+    position: relative;
+    z-index: 10;
+    max-width: 600px;
+    padding: var(--space-lg);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: auto;
+  }
+
+  .labs-content {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .labs-eyebrow {
+    background: var(--color-surface-strong);
+    color: var(--color-ink);
+    border: 1px solid var(--color-hairline-strong);
+    margin-bottom: var(--space-md);
+  }
+
+  .labs-title {
+    font-family: var(--font-serif);
+    font-size: var(--fs-display-xl);
+    font-weight: var(--fw-light);
+    color: var(--color-ink); /* #0c0a09 */
+    line-height: var(--lh-display-xl);
+    letter-spacing: var(--ls-display-xl);
+    margin-bottom: var(--space-md);
+  }
+
+  .labs-desc {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-md);
+    font-weight: var(--fw-regular);
+    color: var(--color-body); /* #4e4e4e */
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+  }
+</style>

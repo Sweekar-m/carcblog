@@ -1,25 +1,26 @@
 ---
-// Search page
+// Search page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 ---
-<Layout title="Search - Carcblog" description="Search for articles, topics, and writers">
+<Layout title="Search - Carcblog" description="Search for articles, topics, and writers on Carcblog">
+
   <div class="search-tiles">
-    <!-- Tile 1: Search Query Box (Parchment Background) -->
-    <section class="tile-parchment animate-fade-in">
-      <div class="max-w-[640px] mx-auto px-6 text-center">
+
+    <!-- Tile 1: Search Query Box — canvas-soft bg, EB Garamond 300 title, search-input pill -->
+    <section class="tile-parchment">
+      <div class="page-container search-container-narrow">
         <h1 class="search-hero-title">Search Carcblog</h1>
-        
-        <div class="relative flex items-center justify-center mt-6">
+
+        <div class="search-bar-wrap">
           <label for="search-input-field" class="sr-only">Search</label>
-          <!-- Search input matching search-input specification -->
           <input
             type="text"
             id="search-input-field"
             placeholder="Search articles, topics, or authors..."
             class="search-bar"
           />
-          <div class="search-icon-box">
-            <svg class="h-4.5 w-4.5 text-ink/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <div class="search-icon-box" aria-hidden="true">
+            <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
@@ -30,12 +31,12 @@ import Layout from '@/components/layout/Layout.astro';
       </div>
     </section>
 
-    <!-- Tile 2: Results & Popular Directory (White Background) -->
+    <!-- Tile 2: Results & Popular Directory — white bg, badge-pills -->
     <section class="tile-white">
-      <div class="max-w-[720px] mx-auto px-6">
+      <div class="page-container search-container-narrow">
         <!-- Empty State Container -->
-        <div class="empty-state">
-          <svg class="h-10 w-10 text-foreground-subtle mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <div class="empty-state" role="status">
+          <svg class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
           <h3 class="empty-title">Enter search terms</h3>
@@ -47,18 +48,16 @@ import Layout from '@/components/layout/Layout.astro';
         <!-- Popular Tags List -->
         <div class="popular-tags-box">
           <h2 class="popular-tags-title">Popular searches</h2>
-          <div class="flex flex-wrap gap-2 justify-center">
-            <span class="search-tag-pill">Technology</span>
-            <span class="search-tag-pill">Science</span>
-            <span class="search-tag-pill">Culture</span>
-            <span class="search-tag-pill">Interface Design</span>
-            <span class="search-tag-pill">Productivity</span>
-            <span class="search-tag-pill">Startup</span>
+          <div class="popular-tags-row">
+            {['Technology', 'Science', 'Culture', 'Interface Design', 'Productivity', 'Startup'].map(term => (
+              <span class="badge-pill search-tag-pill">{term}</span>
+            ))}
           </div>
         </div>
       </div>
     </section>
   </div>
+
 </Layout>
 
 <style>
@@ -66,48 +65,69 @@ import Layout from '@/components/layout/Layout.astro';
     display: flex;
     flex-direction: column;
     width: 100%;
+    min-height: calc(100vh - var(--h-nav));
   }
 
   section {
     width: 100%;
-    padding-top: var(--spacing-section);
-    padding-bottom: var(--spacing-section);
-    border-bottom: 1px solid var(--color-divider-soft);
+    padding-top: var(--space-section);
+    padding-bottom: var(--space-section);
+    border-bottom: 1px solid var(--color-hairline);
   }
 
   .tile-parchment {
-    background-color: var(--color-canvas-parchment);
+    background-color: var(--color-canvas);
   }
 
   .tile-white {
-    background-color: var(--color-canvas);
+    background-color: var(--color-surface-card);
   }
 
+  .search-container-narrow {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  /* display-lg: EB Garamond 300, 36px */
   .search-hero-title {
     font-family: var(--font-serif);
-    font-size: var(--font-size-display-lg);
-    font-weight: 600;
+    font-size: var(--fs-display-lg);
+    font-weight: var(--fw-light);           /* 300 */
     color: var(--color-ink);
+    line-height: var(--lh-display-lg);
+    letter-spacing: var(--ls-display-lg);
+    margin: 0;
   }
 
-  /* Search Input Field Style (Search-input standard: rounded-pill, hairline border) */
+  .search-bar-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: var(--space-lg);
+  }
+
+  /* search-input pill standard: rounded-pill, hairline border */
   .search-bar {
     width: 100%;
     height: 48px;
-    background-color: var(--color-canvas);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-pill); /* 9999px */
+    background-color: var(--color-surface-card);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: var(--radius-pill);     /* 9999px */
     padding-left: 48px;
     padding-right: 20px;
-    font-size: var(--font-size-body); /* 17px */
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-md);
     color: var(--color-ink);
-    transition: all 200ms ease;
+    transition: border-color var(--duration-150) var(--ease-out);
+    box-sizing: border-box;
   }
 
   .search-bar:focus {
     outline: none;
-    border-color: var(--color-primary-focus);
-    box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+    border-color: var(--color-ink);
+    border-width: 1.5px;
   }
 
   .search-icon-box {
@@ -116,59 +136,85 @@ import Layout from '@/components/layout/Layout.astro';
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+  .search-icon {
+    width: 18px; height: 18px;
+    color: var(--color-muted);
   }
 
   .search-helper-text {
-    font-size: var(--font-size-caption);
-    color: var(--color-foreground-muted);
-    margin-top: var(--spacing-sm);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+    margin-top: var(--space-sm);
   }
 
-  /* Empty state */
+  /* ── Empty state ── */
   .empty-state {
     text-align: center;
-    padding: var(--spacing-xl) 0;
-    border-bottom: 1px solid var(--color-divider-soft);
-    margin-bottom: var(--spacing-xl);
+    padding: var(--space-xl) 0;
+    border-bottom: 1px solid var(--color-hairline-soft);
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  .empty-icon {
+    width: 32px; height: 32px;
+    color: var(--color-muted-soft);
   }
 
+  /* title-sm */
   .empty-title {
-    font-size: var(--font-size-body);
-    font-weight: 600;
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-medium);
     color: var(--color-ink);
+    margin: 0;
   }
 
   .empty-desc {
-    font-size: var(--font-size-caption);
-    color: var(--color-foreground-muted);
-    margin-top: var(--spacing-xxs);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+    margin: 0;
   }
 
-  /* Popular Tags */
+  /* ── Popular Tags ── */
   .popular-tags-box {
     text-align: center;
   }
 
+  /* title-sm: Inter 500 */
   .popular-tags-title {
-    font-size: var(--font-size-caption);
-    font-weight: 600;
-    color: var(--color-ink);
-    margin-bottom: var(--spacing-md);
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper);
+    font-weight: var(--fw-semibold);
+    letter-spacing: var(--ls-caption-upper);
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 var(--space-md);
+  }
+
+  .popular-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    justify-content: center;
   }
 
   .search-tag-pill {
-    font-size: var(--font-size-caption);
-    color: var(--color-foreground);
-    background-color: var(--color-canvas-parchment);
     padding: 8px 16px;
-    border-radius: var(--radius-pill);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 200ms ease;
     border: 1px solid var(--color-hairline);
+    cursor: pointer;
+    transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
   }
   .search-tag-pill:hover {
-    background-color: var(--color-surface-pearl);
-    border-color: var(--color-foreground-muted);
+    background-color: var(--color-hairline-soft);
+    border-color: var(--color-hairline-strong);
+    color: var(--color-ink);
   }
 </style>

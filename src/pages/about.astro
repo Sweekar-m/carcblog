@@ -1,39 +1,58 @@
 ---
-// About page
+// About page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 ---
 <Layout title="About — Carcblog" description="Learn about our mission and values — the premium publishing platform for thoughtful writers">
 
   <!-- ═══════════════════════════════════════════════
        SECTION 1: HERO
+       canvas bg, display-mega, atmospheric orbs, surface-card stats
   ═══════════════════════════════════════════════ -->
-  <section class="section section--dark section--hero">
-    <div class="blob b1"></div>
-    <div class="blob b2"></div>
-    <div class="container container--narrow" style="position:relative;z-index:1;">
-      <p class="eyebrow">About Carcblog</p>
-      <h1 class="hero-title">Where Thoughtful Writing<br>Finds Its Audience</h1>
+  <section class="about-hero">
+    <!-- Atmospheric orbs -->
+    <div class="atm-orb about-orb-mint"     aria-hidden="true"></div>
+    <div class="atm-orb about-orb-peach"    aria-hidden="true"></div>
+    <div class="atm-orb about-orb-lavender" aria-hidden="true"></div>
+
+    <div class="page-container about-hero-inner">
+      <span class="badge-pill cta-eyebrow">About Carcblog</span>
+      <h1 class="hero-title">Where thoughtful writing<br>finds its audience.</h1>
       <p class="hero-desc">
         Carcblog is a publishing platform dedicated to fostering thoughtful discourse and connecting writers with readers who appreciate depth, nuance, and quality.
       </p>
-      <div class="hero-stats">
-        <div class="hs-item"><span class="hs-num">12K+</span><span class="hs-label">Writers</span></div>
-        <div class="hs-sep"></div>
-        <div class="hs-item"><span class="hs-num">84K</span><span class="hs-label">Articles</span></div>
-        <div class="hs-sep"></div>
-        <div class="hs-item"><span class="hs-num">2.4M</span><span class="hs-label">Monthly readers</span></div>
-        <div class="hs-sep"></div>
-        <div class="hs-item"><span class="hs-num">140+</span><span class="hs-label">Countries</span></div>
+
+      <!-- Stats board: white surface-card, hairline border, xl radius -->
+      <div class="hero-stats-card">
+        <div class="hs-item">
+          <span class="hs-num">12K+</span>
+          <span class="hs-label">Writers</span>
+        </div>
+        <div class="hs-sep" aria-hidden="true"></div>
+        <div class="hs-item">
+          <span class="hs-num">84K</span>
+          <span class="hs-label">Articles</span>
+        </div>
+        <div class="hs-sep" aria-hidden="true"></div>
+        <div class="hs-item">
+          <span class="hs-num">2.4M</span>
+          <span class="hs-label">Monthly readers</span>
+        </div>
+        <div class="hs-sep" aria-hidden="true"></div>
+        <div class="hs-item">
+          <span class="hs-num">140+</span>
+          <span class="hs-label">Countries</span>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
        SECTION 2: MISSION
+       reading-col layout
   ═══════════════════════════════════════════════ -->
-  <section class="section section--white">
-    <div class="container container--editorial">
-      <p class="section-kicker">Our Mission</p>
+  <section class="about-section">
+    <div class="page-container reading-col">
+      <span class="badge-pill section-kicker">Our Mission</span>
       <h2 class="section-title">Quality over virality</h2>
       <div class="editorial-body">
         <p>
@@ -48,61 +67,43 @@ import Layout from '@/components/layout/Layout.astro';
 
   <!-- ═══════════════════════════════════════════════
        SECTION 3: VALUES GRID
+       white feature-card values grid
   ═══════════════════════════════════════════════ -->
-  <section class="section section--parchment">
-    <div class="container">
-      <div class="section-header">
-        <p class="section-kicker">Our Values</p>
+  <section class="about-section about-section--soft">
+    <div class="page-container">
+      <div class="sec-header">
+        <span class="badge-pill section-kicker">Our Values</span>
         <h2 class="section-title">The principles that guide us</h2>
-        <p class="section-sub">The principles that guide every decision we make as a publishing platform.</p>
+        <p class="sec-sub">The principles that guide every decision we make as a publishing platform.</p>
       </div>
 
       <div class="values-grid">
-        <div class="value-card vc--blue">
-          <div class="value-icon">📖</div>
-          <h3 class="value-title">Quality over quantity</h3>
-          <p class="value-text">We prioritize well-researched, thoughtfully written content that adds genuine value to readers' lives.</p>
-        </div>
-
-        <div class="value-card vc--purple">
-          <div class="value-icon">💬</div>
-          <h3 class="value-title">Thoughtful discourse</h3>
-          <p class="value-text">We foster constructive conversations that bridge different perspectives and experiences.</p>
-        </div>
-
-        <div class="value-card vc--teal">
-          <div class="value-icon">🌱</div>
-          <h3 class="value-title">Growth mindset</h3>
-          <p class="value-text">We support writers in developing their craft and readers in expanding their horizons.</p>
-        </div>
-
-        <div class="value-card vc--rose">
-          <div class="value-icon">🤝</div>
-          <h3 class="value-title">Community first</h3>
-          <p class="value-text">Our platform belongs to our community of writers and readers who shape its direction.</p>
-        </div>
-
-        <div class="value-card vc--amber">
-          <div class="value-icon">✨</div>
-          <h3 class="value-title">Creative freedom</h3>
-          <p class="value-text">We empower writers to express their authentic voices without algorithmic constraints.</p>
-        </div>
-
-        <div class="value-card vc--indigo">
-          <div class="value-icon">🔍</div>
-          <h3 class="value-title">Discoverability</h3>
-          <p class="value-text">We help great content find its audience through thoughtful curation and recommendation.</p>
-        </div>
+        {[
+          { icon: '📖', title: 'Quality over quantity', text: 'We prioritize well-researched, thoughtfully written content that adds genuine value to readers\' lives.' },
+          { icon: '💬', title: 'Thoughtful discourse',  text: 'We foster constructive conversations that bridge different perspectives and experiences.' },
+          { icon: '🌱', title: 'Growth mindset',        text: 'We support writers in developing their craft and readers in expanding their horizons.' },
+          { icon: '🤝', title: 'Community first',       text: 'Our platform belongs to our community of writers and readers who shape its direction.' },
+          { icon: '✨', title: 'Creative freedom',     text: 'We empower writers to express their authentic voices without algorithmic constraints.' },
+          { icon: '🔍', title: 'Discoverability',       text: 'We help great content find its audience through thoughtful curation and recommendation.' }
+        ].map(({ icon, title, text }) => (
+          <div class="value-card feature-card">
+            <!-- voice-icon-circular -->
+            <div class="value-icon-box" aria-hidden="true">{icon}</div>
+            <h3 class="value-title">{title}</h3>
+            <p class="value-text">{text}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
        SECTION 4: TEAM STATEMENT
+       pull-quote style
   ═══════════════════════════════════════════════ -->
-  <section class="section section--white">
-    <div class="container container--editorial">
-      <p class="section-kicker">Our Story</p>
+  <section class="about-section">
+    <div class="page-container reading-col">
+      <span class="badge-pill section-kicker">Our Story</span>
       <h2 class="section-title">Built by writers, for writers</h2>
       <div class="editorial-body">
         <p>
@@ -112,6 +113,7 @@ import Layout from '@/components/layout/Layout.astro';
           We built Carcblog because we believe the internet deserves a publishing space where the quality of the work is the only metric that matters. Where a writer can spend three weeks on a piece and know it will find the readers who care.
         </p>
       </div>
+      <!-- display-sm pull quote -->
       <div class="pull-quote">
         <blockquote>"We built Carcblog because the internet deserves better writing — and writers deserve better tools."</blockquote>
         <cite>— The Carcblog Team</cite>
@@ -120,17 +122,21 @@ import Layout from '@/components/layout/Layout.astro';
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 5: DARK CTA
+       SECTION 5: CTA BAND
+       cta-band spec: canvas bg, display-lg, ink pill
   ═══════════════════════════════════════════════ -->
-  <section class="section section--dark section--cta">
-    <div class="blob b3"></div>
-    <div class="container container--narrow" style="position:relative;z-index:1;text-align:center;">
-      <p class="eyebrow">Join the community</p>
-      <h2 class="cta-title">Ready to share your voice?</h2>
-      <p class="cta-desc">Join our community of writers and readers who believe in the power of thoughtful content.</p>
-      <div class="cta-btns">
-        <a href="/sign-up" class="btn-primary">Join as a Writer</a>
-        <a href="/sign-in" class="btn-ghost">Sign in to read</a>
+  <section class="about-cta-band">
+    <!-- Atmospheric orbs -->
+    <div class="atm-orb about-cta-orb-sky"  aria-hidden="true"></div>
+    <div class="atm-orb about-cta-orb-rose" aria-hidden="true"></div>
+
+    <div class="page-container about-cta-inner">
+      <span class="badge-pill cta-eyebrow">Join the community</span>
+      <h2 class="cta-headline">Ready to share your voice?</h2>
+      <p class="cta-body">Join our community of writers and readers who believe in the power of thoughtful content.</p>
+      <div class="cta-buttons">
+        <a href="/auth/sign-up" class="btn-primary" id="about-cta-signup">Join as a Writer</a>
+        <a href="/auth/sign-in" class="btn-outline" id="about-cta-signin">Sign in to read</a>
       </div>
     </div>
   </section>
@@ -138,219 +144,280 @@ import Layout from '@/components/layout/Layout.astro';
 </Layout>
 
 <style>
-/* ════════════════════════════════════════════
-   CONTAINERS
-════════════════════════════════════════════ */
-.container {
-  max-width: 1100px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
-  box-sizing: border-box;
-}
-.container--narrow { max-width: 720px; text-align: center; }
-.container--editorial { max-width: 720px; }
-
-/* ════════════════════════════════════════════
-   SECTIONS
-════════════════════════════════════════════ */
-.section {
-  width: 100%;
-  padding: 96px 0;
-  border-bottom: 1px solid #e8e8ed;
+/* ════════════════════════════════════════════════════════════
+   ABOUT PAGE — ElevenLabs editorial system
+════════════════════════════════════════════════════════════ */
+.about-hero {
+  background: var(--color-canvas);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
   position: relative;
   overflow: hidden;
+  text-align: center;
 }
-.section--white     { background: #fff; }
-.section--parchment { background: #f5f5f7; }
-.section--dark      { background: #0a0a0f; border-bottom: none; }
-.section--hero      { padding: 120px 0 100px; }
-.section--cta       { padding: 100px 0; }
 
-/* ambient blobs */
-.blob { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
-.b1 { width: 600px; height: 600px; background: rgba(0,102,204,0.25); top: -200px; left: 50%; transform: translateX(-50%); }
-.b2 { width: 400px; height: 400px; background: rgba(124,58,237,0.18); bottom: -100px; right: 10%; }
-.b3 { width: 500px; height: 500px; background: rgba(0,102,204,0.2); bottom: -150px; left: 50%; transform: translateX(-50%); }
-
-/* section kicker / eyebrow */
-.eyebrow, .section-kicker {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #60a5fa;
-  margin-bottom: 16px;
+.about-orb-mint {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.4) 0%, transparent 70%);
+  top: -120px; left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
-.section--white .section-kicker,
-.section--parchment .section-kicker { color: #0066cc; }
+.about-orb-peach {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(244, 197, 168, 0.35) 0%, transparent 70%);
+  bottom: -60px; right: -40px;
+  pointer-events: none;
+}
+.about-orb-lavender {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(200, 184, 224, 0.3) 0%, transparent 70%);
+  bottom: 40px; left: -30px;
+  pointer-events: none;
+}
 
-/* ════════════════════════════════════════════
-   HERO
-════════════════════════════════════════════ */
+.about-hero-inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cta-eyebrow {
+  margin-bottom: var(--space-lg);
+}
+
+/* display-mega: EB Garamond 300, 64px */
 .hero-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2.4rem, 5.5vw, 4rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-mega);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-mega);
+  letter-spacing: var(--ls-display-mega);
+  margin-bottom: var(--space-md);
 }
+
 .hero-desc {
-  font-size: 17px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.7;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-body);
+  line-height: var(--lh-body);
   max-width: 560px;
-  margin: 0 auto 48px;
+  margin: 0 auto var(--space-xl);
 }
-.hero-stats {
+
+/* Stats board — white surface-card, hairline, xl radius, shadow */
+.hero-stats-card {
   display: inline-flex;
   align-items: center;
-  gap: 28px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 20px 32px;
-  backdrop-filter: blur(10px);
+  gap: var(--space-lg);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-md) var(--space-xl);
+  box-shadow: var(--shadow-card-hover);
 }
+@media (max-width: 640px) {
+  .hero-stats-card {
+    flex-direction: column;
+    width: 100%;
+    gap: var(--space-sm);
+  }
+  .hs-sep { display: none; }
+}
+
 .hs-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.hs-num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; }
-.hs-label { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 600; }
-.hs-sep { width: 1px; height: 36px; background: rgba(255,255,255,0.1); }
+.hs-num {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink);
+  line-height: 1;
+}
+.hs-label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption-upper);
+  font-weight: var(--fw-semibold);
+  color: var(--color-muted);
+  letter-spacing: var(--ls-caption-upper);
+  text-transform: uppercase;
+}
+.hs-sep {
+  width: 1px;
+  height: 36px;
+  background: var(--color-hairline);
+}
 
-/* ════════════════════════════════════════════
-   EDITORIAL BODY
-════════════════════════════════════════════ */
+/* ── Sections ── */
+.about-section {
+  background: var(--color-surface-card);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+.about-section--soft {
+  background: var(--color-canvas-soft);
+}
+
+.sec-header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+.section-kicker {
+  display: inline-flex;
+  margin-bottom: var(--space-md);
+}
+
+/* display-lg: EB Garamond 300, 36px */
 .section-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
-  font-weight: 700;
-  color: #1d1d1f;
-  line-height: 1.15;
-  margin-bottom: 24px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-md);
 }
-.section-sub { font-size: 15px; color: #6e6e73; }
-.section-header { text-align: center; margin-bottom: 56px; }
+.sec-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-muted);
+}
 
+/* ── Editorial body ── */
 .editorial-body p {
-  font-size: 17px;
-  line-height: 1.7;
-  color: #3d3d3f;
-  margin-bottom: 20px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  line-height: var(--lh-body);
+  color: var(--color-body);
+  margin-bottom: var(--space-md);
 }
 
+/* display-sm pull quote style: italic EB Garamond 300, hairline left */
 .pull-quote {
-  border-left: 3px solid #0066cc;
-  padding: 20px 28px;
-  margin: 40px 0 0;
-  background: #f5f5f7;
-  border-radius: 0 12px 12px 0;
+  border-left: 2px solid var(--color-hairline-strong);
+  padding-left: var(--space-lg);
+  margin: var(--space-xl) 0 0;
 }
 .pull-quote blockquote {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.3rem;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-sm);
+  font-weight: var(--fw-light);
   font-style: italic;
-  color: #1d1d1f;
-  line-height: 1.55;
-  margin: 0 0 10px;
+  color: var(--color-body-strong);
+  line-height: var(--lh-display-sm);
+  margin: 0 0 var(--space-xs);
 }
-.pull-quote cite { font-size: 13px; color: #86868b; font-style: normal; font-weight: 600; }
+.pull-quote cite {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  color: var(--color-muted);
+  font-style: normal;
+}
 
-/* ════════════════════════════════════════════
-   VALUES GRID
-════════════════════════════════════════════ */
+/* ── Values Grid — white cards, no accent strips ── */
 .values-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: var(--space-md);
 }
 @media (max-width: 768px) { .values-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .values-grid { grid-template-columns: 1fr; } }
 
 .value-card {
-  background: #fff;
-  border: 1px solid #e0e0e8;
-  border-radius: 16px;
-  padding: 28px 24px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  transition: all 240ms cubic-bezier(0.4,1.3,0.65,1);
-}
-.value-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+  gap: var(--space-sm);
 }
 
-/* top accent strip per color */
-.vc--blue   { border-top: 3px solid #3b82f6; }
-.vc--purple { border-top: 3px solid #8b5cf6; }
-.vc--teal   { border-top: 3px solid #14b8a6; }
-.vc--rose   { border-top: 3px solid #f43f5e; }
-.vc--amber  { border-top: 3px solid #f59e0b; }
-.vc--indigo { border-top: 3px solid #6366f1; }
-
-.value-icon { font-size: 28px; }
-.value-title { font-size: 15px; font-weight: 700; color: #1d1d1f; }
-.value-text  { font-size: 13px; color: #6e6e73; line-height: 1.55; }
-
-/* ════════════════════════════════════════════
-   DARK CTA
-════════════════════════════════════════════ */
-.cta-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-  margin-bottom: 16px;
-}
-.cta-desc {
-  font-size: 16px;
-  color: rgba(255,255,255,0.45);
-  line-height: 1.7;
-  max-width: 480px;
-  margin: 0 auto 36px;
-}
-.cta-btns {
+/* voice-icon-circular styling for icons */
+.value-icon-box {
+  font-size: 20px;
+  width: 44px; height: 44px;
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline-soft);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+}
+
+/* title-sm: Inter 500 */
+.value-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+}
+
+.value-text {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  margin: 0;
+}
+
+/* ── CTA Band ── */
+.about-cta-band {
+  background: var(--color-canvas);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
+  position: relative;
+  overflow: hidden;
+}
+.about-cta-orb-sky {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(168, 200, 232, 0.4) 0%, transparent 70%);
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+}
+.about-cta-orb-rose {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(232, 184, 196, 0.35) 0%, transparent 70%);
+  bottom: -60px; right: 10%;
+  pointer-events: none;
+}
+.about-cta-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cta-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-md);
+}
+.cta-body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-body);
+  line-height: var(--lh-body);
+  max-width: 500px;
+  margin: 0 auto var(--space-xl);
+}
+.cta-buttons {
+  display: flex;
+  gap: var(--space-sm);
   flex-wrap: wrap;
+  justify-content: center;
 }
-.btn-primary {
-  background: #0066cc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 13px 28px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
-}
-.btn-primary:hover {
-  background: #0071e3;
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,102,204,0.4);
-}
-.btn-ghost {
-  background: rgba(255,255,255,0.08);
-  color: rgba(255,255,255,0.75);
-  border: 1.5px solid rgba(255,255,255,0.2);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
-}
-.btn-ghost:hover {
-  background: rgba(255,255,255,0.14);
-  border-color: rgba(255,255,255,0.35);
-  color: #fff;
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .about-hero, .about-section, .about-cta-band {
+    padding-top: var(--space-xxl);
+    padding-bottom: var(--space-xxl);
+  }
+  .hero-title { font-size: var(--fs-display-md); }
+  .cta-title { font-size: var(--fs-display-sm); }
 }
 </style>

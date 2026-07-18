@@ -1,322 +1,282 @@
 ---
-// Topics page
+// Topics page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 ---
 <Layout title="Topics — Carcblog" description="Browse and explore all topics on Carcblog">
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 1: POPULAR CATEGORIES
+       SECTION 1: TRENDING TOPICS
+       canvas-soft bg, display-lg title, feature-card categories
   ═══════════════════════════════════════════════ -->
-  <section class="section section--parchment">
-    <div class="container">
-      <div class="section-header">
-        <h1 class="section-title">Trending Topics</h1>
-        <p class="section-sub">Browse popular segments of the publishing canvas.</p>
+  <section class="topics-section topics-section--soft">
+    <div class="page-container">
+      <div class="sec-header">
+        <h1 class="sec-title">Trending Topics</h1>
+        <p class="sec-sub">Browse popular segments of the publishing canvas.</p>
       </div>
 
       <div class="categories-grid">
-        <a href="/discover#technology" class="category-card">
-          <div class="cat-icon">📱</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">Technology</h3>
-              <span class="cat-count">1.2M articles</span>
+        {[
+          { href: '/discover#technology', icon: '📱', name: 'Technology', count: '1.2M', desc: 'Latest insights on software, developer tools, and neural innovations.' },
+          { href: '/discover#science',    icon: '🔬', name: 'Science',    count: '850K', desc: 'Breakthroughs, aerospace discoveries, and research progress reports.' },
+          { href: '/discover#culture',    icon: '🎨', name: 'Arts & Culture', count: '620K', desc: 'Exploring modern design systems, creative expressions, and aesthetics.' },
+          { href: '/discover#history',    icon: '🏛️', name: 'History',    count: '480K', desc: 'Historical records, retro analysis, and stories that explain the present.' },
+          { href: '/discover#business',   icon: '💼', name: 'Business',   count: '550K', desc: 'SaaS architecture, startup ecosystems, and business leadership strategies.' },
+          { href: '/discover#travel',     icon: '🌍', name: 'Travel',     count: '310K', desc: 'Destinations, cultural journals, and global landscape photography.' }
+        ].map(({ href, icon, name, count, desc }) => (
+          <a href={href} class="category-card" aria-label={`Explore ${name} topic — ${count} articles`}>
+            <div class="cat-icon-box" aria-hidden="true">{icon}</div>
+            <div class="cat-body">
+              <div class="cat-meta">
+                <h3 class="cat-name">{name}</h3>
+                <span class="badge-pill cat-badge">{count}</span>
+              </div>
+              <p class="cat-desc">{desc}</p>
             </div>
-            <p class="cat-desc">Latest insights on software, developer tools, and neural innovations.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
-
-        <a href="/discover#science" class="category-card">
-          <div class="cat-icon">🔬</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">Science</h3>
-              <span class="cat-count">850K articles</span>
-            </div>
-            <p class="cat-desc">Breakthroughs, aerospace discoveries, and research progress reports.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
-
-        <a href="/discover#culture" class="category-card">
-          <div class="cat-icon">🎨</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">Arts & Culture</h3>
-              <span class="cat-count">620K articles</span>
-            </div>
-            <p class="cat-desc">Exploring modern design systems, creative expressions, and aesthetics.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
-
-        <a href="/discover#history" class="category-card">
-          <div class="cat-icon">🏛️</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">History</h3>
-              <span class="cat-count">480K articles</span>
-            </div>
-            <p class="cat-desc">Historical records, retro analysis, and stories that explain the present.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
-
-        <a href="/discover#business" class="category-card">
-          <div class="cat-icon">💼</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">Business</h3>
-              <span class="cat-count">550K articles</span>
-            </div>
-            <p class="cat-desc">SaaS architecture, startup ecosystems, and business leadership strategies.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
-
-        <a href="/discover#travel" class="category-card">
-          <div class="cat-icon">🌍</div>
-          <div class="cat-body">
-            <div class="cat-meta">
-              <h3 class="cat-name">Travel</h3>
-              <span class="cat-count">310K articles</span>
-            </div>
-            <p class="cat-desc">Destinations, cultural journals, and global landscape photography.</p>
-          </div>
-          <span class="cat-arrow">→</span>
-        </a>
+            <span class="cat-arrow" aria-hidden="true">→</span>
+          </a>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
        SECTION 2: ALL TOPICS DIRECTORY
+       white bg, badge-pill cloud
   ═══════════════════════════════════════════════ -->
-  <section class="section section--white">
-    <div class="container">
-      <div class="section-header">
-        <h2 class="section-title">All Topics</h2>
-        <p class="section-sub">A comprehensive list of publication categories.</p>
+  <section class="topics-section">
+    <div class="page-container">
+      <div class="sec-header">
+        <h2 class="sec-title">All Topics</h2>
+        <p class="sec-sub">A comprehensive list of publication categories.</p>
       </div>
 
       <div class="topics-cloud">
-        <span class="topic-pill tp--blue">Technology</span>
-        <span class="topic-pill tp--purple">Science</span>
-        <span class="topic-pill tp--teal">Arts & Culture</span>
-        <span class="topic-pill tp--indigo">History</span>
-        <span class="topic-pill tp--amber">Business</span>
-        <span class="topic-pill tp--rose">Travel</span>
-        <span class="topic-pill tp--blue">Food & Drink</span>
-        <span class="topic-pill tp--teal">Health & Wellness</span>
-        <span class="topic-pill tp--purple">Personal Growth</span>
-        <span class="topic-pill tp--indigo">Relationships</span>
-        <span class="topic-pill tp--rose">Environment</span>
-        <span class="topic-pill tp--amber">Philosophy</span>
-        <span class="topic-pill tp--blue">Finance</span>
-        <span class="topic-pill tp--teal">Space</span>
-        <span class="topic-pill tp--purple">Design</span>
-        <span class="topic-pill tp--indigo">Politics</span>
+        {[
+          'Technology', 'Science', 'Arts & Culture', 'History', 'Business', 'Travel',
+          'Food & Drink', 'Health & Wellness', 'Personal Growth', 'Relationships',
+          'Environment', 'Philosophy', 'Finance', 'Space', 'Design', 'Politics'
+        ].map((topic) => (
+          <a href={`/discover#${topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} class="badge-pill topic-cloud-pill">
+            {topic}
+          </a>
+        ))}
       </div>
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 3: DARK CTA
+       SECTION 3: CTA BAND
+       cta-band spec: canvas bg, display-lg, ink pill
   ═══════════════════════════════════════════════ -->
-  <section class="section section--dark">
-    <div class="container container--narrow">
-      <p class="cta-eyebrow">Share your perspective</p>
-      <h2 class="cta-title">Want to contribute?</h2>
-      <p class="cta-body">Share your expertise by writing about topics you are passionate about with a growing audience that cares.</p>
-      <a href="/dashboard/articles/new" class="btn-primary">Write an Article</a>
+  <section class="topics-cta-band">
+    <!-- Atmospheric orbs -->
+    <div class="atm-orb topics-cta-orb-mint"     aria-hidden="true"></div>
+    <div class="atm-orb topics-cta-orb-lavender" aria-hidden="true"></div>
+
+    <div class="page-container topics-cta-inner">
+      <span class="badge-pill cta-eyebrow">Share your perspective</span>
+      <h2 class="cta-headline">Want to contribute?</h2>
+      <p class="cta-body">
+        Share your expertise by writing about topics you are passionate about with a growing audience that cares.
+      </p>
+      <a href="/dashboard/articles/new" class="btn-primary" id="topics-cta-write">Write an Article</a>
     </div>
   </section>
 
 </Layout>
 
 <style>
-/* ════════════════════════════════════════════
-   CONTAINER — sole centering mechanism
-════════════════════════════════════════════ */
-.container {
-  max-width: 1100px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 24px;
-  padding-right: 24px;
-  box-sizing: border-box;
+/* ════════════════════════════════════════════════════════════
+   TOPICS PAGE — ElevenLabs editorial system
+════════════════════════════════════════════════════════════ */
+.topics-section {
+  background: var(--color-surface-card);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
 }
-.container--narrow {
-  max-width: 680px;
+.topics-section--soft {
+  background: var(--color-canvas-soft);
+}
+
+.sec-header {
   text-align: center;
+  margin-bottom: var(--space-xl);
+}
+/* display-lg: EB Garamond 300, 36px */
+.sec-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-xs);
+}
+.sec-sub {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-muted);
 }
 
-/* ════════════════════════════════════════════
-   SECTIONS
-════════════════════════════════════════════ */
-.section {
-  width: 100%;
-  padding: 80px 0;
-  border-bottom: 1px solid #e8e8ed;
-}
-.section--parchment { background: #f5f5f7; }
-.section--white     { background: #ffffff; }
-.section--dark      { background: #0a0a0f; border-bottom: none; }
-
-.section-header {
-  text-align: center;
-  margin-bottom: 48px;
-}
-.section-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: #1d1d1f;
-  line-height: 1.1;
-  margin-bottom: 8px;
-}
-.section-sub { font-size: 15px; color: #6e6e73; }
-
-/* ════════════════════════════════════════════
-   CATEGORIES GRID
-════════════════════════════════════════════ */
+/* ── Categories Grid — white feature-card, hairline, xl radius ── */
 .categories-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: var(--space-md);
 }
-@media (max-width: 768px) { .categories-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 480px) { .categories-grid { grid-template-columns: 1fr; } }
+@media (max-width: 960px) { .categories-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .categories-grid { grid-template-columns: 1fr; } }
 
 .category-card {
-  background: #ffffff;
-  border: 1px solid #e0e0e8;
-  border-radius: 16px;
-  padding: 24px;
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  transition: all 240ms cubic-bezier(0.4,1.3,0.65,1);
+  gap: var(--space-sm);
+  transition: box-shadow var(--duration-200) var(--ease-out), border-color var(--duration-200) var(--ease-out);
 }
 .category-card:hover {
-  border-color: #c0c0c8;
-  transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0,0,0,0.09);
+  border-color: var(--color-hairline-strong);
+  box-shadow: var(--shadow-card-hover);
 }
 
-.cat-icon {
-  font-size: 28px;
-  width: 52px;
-  height: 52px;
-  background: #f5f5f7;
-  border-radius: 12px;
+/* voice-icon-circular style */
+.cat-icon-box {
+  font-size: 20px;
+  width: 44px; height: 44px;
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline-soft);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.cat-body { flex: 1; }
+.cat-body {
+  flex: 1;
+}
 .cat-meta {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-xs);
 }
+/* title-sm: Inter 500 */
 .cat-name {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1d1d1f;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  margin: 0;
 }
-.cat-count {
+.cat-badge {
   font-size: 11px;
-  color: #86868b;
-  font-weight: 600;
 }
 .cat-desc {
-  font-size: 13px;
-  color: #6e6e73;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  margin: 0;
 }
 
 .cat-arrow {
-  font-size: 18px;
-  color: #c0c0c8;
-  transition: all 220ms ease;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-muted-soft);
+  transition: transform var(--duration-150) var(--ease-out), color var(--duration-150) var(--ease-out);
   align-self: flex-end;
+  margin-top: auto;
 }
 .category-card:hover .cat-arrow {
-  color: #0066cc;
+  color: var(--color-ink);
   transform: translateX(4px);
 }
 
-/* ════════════════════════════════════════════
-   TOPICS CLOUD
-════════════════════════════════════════════ */
+/* ── Topics Cloud — badge pills ── */
 .topics-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--space-xs);
   justify-content: center;
+  max-width: 800px;
+  margin: 0 auto;
 }
-.topic-pill {
-  font-size: 14px;
-  font-weight: 700;
-  padding: 10px 20px;
-  border-radius: 9999px;
+.topic-cloud-pill {
+  font-size: var(--fs-body-sm);
+  padding: 8px 20px;
+  text-decoration: none;
+  transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
+  border: 1px solid var(--color-hairline);
   cursor: pointer;
-  transition: all 200ms ease;
-  border: 1.5px solid transparent;
 }
-.tp--blue   { color: #1d4ed8; background: #dbeafe; border-color: #bfdbfe; }
-.tp--purple { color: #6d28d9; background: #ede9fe; border-color: #ddd6fe; }
-.tp--teal   { color: #0f766e; background: #ccfbf1; border-color: #99f6e4; }
-.tp--indigo { color: #3730a3; background: #e0e7ff; border-color: #c7d2fe; }
-.tp--amber  { color: #b45309; background: #fef3c7; border-color: #fde68a; }
-.tp--rose   { color: #be123c; background: #ffe4e6; border-color: #fecdd3; }
-.topic-pill:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.topic-cloud-pill:hover {
+  background: var(--color-hairline-soft);
+  border-color: var(--color-hairline-strong);
+  color: var(--color-ink);
+}
 
-/* ════════════════════════════════════════════
-   DARK CTA
-════════════════════════════════════════════ */
-.cta-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #60a5fa;
-  margin-bottom: 16px;
+/* ── CTA Band ── */
+.topics-cta-band {
+  background: var(--color-canvas);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
+  position: relative;
+  overflow: hidden;
 }
-.cta-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.1;
-  margin-bottom: 16px;
+.topics-cta-orb-mint {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.4) 0%, transparent 70%);
+  top: -80px; left: 10%;
+  pointer-events: none;
+}
+.topics-cta-orb-lavender {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(200, 184, 224, 0.35) 0%, transparent 70%);
+  bottom: -60px; right: 10%;
+  pointer-events: none;
+}
+.topics-cta-inner {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cta-eyebrow {
+  margin-bottom: var(--space-lg);
+}
+/* display-lg: EB Garamond 300, 36px */
+.cta-headline {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-md);
 }
 .cta-body {
-  font-size: 16px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.65;
-  margin-bottom: 36px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  color: var(--color-body);
+  line-height: var(--lh-body);
+  max-width: 500px;
+  margin-bottom: var(--space-xl);
 }
-.btn-primary {
-  display: inline-block;
-  background: #0066cc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  padding: 13px 28px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms ease;
-}
-.btn-primary:hover {
-  background: #0071e3;
-  transform: scale(1.04);
-  box-shadow: 0 8px 24px rgba(0,102,204,0.4);
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .topics-section, .topics-cta-band {
+    padding-top: var(--space-xxl);
+    padding-bottom: var(--space-xxl);
+  }
+  .cta-headline { font-size: var(--fs-display-sm); }
 }
 </style>

@@ -1,12 +1,12 @@
 ---
-// Article detail page
+// Article detail page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 import { getArticleBySlugWithFallback } from '@/lib/supabase';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const articleSlug = slug.join('/');
+const articleSlug = typeof slug === 'string' ? slug : (Array.isArray(slug) ? slug.join('/') : '');
 const articleRaw = await getArticleBySlugWithFallback(articleSlug);
 
 if (!articleRaw) {
@@ -24,224 +24,438 @@ const article = {
   coverImage: articleRaw.cover_image_url,
   body: articleRaw.content
 };
+
+const authorInitial = article.author.name.charAt(0).toUpperCase();
 ---
 
-<Layout title={`${article.title} - Carcblog`} description={article.excerpt}>
-  <div class="min-h-[calc(100vh-var(--header-height))] flex flex-col">
-    {/* Article Header */}
-    <header class="article-header text-center mb-8 pb-6 border-b border-border">
-      <div class="article-meta flex flex-col items-center space-x-3 space-y-2">
-        <div class="article-author flex items-center space-x-3">
+<Layout title={`${article.title} — Carcblog`} description={article.excerpt}>
+
+  <!-- Reading progress bar — ink-colored thin line -->
+  <div class="reading-progress-bar" aria-hidden="true">
+    <div class="reading-progress-fill" id="progressBar"></div>
+  </div>
+
+  <div class="article-page">
+    <div class="page-container">
+      <div class="article-glass-column">
+
+        <!-- ── Article Header ── -->
+        <header class="article-header">
+
+        <!-- Author row: voice-icon-circular + Inter 500 name + caption date -->
+        <div class="article-meta">
+          <div class="author-row">
+            {article.author.image ? (
+              <img
+                src={article.author.image}
+                alt={article.author.name}
+                class="author-avatar"
+              />
+            ) : (
+              <div class="author-avatar-fallback" aria-hidden="true">
+                {authorInitial}
+              </div>
+            )}
+            <div class="author-info">
+              <span class="author-name">{article.author.name}</span>
+              <span class="author-title">Carcblog Contributor</span>
+            </div>
+          </div>
+          <time class="publish-date" datetime={article.publishedAt}>
+            {new Date(article.publishedAt).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })} · 5 min read
+          </time>
+        </div>
+
+        <!-- Headline: display-xl, EB Garamond 300, 48px, -0.96px tracking, ink -->
+        <h1 class="article-title">{article.title}</h1>
+
+        <!-- Cover image: xl radius -->
+        {article.coverImage && (
+          <div class="article-cover-wrap">
+            <img
+              src={article.coverImage}
+              alt={article.title}
+              class="article-cover"
+              loading="eager"
+            />
+          </div>
+        )}
+      </header>
+
+      <!-- ── Article Body — 680px reading column ── -->
+      <article class="article-body reading-col">
+        {article.body ? (
+          <div class="prose" set:html={article.body.replace(/\n/g, '<br/>')} />
+        ) : (
+          <p class="article-empty">Article content loading…</p>
+        )}
+      </article>
+
+      <!-- ── Author card at bottom ── -->
+      <footer class="article-footer reading-col">
+        <div class="author-card">
           {article.author.image ? (
             <img
               src={article.author.image}
               alt={article.author.name}
-              class="author-avatar h-8 w-8 rounded-full object-cover"
+              class="author-card-avatar"
             />
           ) : (
-            <div class="author-avatar flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-medium text-xs">
-              {article.author.name.charAt(0).toUpperCase()}
+            <div class="author-card-avatar-fallback">
+              {authorInitial}
             </div>
           )}
-          <div class="author-info text-left">
-            <div class="author-name font-semibold text-foreground">{article.author.name}</div>
-            <div class="author-title text-xs text-foreground-muted">CarcBlog Contributor</div>
+          <div class="author-card-info">
+            <span class="author-card-name">{article.author.name}</span>
+            <span class="author-card-role">Carcblog Contributor</span>
           </div>
         </div>
-        <div class="publish-date text-sm text-foreground-muted">
-          {new Date(article.publishedAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          })} • 5 min read
-        </div>
-      </div>
-      <h1 class="article-title font-serif text-5xl font-bold text-foreground mb-4 leading-tight">
-        {article.title}
-      </h1>
-      {article.coverImage && (
-        <div class="relative">
-          <img
-            src={article.coverImage}
-            alt={article.title}
-            class="article-image w-full h-64 object-cover rounded-lg shadow-lg"
-            loading="lazy"
-          />
-        </div>
-      )}
-    </header>
+      </footer>
 
-    <!-- Reading Progress Bar -->
-    <div class="reading-progress h-0.5 bg-background-muted rounded-full overflow-hidden my-4">
-      <div class="reading-progress-fill h-full bg-accent-2 transition-all duration-100" id="progressBar"></div>
+      </div><!-- /.article-glass-column -->
     </div>
-
-    <!-- Article Content -->
-    <article class="article-content prose prose-lg max-w-none">
-      {article.body ? (
-        <p>{article.body}</p>
-      ) : (
-        <p class="text-foreground-muted">Article content loading...</p>
-      )}
-    </article>
-
-    {article.author.bio && (
-      <!-- Author Bio -->
-      <section class="author-bio flex items-start mt-8 pt-6 border-t border-border">
-        {article.author.image ? (
-          <img
-            src={article.author.image}
-            alt={article.author.name}
-            class="author-bio-avatar h-10 w-10 rounded-full object-cover"
-          />
-        ) : (
-          <div class="author-bio-avatar flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-xs">
-            {article.author.name.charAt(0).toUpperCase()}
-          </div>
-        )}
-        <div class="author-bio-content ml-4 flex-1">
-          <h3 class="author-bio-name font-semibold text-foreground text-lg">{article.author.name}</h3>
-          <div class="author-bio-title text-sm text-foreground-muted mb-2">Contributor</div>
-          <p class="author-bio-description text-sm text-foreground-muted">{article.author.bio}</p>
-        </div>
-      </section>
-    )}
   </div>
 
-  <script>
-    // Update reading progress bar
-    const progressBar = document.getElementById('progressBar');
-    if (progressBar) {
-      window.addEventListener('scroll', () => {
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight - windowHeight;
-        const scrolled = window.scrollY;
-        const progress = documentHeight > 0 ? (scrolled / documentHeight) * 100 : 0;
-        progressBar.style.width = `${progress}%`;
-      });
-    }
-  </script>
 </Layout>
 
+<script>
+  const progressBar = document.getElementById('progressBar');
+  if (progressBar) {
+    window.addEventListener('scroll', () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight - windowHeight;
+      const scrolled = window.scrollY;
+      const progress = documentHeight > 0 ? (scrolled / documentHeight) * 100 : 0;
+      progressBar.style.width = `${Math.min(progress, 100)}%`;
+    }, { passive: true });
+  }
+</script>
+
 <style>
-  /* Prose classes for article content - customize to match design system */
-  .prose {
-    color: var(--color-foreground);
-    max-width: none;
-  }
+/* ── Reading progress bar — 2px ink-colored line ── */
+.reading-progress-bar {
+  position: fixed;
+  top: var(--h-nav);                       /* sits below the 64px nav */
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-hairline);
+  z-index: 999;
+}
+.reading-progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--color-ink);
+  transition: width 100ms linear;
+}
 
-  .prose p {
-    margin-bottom: var(--space-5);
-    font-size: var(--font-size-3);
-    line-height: var(--leading-relaxed);
-  }
+/* ── Article page layout ── */
+.article-page {
+  background: transparent;
+  min-height: calc(100vh - var(--h-nav));
+  padding: var(--space-section) 0;
+}
 
-  .prose strong {
-    color: var(--color-foreground);
-    font-weight: var(--font-weight-semibold);
-  }
+/* ── Article header ── */
+.article-header {
+  max-width: 720px;                         /* Aligned to reading-col max-width */
+  margin: 0 auto;
+  margin-bottom: var(--space-xl);
+}
 
-  .prose a {
-    color: var(--color-primary);
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    transition: color var(--duration-200) var(--ease-in-out);
-  }
+/* Author meta row */
+.article-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);          /* 32px before headline */
+}
+.author-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+/* voice-icon-circular: surface-strong, full radius */
+.author-avatar {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--color-hairline);
+  flex-shrink: 0;
+}
+.author-avatar-fallback {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+.author-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.author-name {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-body-strong);
+  line-height: 1.3;
+}
+.author-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-regular);
+  color: var(--color-muted);
+}
 
-  .prose a:hover {
-    color: var(--color-primary-hover);
-  }
+/* caption-uppercase: date */
+.publish-date {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-regular);
+  color: var(--color-muted);
+  letter-spacing: var(--ls-body-sm);
+}
 
-  .prose h1,
-  .prose h2,
-  .prose h3,
-  .prose h4,
-  .prose h5,
-  .prose h6 {
-    color: var(--color-foreground);
-    font-family: var(--font-serif);
-    font-weight: var(--font-weight-semibold);
-    margin-top: var(--space-6);
-    margin-bottom: var(--space-4);
-    line-height: var(--leading-tight);
-  }
+/* ── Headline: display-xl spec: EB Garamond 300, 48px ── */
+.article-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-xl);          /* 48px */
+  font-weight: var(--fw-light);             /* 300 — NEVER bold */
+  line-height: var(--lh-display-xl);        /* 1.08 */
+  letter-spacing: var(--ls-display-xl);     /* -0.02em ≈ -0.96px */
+  color: var(--color-ink);
+  margin-bottom: var(--space-xl);
+}
 
-  .prose h1 {
-    font-size: var(--font-size-7);
-  }
+/* Cover image */
+.article-cover-wrap {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--color-hairline);
+}
+.article-cover {
+  width: 100%;
+  display: block;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
 
-  .prose h2 {
-    font-size: var(--font-size-6);
-  }
+/* ── Article body — reading-col 720px max ── */
+.article-body {
+  padding-bottom: var(--space-xxl);
+}
+.article-empty {
+  color: var(--color-muted);
+  font-style: italic;
+}
 
-  .prose h3 {
-    font-size: var(--font-size-5);
-  }
+/* ── Prose styles — editorial body typography ── */
+/* body-md spec: Inter 400, 16px, lh 1.65, +0.16px tracking */
+.prose {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);             /* 16px */
+  font-weight: var(--fw-regular);
+  line-height: 1.65;                        /* Increased to 1.65 for readability */
+  letter-spacing: var(--ls-body);           /* +0.16px */
+  color: var(--color-body);
+}
 
-  .prose h4 {
-    font-size: var(--font-size-4);
-  }
+.prose p {
+  margin-bottom: 1.75rem;                   /* Increased to 1.75rem (28px, >1.5x font-size) */
+  color: var(--color-body);
+}
 
-  .prose h5 {
-    font-size: var(--font-size-3);
-  }
+.prose strong {
+  font-weight: var(--fw-medium);
+  color: var(--color-body-strong);
+}
 
-  .prose h6 {
-    font-size: var(--font-size-2);
-  }
+.prose em { font-style: italic; }
 
-  .prose blockquote {
-    border-left-width: var(--border-3);
-    border-left-color: var(--color-primary);
-    padding-left: var(--space-4);
-    margin-top: var(--space-6);
-    margin-bottom: var(--space-6);
-    font-style: italic;
-    color: var(--color-foreground-muted);
-  }
+/* Links — ink, subtle underline */
+.prose a {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-hairline-strong);
+  text-underline-offset: 3px;
+  transition: text-decoration-color var(--duration-150) var(--ease-out);
+}
+.prose a:hover {
+  text-decoration-color: var(--color-ink);
+  opacity: 1;
+}
 
-  .prose pre {
-    background-color: var(--color-background-muted);
-    border-radius: var(--radius-md);
-    padding: var(--space-4);
-    overflow-x: auto;
-  }
+/* Headings in body — EB Garamond 300 at display-sm/display-md sizes */
+.prose h2 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-md);          /* 32px */
+  font-weight: var(--fw-light);
+  line-height: var(--lh-display-md);
+  letter-spacing: var(--ls-display-md);
+  color: var(--color-ink);
+  margin-top: var(--space-xxl);             /* 48px */
+  margin-bottom: var(--space-md);
+}
+.prose h3 {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-sm);          /* 24px — display-sm */
+  font-weight: var(--fw-light);
+  line-height: var(--lh-display-sm);
+  color: var(--color-ink);
+  margin-top: var(--space-xl);
+  margin-bottom: var(--space-sm);
+}
+.prose h4 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-md);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-xs);
+}
 
-  .prose code {
-    background-color: var(--color-background-muted);
-    padding: 0.2em 0.4em;
-    border-radius: var(--radius-xs);
-    font-size: 0.9em;
-  }
+/* Blockquote — display-sm pull quote style */
+.prose blockquote {
+  border-left: 2px solid var(--color-hairline-strong);
+  padding-left: var(--space-lg);
+  margin: var(--space-xl) 0;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-sm);          /* 24px — display-sm spec for pull quotes */
+  font-weight: var(--fw-light);
+  line-height: var(--lh-display-sm);
+  color: var(--color-body-strong);
+  font-style: italic;
+}
+.prose blockquote p { margin-bottom: 0; color: inherit; }
 
-  .prose pre code {
-    background-color: transparent;
-    padding: 0;
-    border-radius: 0;
-    font-size: inherit;
-  }
+/* Code — surface-strong bg */
+.prose pre {
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  overflow-x: auto;
+  margin: var(--space-xl) 0;
+}
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-surface-strong);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  color: var(--color-body-strong);
+}
+.prose pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  color: var(--color-body-strong);
+}
 
-  .prose ul,
-  .prose ol {
-    margin-top: var(--space-4);
-    margin-bottom: var(--space-4);
-    padding-left: var(--space-5);
-  }
+/* Lists */
+.prose ul, .prose ol {
+  margin: var(--space-md) 0;
+  padding-left: var(--space-lg);
+  color: var(--color-body);
+}
+.prose li { margin-bottom: var(--space-xs); }
 
-  .prose li {
-    margin-bottom: var(--space-2);
-  }
+/* HR — hairline divider */
+.prose hr {
+  border: none;
+  border-top: 1px solid var(--color-hairline);
+  margin: var(--space-xxl) 0;
+}
 
-  .prose li > ul,
-  .prose li > ol {
-    margin-top: var(--space-3);
-    margin-bottom: var(--space-3);
-  }
+/* ── Author card at bottom ── */
+.article-footer {
+  border-top: 1px solid var(--color-hairline);
+  padding-top: var(--space-xl);
+}
+.author-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.author-card-avatar {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 1px solid var(--color-hairline);
+  flex-shrink: 0;
+}
+.author-card-avatar-fallback {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-strong);
+  border: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-ink);
+  flex-shrink: 0;
+}
+.author-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.author-card-name {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-body-strong);
+}
+.author-card-role {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  color: var(--color-muted);
+}
 
-  .prose hr {
-    border-top-width: var(--border-1);
-    border-top-color: var(--color-border-muted);
-    margin-top: var(--space-8);
-    margin-bottom: var(--space-8);
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .article-title {
+    font-size: var(--fs-display-md);        /* 32px on mobile */
+    letter-spacing: var(--ls-display-md);
   }
+  .article-page { padding: var(--space-xxl) 0; }
+  .article-meta { flex-direction: column; align-items: flex-start; }
+}
+.article-glass-column {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: var(--space-xxl) var(--space-xl);
+  background: rgba(245, 245, 245, 0.65);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 48px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-xxl);
+}
+@media (max-width: 768px) {
+  .article-glass-column {
+    padding: var(--space-lg) var(--space-sm);
+    border-radius: var(--radius-xl);
+    background: rgba(245, 245, 245, 0.82);
+  }
+}
 </style>

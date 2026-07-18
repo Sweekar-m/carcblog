@@ -1,5 +1,5 @@
 ---
-// Home page
+// Home page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 import { getPublishedArticlesWithFallback } from '@/lib/supabase';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
@@ -18,111 +18,94 @@ const heroArticle = articleData[0] || null;
 const gridArticles = articleData.slice(1);
 ---
 
-<Layout title="Carcblog — AI-Native Publishing" description="Discover thoughtful writing from insightful writers on Carcblog">
+<Layout title="Carcblog — Where Startup Ideas Go Public" description="Discover insightful writing on startups, founders, funding, and innovation on Carcblog — the editorial platform for the startup ecosystem.">
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 1: HERO — Full-bleed dark gradient
+       SECTION 1: HERO BAND
+       hero-band spec: canvas bg, display-mega, atmospheric orbs, two CTAs
   ═══════════════════════════════════════════════ -->
-  <section class="hero-section">
-    <!-- Background orbs / glow -->
-    <div class="hero-orb hero-orb-1"></div>
-    <div class="hero-orb hero-orb-2"></div>
-    <div class="hero-orb hero-orb-3"></div>
+  <section class="hero-band" id="hero">
+    <!-- Atmospheric gradient orbs — decoration ONLY, never content containers -->
+    <div class="atm-orb hero-orb-mint"   aria-hidden="true"></div>
+    <div class="atm-orb hero-orb-peach"  aria-hidden="true"></div>
+    <div class="atm-orb hero-orb-lavender" aria-hidden="true"></div>
 
     <div class="hero-inner">
-      <!-- Eyebrow pill -->
+      <!-- Eyebrow label -->
       <div class="hero-eyebrow">
-        <span class="eyebrow-dot"></span>
-        AI-Native Publishing Platform
+        <span class="badge-pill">Startup Media</span>
       </div>
 
-      <!-- Main headline -->
+      <!-- Main headline — display-mega: EB Garamond 300, 64px, ink -->
       <h1 class="hero-headline">
-        Where Great<br/>
-        <span class="headline-gradient">Ideas Go Public</span>
+        Where great startup<br />
+        ideas go public.
       </h1>
 
-      <!-- Sub -->
+      <!-- Sub — body-md: Inter 400, body color -->
       <p class="hero-sub">
-        Carcblog is the writer's canvas — a distraction-free publishing environment 
-        built for people who believe words still matter.
+        News, founder stories, funding updates, and product launches —
+        curated for the people building what's next.
       </p>
 
-      <!-- CTA Row -->
+      <!-- CTA row: ink pill primary + outline secondary -->
       <div class="hero-cta-row">
-        <a href="/dashboard/articles/new" class="cta-primary">
-          Start Writing Free
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <a href="/discover" class="btn-primary" id="hero-explore-cta">
+          Explore stories
         </a>
-        <a href="/discover" class="cta-ghost">Explore Stories</a>
+        <a href="/auth/sign-up" class="btn-outline" id="hero-join-cta">
+          Join as a writer
+        </a>
       </div>
 
-      <!-- Social proof numbers -->
+      <!-- Social proof — Inter 500 numbers, caption-uppercase labels -->
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-num">12K+</span>
           <span class="stat-label">Writers</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
           <span class="stat-num">84K+</span>
           <span class="stat-label">Articles Published</span>
         </div>
-        <div class="stat-divider"></div>
+        <div class="stat-divider" aria-hidden="true"></div>
         <div class="stat-item">
           <span class="stat-num">2.4M</span>
           <span class="stat-label">Monthly Readers</span>
         </div>
       </div>
     </div>
-
-    <!-- Hero visual — editor mockup card -->
-    <div class="hero-visual-wrapper">
-      <div class="hero-visual-card">
-        <div class="visual-chrome">
-          <div class="chrome-dots">
-            <span class="cdot cdot-red"></span>
-            <span class="cdot cdot-yellow"></span>
-            <span class="cdot cdot-green"></span>
-          </div>
-          <span class="chrome-title">Carcblog Editor</span>
-        </div>
-        <div class="visual-body">
-          <div class="v-line v-line-title"></div>
-          <div class="v-line v-line-lg"></div>
-          <div class="v-line v-line-md"></div>
-          <div class="v-line v-line-sm"></div>
-          <div class="v-line v-line-md" style="width:72%"></div>
-          <div class="v-line v-line-sm" style="width:55%"></div>
-          <div class="ai-chip">
-            <span class="ai-chip-icon">✦</span>
-            <span><strong>AI:</strong> Suggested headline is 18% more engaging — apply?</span>
-            <button class="ai-chip-btn">Apply</button>
-          </div>
-        </div>
-      </div>
-      <!-- card shadow ground -->
-      <div class="card-shadow"></div>
-    </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
        SECTION 2: FEATURED ARTICLE SPOTLIGHT
+       feature-card spec: white surface, hairline, xl radius
   ═══════════════════════════════════════════════ -->
   {heroArticle && (
     <section class="spotlight-section">
-      <div class="section-container">
-        <div class="section-label">Featured Story</div>
-        <a href={`/article/${heroArticle.slug.current}`} class="spotlight-card">
+      <div class="page-container">
+        <div class="section-header">
+          <span class="badge-pill" aria-label="Section: Featured Story">Featured Story</span>
+        </div>
+        <a href={`/article/${heroArticle.slug.current ?? heroArticle.slug}`} class="spotlight-card reveal-single" aria-label={`Read featured article: ${heroArticle.title}`}>
           <div class="spotlight-image-col">
             {heroArticle.coverImage ? (
-              <img src={heroArticle.coverImage} alt={heroArticle.title} class="spotlight-img" loading="eager" />
+              <img
+                src={heroArticle.coverImage}
+                alt={heroArticle.title}
+                class="spotlight-img"
+                loading="eager"
+              />
             ) : (
-              <div class="spotlight-img-placeholder"></div>
+              <div class="spotlight-img-placeholder">
+                <div class="atm-orb placeholder-orb-mint" aria-hidden="true"></div>
+                <div class="atm-orb placeholder-orb-peach" aria-hidden="true"></div>
+              </div>
             )}
           </div>
           <div class="spotlight-content-col">
-            <time class="spotlight-date">
+            <time class="spotlight-date" datetime={heroArticle.publishedAt}>
               {new Date(heroArticle.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
             </time>
             <h2 class="spotlight-title">{heroArticle.title}</h2>
@@ -131,12 +114,12 @@ const gridArticles = articleData.slice(1);
             )}
             <div class="spotlight-footer">
               <div class="spotlight-author">
-                {heroArticle.author.image && (
-                  <img src={heroArticle.author.image} alt={heroArticle.author.name} class="author-avatar" />
+                {heroArticle.authorImage && (
+                  <img src={heroArticle.authorImage} alt={heroArticle.authorName} class="author-avatar" />
                 )}
-                <span class="author-name">{heroArticle.author.name}</span>
+                <span class="author-name">{heroArticle.authorName}</span>
               </div>
-              <span class="spotlight-cta">Read story →</span>
+              <span class="spotlight-read-label">Read story</span>
             </div>
           </div>
         </a>
@@ -146,226 +129,214 @@ const gridArticles = articleData.slice(1);
 
   <!-- ═══════════════════════════════════════════════
        SECTION 3: MORE STORIES GRID
+       3-up → 2-up → 1-up feature-card grid
   ═══════════════════════════════════════════════ -->
   <section class="grid-section">
-    <div class="section-container">
+    <div class="page-container">
       <div class="grid-header">
         <h2 class="grid-title">
           {heroArticle ? 'More Stories' : 'Featured Stories'}
         </h2>
-        <a href="/feed" class="grid-view-all">View all →</a>
+        <a href="/feed" class="grid-view-all btn-outline" id="homepage-view-all">View all</a>
       </div>
 
-      {(heroArticle ? gridArticles : featuredArticles).length > 0 ? (
-        <div class="articles-grid">
-          {(heroArticle ? gridArticles : featuredArticles).map((article) => (
+      {(heroArticle ? gridArticles : articleData).length > 0 ? (
+        <div class="articles-grid reveal-grid">
+          {(heroArticle ? gridArticles : articleData).map((article) => (
             <ArticleCard
               title={article.title}
               excerpt={article.excerpt}
               publishedAt={article.publishedAt}
-              authorName={article.author.name}
-              authorImage={article.author.image}
-              slug={article.slug.current}
+              authorName={article.authorName}
+              authorImage={article.authorImage}
+              slug={article.slug}
               coverImage={article.coverImage}
             />
           ))}
         </div>
       ) : (
-        <div class="empty-state-box">
-          <p class="empty-eyebrow">Nothing yet</p>
+        <div class="empty-state reveal-single" role="status">
+          <!-- Atmospheric orb for empty state -->
+          <div class="empty-orb-mint" aria-hidden="true"></div>
+          <p class="badge-pill empty-eyebrow">Nothing yet</p>
           <h3 class="empty-title">Be the first to publish</h3>
-          <p class="empty-body">Your story starts here. Create your first article and join a community of thoughtful writers.</p>
-          <a href="/dashboard/articles/new" class="cta-primary inline-cta">Write your first story →</a>
+          <p class="empty-body">
+            Your story starts here. Create your first article and join a community of thoughtful writers.
+          </p>
+          <a href="/dashboard/articles/new" class="btn-primary" id="empty-state-write-cta">
+            Write your first story
+          </a>
         </div>
       )}
     </div>
   </section>
 
   <!-- ═══════════════════════════════════════════════
-       SECTION 4: NEWSLETTER / CTA
+       SECTION 4: CTA BAND
+       cta-band spec: canvas bg, display-lg headline, ink pill, 96px padding
   ═══════════════════════════════════════════════ -->
-  <section class="cta-section">
-    <div class="cta-orb cta-orb-1"></div>
-    <div class="cta-orb cta-orb-2"></div>
-    <div class="cta-content">
-      <p class="cta-eyebrow">Join 12,000 writers</p>
-      <h2 class="cta-headline">Your ideas deserve<br/>a better home.</h2>
+  <section class="cta-band">
+    <!-- Atmospheric orbs — decoration behind copy -->
+    <div class="atm-orb cta-orb-lavender" aria-hidden="true"></div>
+    <div class="atm-orb cta-orb-sky"      aria-hidden="true"></div>
+
+    <div class="cta-band-inner reveal-single">
+      <p class="badge-pill cta-eyebrow">Join 12,000 writers</p>
+      <h2 class="cta-headline">
+        Your ideas deserve<br />a better home.
+      </h2>
       <p class="cta-body">
-        Get early access to writing tools, editorial insights, and a community of people who take their craft seriously.
+        Get early access to writing tools, editorial insights, and a community
+        of people who take their craft seriously.
       </p>
       <div class="cta-actions">
-        <a href="/sign-up" class="cta-primary cta-primary--large">Start Publishing Free</a>
-        <a href="/about" class="cta-ghost cta-ghost--dark">Learn more</a>
+        <a href="/auth/sign-up" class="btn-primary" id="cta-band-signup">Start publishing free</a>
+        <a href="/about" class="btn-outline" id="cta-band-learn">Learn more</a>
       </div>
     </div>
   </section>
 
+  <!-- Homepage motion controls -->
+  <script>
+    import { animate } from 'motion';
+
+    const triggerHeroAnimations = () => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      const headline = document.querySelector('.hero-headline');
+      const sub = document.querySelector('.hero-sub');
+      const ctas = document.querySelector('.hero-cta-row');
+      const stats = document.querySelector('.hero-stats');
+
+      if (headline && sub && ctas && stats) {
+        animate(
+          headline,
+          { opacity: [0, 1], y: [16, 0] },
+          { duration: 0.5, ease: 'ease-out' }
+        );
+        animate(
+          sub,
+          { opacity: [0, 1], y: [16, 0] },
+          { duration: 0.5, delay: 0.1, ease: 'ease-out' }
+        );
+        animate(
+          ctas,
+          { opacity: [0, 1], y: [16, 0] },
+          { duration: 0.5, delay: 0.2, ease: 'ease-out' }
+        );
+        animate(
+          stats,
+          { opacity: [0, 1], y: [16, 0] },
+          { duration: 0.5, delay: 0.3, ease: 'ease-out' }
+        );
+      }
+    };
+
+    document.addEventListener('astro:page-load', triggerHeroAnimations);
+  </script>
+
 </Layout>
 
 <style>
-/* ════════════════════════════════════════════
-   HERO SECTION
-════════════════════════════════════════════ */
-.hero-section {
-  background: #0a0a0f;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120px 24px 80px;
+/* ════════════════════════════════════════════════════════════
+   HERO BAND — hero-band spec
+   canvas #f5f5f5, display-mega, atmospheric orbs, 96px padding
+════════════════════════════════════════════════════════════ */
+.hero-band {
+  background: transparent;
+  padding: var(--space-section) var(--space-lg);
   position: relative;
   overflow: hidden;
   text-align: center;
+  border-bottom: 1px solid var(--color-hairline);
 }
 
-/* Glowing orbs in background */
-.hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  pointer-events: none;
-}
-.hero-orb-1 {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(0,102,204,0.35) 0%, transparent 70%);
-  top: -150px; left: 50%;
+/* Atmospheric orbs — pastel radial blooms, pure decoration */
+.hero-orb-mint {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.45) 0%, transparent 70%);
+  top: -120px; left: 50%;
   transform: translateX(-50%);
 }
-.hero-orb-2 {
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(124,58,237,0.2) 0%, transparent 70%);
-  bottom: 100px; right: 10%;
+.hero-orb-peach {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(244, 197, 168, 0.35) 0%, transparent 70%);
+  bottom: -40px; right: -60px;
 }
-.hero-orb-3 {
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
-  bottom: 0; left: 5%;
+.hero-orb-lavender {
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, rgba(200, 184, 224, 0.3) 0%, transparent 70%);
+  bottom: 20px; left: -40px;
 }
 
 .hero-inner {
   position: relative;
   z-index: 2;
   max-width: 760px;
-  width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  background: rgba(245, 245, 245, 0.65);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+  border-radius: var(--radius-xxl);
+  padding: var(--space-xxl) var(--space-xl);
+}
+@media (max-width: 768px) {
+  .hero-inner {
+    padding: var(--space-xl) var(--space-sm);
+    border-radius: var(--radius-xl);
+    background: rgba(245, 245, 245, 0.82);
+  }
 }
 
-/* Eyebrow pill */
 .hero-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.7);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  margin-bottom: 32px;
-}
-.eyebrow-dot {
-  width: 6px; height: 6px;
-  background: #0ea5e9;
-  border-radius: 50%;
-  animation: pulse-dot 2s ease infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+  margin-bottom: var(--space-xl);
 }
 
-/* Main headline */
+/* display-mega spec: EB Garamond 300, 64px, lh 1.05, ls -1.92px, ink */
 .hero-headline {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(3rem, 7vw, 5.5rem);
-  font-weight: 700;
-  line-height: 1.05;
-  color: #ffffff;
-  margin-bottom: 24px;
-  letter-spacing: -0.02em;
-}
-.headline-gradient {
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #34d399 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-mega);        /* 64px */
+  font-weight: var(--fw-light);             /* 300 — NEVER bold */
+  line-height: var(--lh-display-mega);      /* 1.05 */
+  letter-spacing: var(--ls-display-mega);   /* -0.12em ≈ -1.92px */
+  color: var(--color-ink);
+  margin-bottom: var(--space-lg);           /* 24px */
+  max-width: 720px;
 }
 
-/* Subheadline */
+/* body-md spec: Inter 400, 16px, lh 1.5, ls +0.16px, body color */
 .hero-sub {
-  font-size: 18px;
-  line-height: 1.6;
-  color: rgba(255,255,255,0.55);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--color-body);
   max-width: 520px;
-  margin-bottom: 40px;
+  margin-bottom: var(--space-xl);           /* 32px */
 }
 
-/* CTA row */
+/* CTA row: ink pill + outline secondary, 40px height */
 .hero-cta-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 56px;
+  gap: var(--space-sm);                     /* 12px */
+  margin-bottom: var(--space-xxl);          /* 48px */
   flex-wrap: wrap;
 }
 
-.cta-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #0066cc;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 13px 24px;
-  border-radius: 9999px;
-  text-decoration: none;
-  transition: all 220ms cubic-bezier(0.4,1.3,0.65,1);
-  white-space: nowrap;
-}
-.cta-primary:hover {
-  background: #0071e3;
-  transform: scale(1.03);
-  box-shadow: 0 8px 24px rgba(0,102,204,0.4);
-}
-.cta-primary:active { transform: scale(0.97); }
-
-.cta-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.10);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 9999px;
-  border: 1.5px solid rgba(255,255,255,0.28);
-  text-decoration: none;
-  transition: all 220ms ease;
-  white-space: nowrap;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-.cta-ghost:hover {
-  background: rgba(255,255,255,0.18);
-  border-color: rgba(255,255,255,0.4);
-  transform: scale(1.02);
-}
-
-/* Stats row */
+/* Stats — Inter numbers, caption-uppercase labels */
 .hero-stats {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
+  gap: var(--space-xl);                     /* 32px */
   flex-wrap: wrap;
 }
 .stat-item {
@@ -375,219 +346,131 @@ const gridArticles = articleData.slice(1);
   gap: 2px;
 }
 .stat-num {
-  font-size: 22px;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-md);            /* 20px */
+  font-weight: var(--fw-medium);            /* 500 */
+  color: var(--color-ink);
+  line-height: var(--lh-title-md);
 }
 .stat-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption-upper);       /* 12px */
+  font-weight: var(--fw-semibold);          /* 600 */
+  letter-spacing: var(--ls-caption-upper);  /* 0.08em */
   text-transform: uppercase;
+  color: var(--color-muted);
 }
 .stat-divider {
   width: 1px;
   height: 32px;
-  background: rgba(255,255,255,0.12);
+  background: var(--color-hairline);
 }
 
-/* Hero editor mockup */
-.hero-visual-wrapper {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 680px;
-  margin-top: 64px;
-}
-.hero-visual-card {
-  background: #14141a;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.05),
-    0 40px 80px rgba(0,0,0,0.6),
-    0 0 60px rgba(0,102,204,0.15);
-}
-.visual-chrome {
-  height: 36px;
-  background: #1a1a24;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  gap: 10px;
-}
-.chrome-dots {
-  display: flex;
-  gap: 6px;
-}
-.cdot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-}
-.cdot-red { background: #ff5f57; }
-.cdot-yellow { background: #febc2e; }
-.cdot-green { background: #28c840; }
-.chrome-title {
-  font-size: 11px;
-  color: rgba(255,255,255,0.3);
-  margin-left: auto;
-  margin-right: auto;
-  letter-spacing: 0.02em;
-}
-.visual-body {
-  padding: 28px 32px 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.v-line {
-  height: 10px;
-  border-radius: 6px;
-  background: rgba(255,255,255,0.08);
-}
-.v-line-title {
-  height: 18px;
-  width: 65%;
-  background: rgba(255,255,255,0.14);
-  margin-bottom: 4px;
-}
-.v-line-lg { width: 90%; }
-.v-line-md { width: 78%; }
-.v-line-sm { width: 45%; }
-
-.ai-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: rgba(99,102,241,0.12);
-  border: 1px solid rgba(99,102,241,0.25);
-  border-radius: 8px;
-  padding: 10px 14px;
-  margin-top: 12px;
-  font-size: 12px;
-  color: rgba(255,255,255,0.75);
-}
-.ai-chip-icon {
-  color: #a78bfa;
-  font-size: 14px;
-}
-.ai-chip-btn {
-  margin-left: auto;
-  background: #6366f1;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.card-shadow {
-  height: 24px;
-  margin: 0 32px;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%);
-}
-
-/* ════════════════════════════════════════════
-   SHARED SECTION UTILS
-════════════════════════════════════════════ */
-.section-container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.section-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #0066cc;
-  margin-bottom: 20px;
-}
-
-/* ════════════════════════════════════════════
-   SECTION 2: SPOTLIGHT
-════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   SPOTLIGHT SECTION
+   feature-card: white, hairline, xl radius
+════════════════════════════════════════════════════════════ */
 .spotlight-section {
-  background: #f5f5f7;
-  padding: 80px 0;
-  border-bottom: 1px solid #e8e8ed;
+  background: rgba(250, 250, 250, 0.45);
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.section-header {
+  margin-bottom: var(--space-lg);           /* 24px */
 }
 
 .spotlight-card {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  background: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 20px;
+  gap: 0;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   text-decoration: none;
-  transition: all 250ms cubic-bezier(0.4,1.3,0.65,1);
+  transition: box-shadow var(--duration-200) var(--ease-out);
 }
 .spotlight-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-  border-color: #c0c0c0;
+  box-shadow: var(--shadow-card-hover);
 }
 @media (max-width: 768px) {
-  .spotlight-card { grid-template-columns: 1fr; gap: 0; }
+  .spotlight-card { grid-template-columns: 1fr; }
 }
 
 .spotlight-image-col {
   aspect-ratio: 4/3;
   overflow: hidden;
-  background: #f5f5f7;
+  background: var(--color-surface-strong);
+  position: relative;
 }
 .spotlight-img {
   width: 100%; height: 100%;
   object-fit: cover;
-  transition: transform 400ms ease;
+  display: block;
+  transition: transform 400ms var(--ease-out);
 }
-.spotlight-card:hover .spotlight-img { transform: scale(1.04); }
+.spotlight-card:hover .spotlight-img { transform: scale(1.03); }
 .spotlight-img-placeholder {
   width: 100%; height: 100%;
-  background: linear-gradient(135deg, #e8e8ed 0%, #d0d0d8 100%);
+  background: var(--color-canvas-soft);
+  position: relative;
+  overflow: hidden;
+}
+.placeholder-orb-mint {
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.5) 0%, transparent 70%);
+  top: -40px; left: -40px;
+}
+.placeholder-orb-peach {
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(244, 197, 168, 0.4) 0%, transparent 70%);
+  bottom: -30px; right: -30px;
 }
 
 .spotlight-content-col {
-  padding: 40px 40px 40px 0;
+  padding: var(--space-xl);                 /* 32px */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 @media (max-width: 768px) {
-  .spotlight-content-col { padding: 28px; }
+  .spotlight-content-col { padding: var(--space-lg); }
 }
 
+/* caption-uppercase */
 .spotlight-date {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption-upper);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--ls-caption-upper);
   text-transform: uppercase;
-  color: #86868b;
-  margin-bottom: 12px;
+  color: var(--color-muted);
+  margin-bottom: var(--space-sm);
   display: block;
 }
+
+/* display-lg: EB Garamond 300, 36px */
 .spotlight-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 700;
-  color: #1d1d1f;
-  line-height: 1.15;
-  margin-bottom: 16px;
+  font-family: var(--font-serif);
+  font-size: clamp(var(--fs-display-md), 3vw, var(--fs-display-lg));
+  font-weight: var(--fw-light);             /* 300 */
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-sm);
 }
 .spotlight-excerpt {
-  font-size: 15px;
-  color: #6e6e73;
-  line-height: 1.6;
-  margin-bottom: 28px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-regular);
+  color: var(--color-body);
+  line-height: var(--lh-body-sm);
+  letter-spacing: var(--ls-body-sm);
+  margin-bottom: var(--space-lg);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -598,183 +481,214 @@ const gridArticles = articleData.slice(1);
   align-items: center;
   justify-content: space-between;
   margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-hairline-soft);
 }
 .spotlight-author {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-xs);
 }
 .author-avatar {
   width: 28px; height: 28px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   object-fit: cover;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-hairline);
 }
 .author-name {
-  font-size: 13px;
-  font-weight: 600;
-  color: #1d1d1f;
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-body-strong);
 }
-.spotlight-cta {
-  font-size: 13px;
-  font-weight: 700;
-  color: #0066cc;
+.spotlight-read-label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-medium);
+  color: var(--color-muted);
 }
 
-/* ════════════════════════════════════════════
-   SECTION 3: GRID
-════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════
+   GRID SECTION — 3-up feature cards
+════════════════════════════════════════════════════════════ */
 .grid-section {
-  background: #ffffff;
-  padding: 80px 0;
-  border-bottom: 1px solid #e8e8ed;
+  background: transparent;
+  padding: var(--space-section) 0;
+  border-bottom: 1px solid var(--color-hairline);
 }
 
 .grid-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 36px;
+  margin-bottom: var(--space-xl);           /* 32px */
+  flex-wrap: wrap;
+  gap: var(--space-sm);
 }
-.grid-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1d1d1f;
-}
-.grid-view-all {
-  font-size: 13px;
-  font-weight: 600;
-  color: #0066cc;
-  text-decoration: none;
-}
-.grid-view-all:hover { text-decoration: underline; }
 
+/* display-lg: EB Garamond 300, 36px — section head */
+.grid-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: 0;
+}
+
+/* View all — outline button, small */
+.grid-view-all {
+  font-size: var(--fs-caption);
+  padding: 6px 16px;
+  height: auto;
+}
+
+/* 3-up → 2-up → 1-up */
 .articles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 360px));
-  gap: 24px;
-  justify-content: center;   /* centers columns when fewer than full row */
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);                     /* 24px */
+}
+@media (max-width: 1024px) {
+  .articles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .articles-grid { grid-template-columns: 1fr; }
 }
 
-/* Empty state */
-.empty-state-box {
+/* Empty state — atmospheric orb + editorial type */
+.empty-state {
   text-align: center;
-  padding: 80px 24px;
-  border: 1px dashed #d0d0d8;
-  border-radius: 16px;
-}
-.empty-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #86868b;
-  margin-bottom: 8px;
-}
-.empty-title {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1d1d1f;
-  margin-bottom: 12px;
-}
-.empty-body {
-  font-size: 15px;
-  color: #6e6e73;
-  max-width: 400px;
-  margin: 0 auto 28px;
-  line-height: 1.6;
-}
-.inline-cta { display: inline-flex; }
-
-/* ════════════════════════════════════════════
-   SECTION 4: CTA SECTION
-════════════════════════════════════════════ */
-.cta-section {
-  background: #0a0a0f;
-  padding: 120px 24px;
-  text-align: center;
+  padding: var(--space-section) var(--space-lg);
+  border: 1px dashed var(--color-hairline-strong);
+  border-radius: var(--radius-xl);
   position: relative;
   overflow: hidden;
 }
-.cta-orb {
+.empty-orb-mint {
   position: absolute;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(167, 229, 211, 0.35) 0%, transparent 70%);
+  filter: blur(50px);
   border-radius: 50%;
-  filter: blur(80px);
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
   pointer-events: none;
 }
-.cta-orb-1 {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(0,102,204,0.3) 0%, transparent 70%);
-  top: -100px; left: -100px;
+.empty-eyebrow {
+  display: inline-flex;
+  margin: 0 auto var(--space-sm);
 }
-.cta-orb-2 {
+.empty-title {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-md);
+  font-weight: var(--fw-light);
+  color: var(--color-ink);
+  margin-bottom: var(--space-sm);
+}
+.empty-body {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-body);
+  max-width: 400px;
+  margin: 0 auto var(--space-xl);
+  line-height: var(--lh-body-sm);
+}
+
+/* ════════════════════════════════════════════════════════════
+   CTA BAND — cta-band spec
+   canvas bg, display-lg, 96px padding, ink pill, atmospheric orbs
+════════════════════════════════════════════════════════════ */
+.cta-band {
+  background: transparent;
+  padding: var(--space-section) var(--space-lg);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.cta-orb-lavender {
   width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
-  bottom: -80px; right: 5%;
+  background: radial-gradient(circle, rgba(200, 184, 224, 0.4) 0%, transparent 70%);
+  top: -80px; right: -60px;
 }
-.cta-content {
+.cta-orb-sky {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(168, 200, 232, 0.35) 0%, transparent 70%);
+  bottom: -60px; left: -40px;
+}
+
+.cta-band-inner {
   position: relative;
   z-index: 2;
-  max-width: 680px;
+  max-width: 620px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
 .cta-eyebrow {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #60a5fa;
-  margin-bottom: 20px;
+  margin-bottom: var(--space-lg);           /* 24px */
 }
+
+/* display-lg: EB Garamond 300, 36px */
 .cta-headline {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  margin-bottom: 20px;
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-light);             /* 300 */
+  color: var(--color-ink);
+  line-height: var(--lh-display-lg);
+  letter-spacing: var(--ls-display-lg);
+  margin-bottom: var(--space-md);           /* 20px */
 }
 .cta-body {
-  font-size: 17px;
-  color: rgba(255,255,255,0.5);
-  line-height: 1.6;
-  margin-bottom: 40px;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-md);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-body);
+  letter-spacing: var(--ls-body);
+  color: var(--color-body);
+  max-width: 480px;
+  margin-bottom: var(--space-xl);           /* 32px */
 }
 .cta-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--space-sm);
   flex-wrap: wrap;
 }
-.cta-primary--large {
-  padding: 16px 32px;
-  font-size: 15px;
-}
-.cta-ghost--dark {
-  color: rgba(255,255,255,0.65);
-  border-color: rgba(255,255,255,0.18);
-  background: rgba(255,255,255,0.05);
-}
-.cta-ghost--dark:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.1);
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════════ */
+/* Mobile: 375px-640px — headline scales from 64px → 32px */
+@media (max-width: 640px) {
+  .hero-band { padding: 80px var(--space-base) var(--space-section); }
+  .hero-headline {
+    font-size: var(--fs-display-md);        /* 32px */
+    letter-spacing: var(--ls-display-md);
+  }
+  .hero-stats { gap: var(--space-md); }
+  .stat-divider { display: none; }
+  .hero-orb-mint { width: 280px; height: 280px; }
+  .hero-orb-peach, .hero-orb-lavender { display: none; }
+
+  .spotlight-section, .grid-section, .cta-band {
+    padding-top: var(--space-xxl);
+    padding-bottom: var(--space-xxl);
+  }
+  .cta-headline { font-size: var(--fs-display-sm); }
 }
 
-/* ════════════════════════════════════════════
-   RESPONSIVE
-════════════════════════════════════════════ */
-@media (max-width: 640px) {
-  .hero-stats { gap: 20px; }
-  .stat-divider { display: none; }
-  .hero-section { padding: 100px 16px 60px; }
+/* Tablet: 640px-1024px — headline 48px */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .hero-headline {
+    font-size: var(--fs-display-xl);        /* 48px */
+    letter-spacing: var(--ls-display-xl);
+  }
 }
 </style>

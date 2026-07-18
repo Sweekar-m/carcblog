@@ -1,120 +1,216 @@
+/* ═══════════════════════════════════════════════════════════
+   CarcBlog Design Tokens — ElevenLabs Editorial System
+   Source: Design.md
+   All values are exact from the spec. Never use hex literals
+   in components — reference these variables instead.
+═══════════════════════════════════════════════════════════ */
+
 :root {
-  /* Color System */
-  --color-background: #ffffff;
-  --color-foreground: #111827;
-  --color-muted: #6b7280;
-  --color-muted-foreground: #9ca3af;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #111827;
-  --color-card: #ffffff;
-  --color-card-foreground: #111827;
-  --color-border: #e5e7eb;
-  --color-input: #e5e7eb;
-  --color-primary: #2563eb;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #f3f4f6;
-  --color-secondary-foreground: #111827;
-  --color-accent: #f3f4f6;
-  --color-accent-foreground: #111827;
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #e5e7eb;
-  --color-input: #e5e7eb;
-  --color-ring: #2563eb;
+  /* ── Canvas / Surface ── */
+  --color-canvas:               #f5f5f5;  /* page floor */
+  --color-canvas-soft:          #fafafa;  /* lighter alternating band */
+  --color-canvas-deep:          #0c0a09;  /* rare dark hero band */
+  --color-surface-card:         #ffffff;  /* content cards */
+  --color-surface-strong:       #f0efed;  /* badges, icon plates */
+  --color-surface-dark:         #0c0a09;  /* dark hero/CTA band */
+  --color-surface-dark-elevated:#1c1917;  /* cards on dark canvas */
 
-  /* Glass effects */
-  --color-glass-bg: rgba(255, 255, 255, 0.6);
-  --color-glass-border: rgba(255, 255, 255, 0.2);
+  /* ── Ink / Text ── */
+  --color-ink:                  #0c0a09;  /* display, primary text */
+  --color-primary:              #292524;  /* ink pill CTA color */
+  --color-primary-active:       #0c0a09;  /* press state */
+  --color-body:                 #4e4e4e;  /* default running text */
+  --color-body-strong:          #292524;  /* emphasis */
+  --color-muted:                #777169;  /* subtitles */
+  --color-muted-soft:           #a8a29e;  /* disabled text */
 
-  /* Radius */
+  /* ── On-color text ── */
+  --color-on-primary:           #ffffff;  /* white text on ink pill */
+  --color-on-dark:              #ffffff;  /* white text on dark hero */
+  --color-on-dark-soft:         #a8a29e;  /* muted off-white on dark */
+
+  /* ── Hairlines / Dividers ── */
+  --color-hairline:             #e7e5e4;  /* default 1px divider */
+  --color-hairline-soft:        #f0efed;  /* lighter divider */
+  --color-hairline-strong:      #d6d3d1;  /* stronger panel outline */
+
+  /* ── Atmospheric Gradient Orb Stops (background decoration ONLY) ── */
+  --color-gradient-mint:        #a7e5d3;
+  --color-gradient-peach:       #f4c5a8;
+  --color-gradient-lavender:    #c8b8e0;
+  --color-gradient-sky:         #a8c8e8;
+  --color-gradient-rose:        #e8b8c4;
+
+  /* ── Semantic ── */
+  --color-success:              #16a34a;
+  --color-error:                #dc2626;
+
+  /* ── Elevation — single soft shadow tier ── */
+  --shadow-card-hover:          0 4px 16px rgba(0, 0, 0, 0.04);
+
+  /* ── Border Radius Scale ── */
   --radius-none: 0px;
-  --radius-sm: 0.25rem;
-  --radius: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-xxl:  24px;
+  --radius-pill: 9999px;
+  --radius-full: 9999px;
 
-  /* Spacing */
-  --spacing-0: 0px;
-  --spacing-1: 0.25rem;
-  --spacing-2: 0.5rem;
-  --spacing-3: 0.75rem;
-  --spacing-4: 1rem;
-  --spacing-5: 1.5rem;
-  --spacing-6: 2rem;
-  --spacing-8: 3rem;
-  --spacing-10: 4rem;
-  --spacing-12: 5rem;
-  --spacing-16: 6rem;
+  /* ── Spacing Scale ── */
+  --space-xxs:     4px;
+  --space-xs:      8px;
+  --space-sm:      12px;
+  --space-base:    16px;
+  --space-md:      20px;
+  --space-lg:      24px;
+  --space-xl:      32px;
+  --space-xxl:     48px;
+  --space-section: 96px;
 
-  /* Typography */
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-serif: "Merriweather", Georgia, serif;
-  --font-mono: "Fira Code", monospace;
+  /* ── Typography — Font Families ── */
+  --font-sans:  'Inter', system-ui, sans-serif;
+  --font-serif: 'EB Garamond', 'Times New Roman', serif;
+  --font-mono:  'Fira Code', monospace;
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-  --text-5xl: 3rem;
-  --text-6xl: 3.75rem;
+  /* ── Typography — Font Sizes ── */
+  --fs-display-mega: 4rem;        /* 64px */
+  --fs-display-xl:   3rem;        /* 48px */
+  --fs-display-lg:   2.25rem;     /* 36px */
+  --fs-display-md:   2rem;        /* 32px */
+  --fs-display-sm:   1.5rem;      /* 24px */
+  --fs-title-md:     1.25rem;     /* 20px */
+  --fs-title-sm:     1.125rem;    /* 18px */
+  --fs-body-md:      1rem;        /* 16px */
+  --fs-body-sm:      0.9375rem;   /* 15px */
+  --fs-caption:      0.875rem;    /* 14px */
+  --fs-caption-upper:0.75rem;     /* 12px */
+  --fs-btn:          0.9375rem;   /* 15px */
+  --fs-nav-link:     0.9375rem;   /* 15px */
 
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
+  /* ── Typography — Font Weights ── */
+  --fw-light:    300;
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
 
-  --leading-none: 1;
-  --leading-tight: 1.25;
-  --leading-snug: 1.375;
-  --leading-normal: 1.5;
-  --leading-relaxed: 1.625;
-  --leading-loose: 2;
+  /* ── Typography — Line Heights ── */
+  --lh-display-mega: 1.05;
+  --lh-display-xl:   1.08;
+  --lh-display-lg:   1.17;
+  --lh-display-md:   1.13;
+  --lh-display-sm:   1.2;
+  --lh-title-md:     1.35;
+  --lh-title-sm:     1.44;
+  --lh-body:         1.5;
+  --lh-body-sm:      1.47;
+  --lh-caption:      1.5;
+  --lh-btn:          1.0;
+  --lh-nav-link:     1.4;
 
-  /* Transition */
-  --duration-75: 75ms;
-  --duration-100: 100ms;
+  /* ── Typography — Letter Spacing ── */
+  --ls-display-mega: -0.02em;   /* Changed from -0.12em (which collapsed space) to -0.02em */
+  --ls-display-xl:   -0.01em;   /* Changed from -0.02em to -0.01em */
+  --ls-display-lg:    0em;      /* Changed from -0.01em to 0em to prevent word collapse */
+  --ls-display-md:    0em;      /* Changed from -0.01em to 0em */
+  --ls-display-sm:    0em;
+  --ls-title-sm:      0.01em;   /* +0.18px */
+  --ls-body:          0.01em;   /* +0.16px */
+  --ls-body-sm:       0.009em;  /* +0.15px */
+  --ls-caption-upper: 0.08em;   /* +0.96px */
+
+  /* ── Component Heights ── */
+  --h-nav: 64px;
+  --h-btn: 40px;
+  --h-input: 44px;
+
+  /* ── Transitions ── */
   --duration-150: 150ms;
   --duration-200: 200ms;
   --duration-300: 300ms;
-  --duration-500: 500ms;
-  --duration-700: 700ms;
-  --duration-1000: 1000ms;
-
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Legacy aliases (for backward compat with any old component still using these) ── */
+  --color-background:         var(--color-canvas);
+  --color-foreground:         var(--color-ink);
+  --color-border:             var(--color-hairline);
+  --color-input:              var(--color-hairline);
+  --color-ring:               var(--color-primary);
+  --color-card:               var(--color-surface-card);
+  --color-card-foreground:    var(--color-ink);
+  --color-popover:            var(--color-surface-card);
+  --color-popover-foreground: var(--color-ink);
+  --color-secondary:          var(--color-surface-strong);
+  --color-secondary-foreground: var(--color-ink);
+  --color-accent:             var(--color-surface-strong);
+  --color-accent-foreground:  var(--color-ink);
+  --color-destructive:        var(--color-error);
+  --color-destructive-foreground: var(--color-on-primary);
+  --color-primary-foreground: var(--color-on-primary);
+  --color-muted-foreground:   var(--color-muted-soft);
+
+  /* Legacy spacing (for any component still using old names) */
+  --spacing-sm:  var(--space-sm);
+  --spacing-md:  var(--space-md);
+  --spacing-lg:  var(--space-lg);
+  --spacing-xl:  var(--space-xl);
+  --spacing-xxl: var(--space-xxl);
+  --space-4:     var(--space-base);
+  --space-6:     var(--space-lg);
+  --space-8:     var(--space-xl);
+  --space-12:    64px;
+  --space-16:    var(--space-section);
+
+  /* Legacy font names */
+  --font-size-2:    var(--fs-body-md);
+  --font-size-4:    var(--fs-title-sm);
+  --font-size-5:    var(--fs-title-md);
+  --font-size-6:    var(--fs-display-sm);
+  --font-size-7:    var(--fs-display-lg);
+  --font-size-8:    var(--fs-display-xl);
+  --font-size-caption: var(--fs-caption);
+  --font-size-body:    var(--fs-body-md);
+  --font-size-tagline: var(--fs-display-sm);
+  --font-weight-regular: var(--fw-regular);
+  --font-weight-semibold: var(--fw-semibold);
+  --leading-tight:   1.25;
+  --leading-relaxed: 1.625;
+
+  /* Legacy that Footer still uses */
+  --color-canvas-parchment:   var(--color-canvas);
+  --color-foreground-muted:   var(--color-body);
+  --color-divider-soft:       var(--color-hairline-soft);
+  --color-ink:                #0c0a09;
+  --color-hairline:           #e7e5e4;
 }
 
-[data-theme="dark"] {
-  --color-background: #111827;
-  --color-foreground: #f9fafb;
-  --color-muted: #9ca3af;
-  --color-muted-foreground: #d1d5db;
-  --color-popover: #1f2937;
-  --color-popover-foreground: #f9fafb;
-  --color-card: #1f2937;
-  --color-card-foreground: #f9fafb;
-  --color-border: #374151;
-  --color-input: #374151;
-  --color-primary: #3b82f6;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #374151;
-  --color-secondary-foreground: #f9fafb;
-  --color-accent: #374151;
-  --color-accent-foreground: #f9fafb;
-  --color-destructive: #f87171;
-  --color-destructive-foreground: #ffffff;
-  --color-border: #374151;
-  --color-input: #374151;
-  --color-ring: #3b82f6;
-
-  /* Glass effects for dark mode */
-  --color-glass-bg: rgba(31, 41, 55, 0.6);
-  --color-glass-border: rgba(255, 255, 255, 0.1);
+/* ── Dark mode overrides ── */
+[data-theme='dark'],
+.dark {
+  --color-canvas:               #0c0a09;
+  --color-canvas-soft:          #1c1917;
+  --color-surface-card:         #1c1917;
+  --color-surface-strong:       #292524;
+  --color-ink:                  #ffffff;
+  --color-primary:              #ffffff;
+  --color-body:                 #a8a29e;
+  --color-body-strong:          #ffffff;
+  --color-muted:                #777169;
+  --color-muted-soft:           #57534e;
+  --color-hairline:             #292524;
+  --color-hairline-soft:        #1c1917;
+  --color-hairline-strong:      #3a3530;
+  --color-on-primary:           #0c0a09;
+  /* Legacy aliases update in dark */
+  --color-background:           var(--color-canvas);
+  --color-foreground:           var(--color-ink);
+  --color-border:               var(--color-hairline);
+  --color-card:                 var(--color-surface-card);
+  --color-canvas-parchment:     var(--color-canvas);
+  --color-foreground-muted:     var(--color-body);
+  --color-divider-soft:         var(--color-hairline-soft);
 }

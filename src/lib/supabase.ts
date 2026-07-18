@@ -14,7 +14,10 @@ export async function getUserProfile(userId: string) {
     .eq('id', userId)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') return null; // 0 rows / Not found
+    throw error;
+  }
   return data;
 }
 
@@ -41,7 +44,7 @@ export async function upsertUserProfile(
   // Format occupation into bio to avoid database migrations
   let finalBio = profile.bio || '';
   if (profile.occupation) {
-    finalBio = \[{{profile.occupation}}] \.trim();
+    finalBio = `[${profile.occupation}] ${finalBio}`.trim();
   }
 
   // Omit occupation from the database payload to avoid column missing errors
@@ -101,6 +104,8 @@ export interface Article {
   slug: string;
   title: string;
   content: string;
+  excerpt: string | null;
+  cover_image_url: string | null;
   author_id: string;
   published_at: string | null;
   created_at: string;
@@ -128,13 +133,13 @@ export async function createArticle(
   const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('articles')
+    .insert([
       {
         ...article,
         excerpt: article.excerpt ?? null,
         cover_image_url: article.cover_image_url ?? null,
         created_at: now,
         updated_at: now,
-      }
       }
     ])
     .select()
@@ -147,7 +152,7 @@ export async function createArticle(
 export async function getArticlesByAuthor(authorId: string) {
   const { data, error } = await supabase
     .from('articles')
-    .select(
+    .select(`
       *,
       author:profiles!author_id (
         id,
@@ -156,7 +161,7 @@ export async function getArticlesByAuthor(authorId: string) {
         avatar_url,
         bio
       )
-    )
+    `)
     .eq('author_id', authorId)
     .order('created_at', { ascending: false });
 
@@ -167,7 +172,7 @@ export async function getArticlesByAuthor(authorId: string) {
 export async function getPublishedArticles(limit = 10) {
   const { data, error } = await supabase
     .from('articles')
-    .select(
+    .select(`
       *,
       author:profiles!author_id (
         id,
@@ -176,7 +181,7 @@ export async function getPublishedArticles(limit = 10) {
         avatar_url,
         bio
       )
-    )
+    `)
     .not('published_at', 'is', null)
     .order('published_at', { ascending: false })
     .limit(limit);
@@ -188,7 +193,7 @@ export async function getPublishedArticles(limit = 10) {
 export async function getArticleBySlug(slug: string) {
   const { data, error } = await supabase
     .from('articles')
-    .select(
+    .select(`
       *,
       author:profiles!author_id (
         id,
@@ -197,11 +202,14 @@ export async function getArticleBySlug(slug: string) {
         avatar_url,
         bio
       )
-    )
+    `)
     .eq('slug', slug)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    if (error.code === 'PGRST116') return null; // 0 rows / Not found
+    throw error;
+  }
   return data;
 }
 
@@ -247,53 +255,44 @@ const mockArticles: Article[] = [
   }
 ];
 
-// Wrapper functions that return mock data in development if no real data exists
 export async function getArticlesByAuthorWithFallback(authorId: string) {
   try {
     const articles = await getArticlesByAuthor(authorId);
-    if (import.meta.env.DEV && articles.length === 0) {
+    if (!articles || articles.length === 0) {
       return mockArticles.filter(a => a.author_id === authorId);
     }
     return articles;
   } catch (error) {
     console.warn('Failed to fetch articles by author, using mock data:', error);
-    if (import.meta.env.DEV) {
-      return mockArticles.filter(a => a.author_id === authorId);
-    }
-    throw error;
+    return mockArticles.filter(a => a.author_id === authorId);
   }
 }
 
 export async function getPublishedArticlesWithFallback(limit = 10) {
   try {
     const articles = await getPublishedArticles(limit);
-    if (import.meta.env.DEV && articles.length === 0) {
+    if (!articles || articles.length === 0) {
       return mockArticles.slice(0, limit);
     }
     return articles;
   } catch (error) {
     console.warn('Failed to fetch published articles, using mock data:', error);
-    if (import.meta.env.DEV) {
-      return mockArticles.slice(0, limit);
-    }
-    throw error;
+    return mockArticles.slice(0, limit);
   }
 }
 
 export async function getArticleBySlugWithFallback(slug: string) {
   try {
     const article = await getArticleBySlug(slug);
-    if (import.meta.env.DEV && !article) {
+    if (!article) {
       const match = mockArticles.find(a => a.slug === slug);
       if (match) return match;
     }
     return article;
   } catch (error) {
     console.warn('Failed to fetch article by slug, using mock data:', error);
-    if (import.meta.env.DEV) {
-      const match = mockArticles.find(a => a.slug === slug);
-      if (match) return match;
-    }
+    const match = mockArticles.find(a => a.slug === slug);
+    if (match) return match;
     throw error;
   }
 }
