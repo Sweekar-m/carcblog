@@ -10,11 +10,13 @@ export const sanityClient = createClient({
 });
 
 // ---------- WRITER (private) client ----------
+const sanityApiToken = import.meta.env.SANITY_API_TOKEN;
+console.log('Sanity write client token present:', !!sanityApiToken, 'prefix:', sanityApiToken ? sanityApiToken.slice(0, 6) : 'undefined');
 export const sanityWriteClient = createClient({
   projectId: import.meta.env.SANITY_PROJECT_ID ?? import.meta.env.PUBLIC_SANITY_PROJECT_ID,
   dataset: import.meta.env.SANITY_DATASET ?? import.meta.env.PUBLIC_SANITY_DATASET,
   apiVersion: import.meta.env.SANITY_API_VERSION ?? '2023-05-03',
-  token: import.meta.env.SANITY_API_TOKEN,
+  token: sanityApiToken,
   useCdn: false,
 });
 
@@ -97,8 +99,15 @@ export async function createSanityArticle(data: {
   coverImageUrl?: string;
   authorClerkId: string;
   status: 'draft' | 'published';
+  authorName?: string;
+  authorImageUrl?: string;
 }) {
-  const authorId = await ensureAuthorDocument(data.authorClerkId, 'Unknown'); // name will be updated later if needed
+  const authorId = await ensureAuthorDocument(
+    data.authorClerkId,
+    data.authorName ?? 'Unknown',
+    undefined, // email not stored
+    data.authorImageUrl
+  );
   const doc: any = {
     _type: 'article',
     title: data.title,

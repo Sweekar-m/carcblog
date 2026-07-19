@@ -95,6 +95,8 @@ export const POST: APIRoute = async ({ locals, request }) => {
       coverImageUrl: coverImage ?? undefined,
       authorClerkId: auth.userId,
       status: status as 'draft' | 'published',
+      authorName: profile.full_name ?? profile.username ?? 'Unknown',
+      authorImageUrl: profile.avatar_url,
     });
 
     return new Response(JSON.stringify({ success: true, article }), {
