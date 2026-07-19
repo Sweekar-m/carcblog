@@ -150,13 +150,17 @@ export const prerender = false;
 
         responseDiv.className = 'form-response form-response--success';
         responseDiv.textContent = 'Article published successfully!';
-        form.reset();
-        wordCount.textContent = '0 words';
-
-        // Redirect after success
-        setTimeout(() => {
-          window.location.href = '/dashboard/articles';
-        }, 1200);
+        // Redirect to the article page using the slug from the response
+        const slug = result.article?.slug?.current;
+        if (slug) {
+          window.location.href = `/article/${slug}`;
+        } else {
+          // fallback to dashboard if slug missing
+          setTimeout(() => {
+            window.location.href = '/dashboard/articles';
+          }, 1200);
+        }
+        // No need to reset form as we are leaving the page
 
       } catch (err: any) {
         responseDiv.className = 'form-response form-response--error';
@@ -282,7 +286,7 @@ export const prerender = false;
 
   .form-textarea--content {
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: var(--fs-caption);
     line-height: 1.6;
   }
 
