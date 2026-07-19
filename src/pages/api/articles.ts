@@ -1,16 +1,33 @@
 import type { APIRoute } from 'astro';
-import { createArticle, getUserProfile, getPublishedArticles } from '@/lib/supabase';
+import { sanityClient, createSanityArticle } from '@/lib/sanity';
+import { getUserProfile } from '@/lib/supabase';
 
 export const prerender = false;
 
+/**
+ * GET: Return published articles (public feed).
+ */
 export const GET: APIRoute = async () => {
   try {
-    const articles = await getPublishedArticles();
+    const articles = await sanityClient.fetch(`
+      *[_type == "article" && defined(publishedAt)]
+        | order(publishedAt desc)
+      {
+        _id,
+        title,
+        slug,
+        publishedAt,
+        excerpt,
+        "coverImage": coverImage.asset->url,
+        "author": {
+          "name": author->name,
+          "image": author->image.asset->url
+        }
+      }
+    `);
     return new Response(JSON.stringify({ success: true, articles }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (err: any) {
     console.error('Error fetching articles:', err);
@@ -18,6 +35,9 @@ export const GET: APIRoute = async () => {
   }
 };
 
+/**
+ * POST: Create a new article (writer only).
+ */
 export const POST: APIRoute = async ({ locals, request }) => {
   // Auth check
   const auth = await (locals as any).auth();
@@ -25,14 +45,13 @@ export const POST: APIRoute = async ({ locals, request }) => {
     return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
   }
 
-  // Get user profile to check role
+  // Get user profile to verify writer role
   let profile;
   try {
     profile = await getUserProfile(auth.userId);
   } catch (err) {
     return new Response(JSON.stringify({ error: 'Failed to fetch user profile' }), { status: 500 });
   }
-
   if (!profile || profile.role !== 'writer') {
     return new Response(JSON.stringify({ error: 'Only writers can create articles' }), { status: 403 });
   }
@@ -52,22 +71,32 @@ export const POST: APIRoute = async ({ locals, request }) => {
     return new Response(JSON.stringify({ error: 'Title, slug, and content are required' }), { status: 400 });
   }
 
-  // Determine published_at based on status
-  const publishedAt = status === 'published' ? new Date().toISOString() : null;
+  // Prepare article data (convert plain text to portable text block if needed)
+  const portableBody = typeof content === 'string' && content.trim()
+    ? [
+        {
+          _type: 'block',
+          style: 'normal',
+          children: [{ _type: 'span', text: content }],
+        },
+      ]
+    : (Array.isArray(content) ? content : []);
 
-  // Create article in Supabase
   try {
-    const article = await createArticle({
+    const article = await createSanityArticle({
       title,
       slug,
-      cover_image_url: coverImage || null,
-      excerpt: excerpt || null,
-      content,
-      author_id: auth.userId,
-      published_at: publishedAt,
+      excerpt: excerpt ?? null,
+      body: portableBody,
+      coverImageUrl: coverImage ?? undefined,
+      authorClerkId: auth.userId,
+      status: status as 'draft' | 'published',
     });
 
-    return new Response(JSON.stringify({ success: true, article }), { status: 201 });
+    return new Response(JSON.stringify({ success: true, article }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (err: any) {
     console.error('Error creating article:', err);
     return new Response(JSON.stringify({ error: err?.message || 'Failed to create article' }), { status: 500 });

@@ -3,28 +3,23 @@
 import Layout from '@/layouts/Layout.astro';
 import WriterDashboard from '@/components/dashboard/WriterDashboard.astro';
 import { supabase } from '@/lib/supabase';
-import { getRecentArticles } from '@/lib/sanity';
+import { getSanityArticlesByAuthor, getRecentSanityArticles } from '@/lib/sanity';
 import { getUserProfile } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
 // Get user's article stats
+// Get user's article stats
 async function getUserStats(userId) {
   try {
-    // Get articles count
-    const articles = await getRecentArticles(100); // Get a reasonable number
+    // Get articles for this user
+    const articles = await getSanityArticlesByAuthor(userId, 1000); // reasonable limit
 
-    // Filter articles by this user (assuming we have author info in articles)
-    const userArticles = articles.filter(article =>
-      article.author?.id === userId || article.author?._id === userId
-    );
-
-    // Calculate stats (in a real app, these would come from analytics/Supabase)
-    const articleCount = userArticles.length;
-    // These would typically come from analytics service
-    const viewCount = Math.floor(Math.random() * 1000) + 200; // Placeholder
-    const readTime = Math.floor(Math.random() * 500) + 100;   // Placeholder
+    const articleCount = articles.length;
+    // Placeholder metrics - replace with real analytics if available
+    const viewCount = 0; // TODO: implement view tracking
+    const readTime = 0; // TODO: implement reading time aggregation
 
     return {
       articleCount,
@@ -40,43 +35,24 @@ async function getUserStats(userId) {
 // Get recent activity for user
 async function getRecentActivity(userId) {
   try {
-    // Get recent articles
-    const articles = await getRecentArticles(5);
-    const userArticles = articles.filter(article =>
-      article.author?.id === userId || article.author?._id === userId
-    ).map(article => ({
-      type: 'article',
-      action: 'published',
-      title: article.title,
-      timestamp: article.publishedAt || new Date().toISOString()
-    }));
+    // Get recent articles for this user
+    const articles = await getSanityArticlesByAuthor(userId, 5);
 
-    // In a real app, you'd also get likes, follows, comments from activity feed
-    // For now, we'll return what we have plus some mock activity
-    const mockActivity = [
-      {
-        type: 'engagement',
-        action: 'liked',
-        description: 'Your article "Understanding TypeScript Generics" received 12 new likes',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
-      },
-      {
-        type: 'follow',
-        action: 'followed',
-        description: 'You gained 3 new followers',
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
-      }
-    ];
+    const articleActivity = articles
+      .map(article => ({
+        type: 'article',
+        title: article.title,
+        timestamp: article.publishedAt || new Date().toISOString(),
+      }))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    return [...userArticles, ...mockActivity].sort((a, b) =>
-      new Date(b.timestamp) - new Date(a.timestamp)
-    ).slice(0, 3); // Return top 3 activities
+    // For now, we just return article activity (likes/follows could be added later)
+    return articleActivity.slice(0, 3); // Return top 3 activities
   } catch (error) {
     console.error('Failed to fetch recent activity:', error);
     return [];
   }
 }
-
 const user = await getCurrentUser(Astro.locals);
 const stats = user ? await getUserStats(user.id) : { articleCount: 0, viewCount: 0, readTime: 0 };
 const recentActivity = user ? await getRecentActivity(user.id) : [];

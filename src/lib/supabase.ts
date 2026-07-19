@@ -214,46 +214,7 @@ export async function getArticleBySlug(slug: string) {
 }
 
 // Mock data for development fallback
-const mockArticles: Article[] = [
-  {
-    id: 'article_1',
-    title: 'Getting Started with Astro and Tailwind CSS',
-    slug: 'getting-started-with-astro-and-tailwind-css',
-    content: 'Astro is a modern web framework that enables you to build faster websites with less client-side JavaScript. By shipping zero client-side JavaScript by default, Astro pages load instantly. This is the body of the mock article.',
-    author_id: 'mock_user_id',
-    published_at: (new Date()).toISOString(),
-    created_at: (new Date()).toISOString(),
-    updated_at: (new Date()).toISOString(),
-    excerpt: null,
-    cover_image_url: null,
-    author: {
-      id: 'mock_user_id',
-      username: 'johndoe',
-      full_name: 'John Doe',
-      avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      bio: 'Software engineer and technical writer'
-    }
-  },
-  {
-    id: 'article_2',
-    title: 'Understanding TypeScript Generics',
-    slug: 'understanding-typescript-generics',
-    content: 'Generics are a powerful feature in TypeScript that allow you to write reusable, type-safe components and functions. They act as type variables that let you capture the types passed to a function or class.',
-    author_id: 'mock_user_id',
-    published_at: (new Date(Date.now() - 86400000)).toISOString(),
-    created_at: (new Date(Date.now() - 86400000)).toISOString(),
-    updated_at: (new Date(Date.now() - 86400000)).toISOString(),
-    excerpt: null,
-    cover_image_url: null,
-    author: {
-      id: 'mock_user_id',
-      username: 'janesmith',
-      full_name: 'Jane Smith',
-      avatar_url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      bio: 'Senior frontend developer and tech enthusiast'
-    }
-  }
-];
+const mockArticles: Article[] = [];
 
 export async function getArticlesByAuthorWithFallback(authorId: string) {
   try {

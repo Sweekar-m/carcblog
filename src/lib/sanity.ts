@@ -1,160 +1,122 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
-// Initialize Sanity client
+// ---------- READ-ONLY (public) client ----------
 export const sanityClient = createClient({
-  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID || 'placeholder',
-  dataset: import.meta.env.PUBLIC_SANITY_DATASET || 'production',
-  apiVersion: '2023-05-03', // use current date in format YYYY-MM-DD
-  useCdn: true, // set to false if you require the latest fresh data
+  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: import.meta.env.PUBLIC_SANITY_DATASET,
+  apiVersion: import.meta.env.SANITY_API_VERSION ?? '2023-05-03',
+  useCdn: true,
 });
 
-// Set up image URL builder
-const builder = imageUrlBuilder(sanityClient);
-export function urlFor(source: any) {
-  return builder.image(source);
-}
+// ---------- WRITER (private) client ----------
+export const sanityWriteClient = createClient({
+  projectId: import.meta.env.SANITY_PROJECT_ID ?? import.meta.env.PUBLIC_SANITY_PROJECT_ID,
+  dataset: import.meta.env.SANITY_DATASET ?? import.meta.env.PUBLIC_SANITY_DATASET,
+  apiVersion: import.meta.env.SANITY_API_VERSION ?? '2023-05-03',
+  token: import.meta.env.SANITY_API_TOKEN,
+  useCdn: false,
+});
 
-// Mock Data for Local Development / Fallbacks
-const mockArticles: Article[] = [
-  {
-    _id: 'article_1',
-    title: 'Getting Started with Astro and Tailwind CSS',
-    slug: { current: 'getting-started-with-astro-and-tailwind-css' },
-    publishedAt: new Date().toISOString(),
-    excerpt: 'Learn how to build modern, performant websites using Astro and Tailwind CSS.',
-    coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80',
-    author: {
-      name: 'John Doe',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      bio: 'Software engineer and technical writer'
-    },
-    body: 'Astro is a modern web framework that enables you to build faster websites with less client-side JavaScript. By shipping zero client-side JavaScript by default, Astro pages load instantly. This is the body of the mock article.'
-  },
-  {
-    _id: 'article_2',
-    title: 'Understanding TypeScript Generics',
-    slug: { current: 'understanding-typescript-generics' },
-    publishedAt: new Date(Date.now() - 86400000).toISOString(),
-    excerpt: 'A comprehensive guide to understanding and using generics in TypeScript.',
-    coverImage: 'https://images.unsplash.com/photo-1516116211223-5c359a36298a?auto=format&fit=crop&w=800&q=80',
-    author: {
-      name: 'Jane Smith',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      bio: 'Senior frontend developer and tech enthusiast'
-    },
-    body: 'Generics are a powerful feature in TypeScript that allow you to write reusable, type-safe components and functions. They act as type variables that let you capture the types passed to a function or class.'
-  }
-];
+// Image URL builder
+export const urlFor = (source: any) => imageUrlBuilder(sanityClient).image(source);
 
-async function safeFetch<T>(query: string, params: any, fallback: T): Promise<T> {
-  const projId = sanityClient.config().projectId;
-  if (!projId || projId === 'placeholder') {
-    return fallback;
-  }
-  try {
-    return await sanityClient.fetch(query, params);
-  } catch (error) {
-    console.warn('Sanity fetch failed, using fallback mock data:', error);
-    return fallback;
-  }
-}
-
-// Helper functions for fetching content
-export async function getFeaturedArticles(limit = 6) {
-  return safeFetch(
-    `*[_type == "article" && defined(publishedAt) && featured == true] | order(publishedAt desc)[0...${limit}] {
-      _id,
-      title,
-      slug,
-      publishedAt,
-      excerpt,
-      "coverImage": coverImage.asset->url,
-      "author": {
-        "name": author->name,
-        "image": author->image.asset->url
-      }
-    }`,
-    {},
-    mockArticles.slice(0, limit)
-  );
-}
-
-export async function getArticleBySlug(slug: string) {
-  const matched = mockArticles.find(a => a.slug.current === slug) || null;
-  return safeFetch(
-    `*[_type == "article" && slug.current == $slug][0] {
-      _id,
-      title,
-      slug,
-      publishedAt,
-      body,
-      excerpt,
-      "coverImage": coverImage.asset->url,
-      "author": {
-        "name": author->name,
-        "image": author->image.asset->url,
-        "bio": author->bio
-      }
-    }`,
-    { slug },
-    matched
-  );
-}
-
-export async function getArticlesByAuthor(authorId: string, limit = 10) {
-  return safeFetch(
-    `*[_type == "article" && author._ref == $authorId && defined(publishedAt)] | order(publishedAt desc)[0...${limit}] {
-      _id,
-      title,
-      slug,
-      publishedAt,
-      excerpt,
-      "coverImage": coverImage.asset->url
-    }`,
-    { authorId },
-    mockArticles.slice(0, limit)
-  );
-}
-
-export async function getRecentArticles(limit = 10) {
-  return safeFetch(
-    `*[_type == "article" && defined(publishedAt)] | order(publishedAt desc)[0...${limit}] {
-      _id,
-      title,
-      slug,
-      publishedAt,
-      excerpt,
-      "coverImage": coverImage.asset->url,
-      "author": {
-        "name": author->name,
-        "image": author->image.asset->url
-      }
-    }`,
-    {},
-    mockArticles.slice(0, limit)
-  );
-}
-
-// Types
-export interface Article {
+/* Types */
+export interface SanityArticle {
   _id: string;
   title: string;
   slug: { current: string };
-  publishedAt: string;
-  excerpt: string;
-  coverImage?: string;
-  author: {
-    name: string;
-    image?: string;
+  publishedAt?: string;
+  excerpt?: string;
+  coverImage?: { asset: { _ref: string } };
+  author?: {
+    _ref: string;
+    name?: string;
+    image?: { asset: { _ref: string } };
     bio?: string;
   };
-  body?: any; // Portable text
+  body?: any;
+}
+export interface SanityAuthor {
+  _id: string;
+  clerkUserId: string;
+  name: string;
+  email?: string;
+  image?: { asset: { _ref: string } };
+  bio?: string;
 }
 
-export interface Author {
-  _id: string;
-  name: string;
-  image?: string;
-  bio?: string;
+/* Read-only fetch */
+export async function getSanityArticles(opts: { limit?: number; authorId?: string }): Promise<SanityArticle[]> {
+  const { limit = 100, authorId } = opts;
+  let q = '*[_type == "article" && defined(publishedAt)]';
+  if (authorId) q += ' && author._ref == $authorId';
+  q += ' | order(publishedAt desc) [0...$limit] { _id, title, slug, publishedAt, excerpt, coverImage, author->{ _id, name, "image": image.asset->url } }';
+  const p: { limit: number; authorId?: string } = { limit };
+  if (authorId) p.authorId = authorId;
+  return sanityClient.fetch<SanityArticle[]>(q, p);
+}
+export async function getSanityArticleBySlug(slug: string): Promise<SanityArticle | null> {
+  return sanityClient.fetch<SanityArticle | null>(`*[_type == "article" && slug.current == $slug][0] { _id, title, slug, publishedAt, excerpt, coverImage, author->{ _id, name, "image": image.asset->url }, body }`, { slug });
+}
+export async function getSanityArticlesByAuthor(authorId: string, limit = 100): Promise<SanityArticle[]> {
+  return sanityClient.fetch<SanityArticle[]>(`*[_type == "article" && author._ref == $authorId && defined(publishedAt)] | order(publishedAt desc)[0...$limit] { _id, title, slug, publishedAt, excerpt, coverImage, author->{ _id, name, "image": image.asset->url } }`, { authorId, limit });
+}
+export async function getRecentSanityArticles(limit = 10): Promise<SanityArticle[]> {
+  return sanityClient.fetch<SanityArticle[]>(`*[_type == "article" && defined(publishedAt)] | order(publishedAt desc)[0...$limit] { _id, title, slug, publishedAt, excerpt, coverImage, author->{ _id, name, "image": image.asset->url } }`, { limit });
+}
+
+/* Author helpers */
+export async function ensureAuthorDocument(clerkUserId: string, name: string, email?: string, imageUrl?: string): Promise<string> {
+  const existing = await sanityWriteClient.fetch<{ _id: string }[]>(`*[_type == "author" && clerkUserId == $id][0] { _id }`, { id: clerkUserId });
+  if (existing?.[0]?._id) return existing[0]._id;
+  const doc: any = { _type: 'author', clerkUserId, name };
+  if (email) doc.email = email;
+  if (imageUrl) {
+    const assetId = await uploadAsset(imageUrl);
+    doc.image = { _type: 'image', asset: { _ref: assetId } };
+  }
+  const created = await sanityWaitClient.create(doc);
+  return created._id;
+}
+async function uploadAsset(url: string): Promise<string> {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error(`Failed to fetch image: ${url}`);
+  const buffer = Buffer.from(await resp.arrayBuffer());
+  const contentType = resp.headers.get('content-type') || 'image/jpeg';
+  const asset = await sanityWriteClient.assets.upload('image', buffer, { filename: new URL(url).pathname.split('/').pop() || 'upload.jpg', contentType });
+  return asset.document._id;
+}
+
+/* Create article */
+export async function createSanityArticle(data: {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  body?: any;
+  coverImageUrl?: string;
+  authorClerkId: string;
+  status: 'draft' | 'published';
+}) {
+  const authorId = await ensureAuthorDocument(data.authorClerkId, 'Unknown'); // name will be updated later if needed
+  const doc: any = {
+    _type: 'article',
+    title: data.title,
+    slug: { current: data.slug },
+    excerpt: data.excerpt ?? null,
+    body: data.body ?? null,
+    publishedAt: data.status === 'published' ? new Date().toISOString() : null,
+    author: { _type: 'reference', _ref: authorId },
+  };
+  if (data.coverImageUrl) {
+    const assetId = await uploadAsset(data.coverImageUrl);
+    doc.coverImage = { _type: 'image', asset: { _ref: assetId } };
+  }
+  return sanityWaitClient.create(doc);
+}
+
+/* Portable text to HTML */
+import { toHTML } from '@portabletext/to-html';
+export function portableTextToHtml(value: any): string {
+  return toHTML(value);
 }
