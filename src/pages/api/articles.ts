@@ -1,7 +1,22 @@
 import type { APIRoute } from 'astro';
-import { createArticle, getUserProfile } from '@/lib/supabase';
+import { createArticle, getUserProfile, getPublishedArticles } from '@/lib/supabase';
 
 export const prerender = false;
+
+export const GET: APIRoute = async () => {
+  try {
+    const articles = await getPublishedArticles();
+    return new Response(JSON.stringify({ success: true, articles }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  } catch (err: any) {
+    console.error('Error fetching articles:', err);
+    return new Response(JSON.stringify({ error: err?.message || 'Failed to fetch articles' }), { status: 500 });
+  }
+};
 
 export const POST: APIRoute = async ({ locals, request }) => {
   // Auth check
