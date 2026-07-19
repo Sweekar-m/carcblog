@@ -157,7 +157,7 @@ import Layout from '@/components/layout/Layout.astro';
    DISCOVER HERO — canvas, display-mega, atmospheric orbs
 ════════════════════════════════════════════════════════════ */
 .discover-hero {
-  background: var(--color-canvas);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
   position: relative;
@@ -202,12 +202,12 @@ import Layout from '@/components/layout/Layout.astro';
    SECTIONS
 ════════════════════════════════════════════════════════════ */
 .discover-section {
-  background: var(--color-surface-card);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
 }
 .discover-section--soft {
-  background: var(--color-canvas-soft);
+  background: transparent;
 }
 
 /* Section header */
@@ -257,8 +257,10 @@ import Layout from '@/components/layout/Layout.astro';
 }
 
 .topic-card {
-  background: var(--color-surface-card);
-  border: 1px solid var(--color-hairline);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-xl);
   padding: var(--space-lg);
   display: flex;
@@ -400,10 +402,13 @@ import Layout from '@/components/layout/Layout.astro';
 .lists-grid {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--color-hairline);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  background: var(--color-surface-card);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
 }
 
 .list-card {
@@ -416,7 +421,7 @@ import Layout from '@/components/layout/Layout.astro';
   transition: background var(--duration-150) var(--ease-out);
 }
 .list-card:last-child { border-bottom: none; }
-.list-card:hover { background: var(--color-canvas-soft); }
+.list-card:hover { background: rgba(255, 255, 255, 0.08); }
 
 /* Sequence number — display-sm EB Garamond 300 */
 .list-num {
@@ -463,7 +468,7 @@ import Layout from '@/components/layout/Layout.astro';
    CTA BAND — cta-band spec
 ════════════════════════════════════════════════════════════ */
 .discover-cta-band {
-  background: var(--color-canvas);
+  background: transparent;
   padding: var(--space-section) 0;
   position: relative;
   overflow: hidden;

@@ -148,7 +148,7 @@ import Layout from '@/components/layout/Layout.astro';
    ABOUT PAGE — ElevenLabs editorial system
 ════════════════════════════════════════════════════════════ */
 .about-hero {
-  background: var(--color-canvas);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
   position: relative;
@@ -213,11 +213,13 @@ import Layout from '@/components/layout/Layout.astro';
   display: inline-flex;
   align-items: center;
   gap: var(--space-lg);
-  background: var(--color-surface-card);
-  border: 1px solid var(--color-hairline);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--radius-xl);
   padding: var(--space-md) var(--space-xl);
-  box-shadow: var(--shadow-card-hover);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
 }
 @media (max-width: 640px) {
   .hero-stats-card {
@@ -252,12 +254,12 @@ import Layout from '@/components/layout/Layout.astro';
 
 /* ── Sections ── */
 .about-section {
-  background: var(--color-surface-card);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
 }
 .about-section--soft {
-  background: var(--color-canvas-soft);
+  background: transparent;
 }
 
 .sec-header {
@@ -361,7 +363,7 @@ import Layout from '@/components/layout/Layout.astro';
 
 /* ── CTA Band ── */
 .about-cta-band {
-  background: var(--color-canvas);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
   position: relative;
