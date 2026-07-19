@@ -48,10 +48,14 @@ export const POST: APIRoute = async ({ locals, request }) => {
   // Get user profile to verify writer role
   let profile;
   try {
+    console.log('auth.userId:', auth.userId);
     profile = await getUserProfile(auth.userId);
   } catch (err) {
+    console.error('getUserProfile error:', err);
     return new Response(JSON.stringify({ error: 'Failed to fetch user profile' }), { status: 500 });
   }
+  console.log('profile:', profile);
+  console.log('profile.role:', profile?.role);
   if (!profile || profile.role !== 'writer') {
     return new Response(JSON.stringify({ error: 'Only writers can create articles' }), { status: 403 });
   }

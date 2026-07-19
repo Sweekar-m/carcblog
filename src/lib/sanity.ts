@@ -76,7 +76,7 @@ export async function ensureAuthorDocument(clerkUserId: string, name: string, em
     const assetId = await uploadAsset(imageUrl);
     doc.image = { _type: 'image', asset: { _ref: assetId } };
   }
-  const created = await sanityWaitClient.create(doc);
+  const created = await sanityWriteClient.create(doc);
   return created._id;
 }
 async function uploadAsset(url: string): Promise<string> {
@@ -112,7 +112,7 @@ export async function createSanityArticle(data: {
     const assetId = await uploadAsset(data.coverImageUrl);
     doc.coverImage = { _type: 'image', asset: { _ref: assetId } };
   }
-  return sanityWaitClient.create(doc);
+  return sanityWriteClient.create(doc);
 }
 
 /* Portable text to HTML */
