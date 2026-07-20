@@ -1,76 +1,65 @@
-/**
- * POST /api/onboarding
- *
- * Accepts the onboarding form payload and upserts the user's profile
- * in Supabase. Requires an authenticated Clerk session.
- */
 import type { APIRoute } from 'astro';
 import { upsertUserProfile } from '@/lib/supabase';
+import { z } from 'zod';
 
 export const prerender = false;
 
+const onboardingSchema = z.object({
+  fullName: z.string().min(1, 'Full name is required'),
+  role: z.enum(['reader', 'writer']),
+  occupation: z.string().min(1, 'Occupation is required'),
+  bio: z.string().optional(),
+});
+
 export const POST: APIRoute = async ({ locals, request }) => {
-  // ── Auth check ──
-  let userId: string | null = null;
-  let clerkUser: any = null;
-
-  if (typeof locals.auth === 'function') {
-    try {
-      const auth = await (locals as any).auth();
-      userId = auth?.userId ?? null;
-      if (userId && typeof (locals as any).currentUser === 'function') {
-        clerkUser = await (locals as any).currentUser();
-      }
-    } catch {
-      return new Response(JSON.stringify({ error: 'Auth check failed' }), { status: 401 });
+  try {
+    // Auth check using the same pattern as articles.ts
+    const auth = await (locals as any).auth();
+    if (!auth?.userId) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
     }
-  }
 
-  if (!userId) {
-    return new Response(JSON.stringify({ error: 'Not authenticated' }), { status: 401 });
-  }
+    const data = await request.json();
+    const parsed = onboardingSchema.safeParse(data);
 
-  // ── Parse body ──
-  let body: any;
-  try {
-    body = await request.json();
-  } catch {
-    return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400 });
-  }
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid input', details: parsed.error.format() }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
 
-  const { full_name, role, occupation, bio } = body;
+    const { fullName, role, occupation, bio } = parsed.data;
 
-  if (!role || !['reader', 'writer'].includes(role)) {
-    return new Response(JSON.stringify({ error: 'Invalid role' }), { status: 400 });
-  }
+    // Fetch Clerk user details to retrieve or generate a username
+    const clerkUser = typeof (locals as any).currentUser === 'function' ? await (locals as any).currentUser() : null;
+    const username = clerkUser?.username || 
+                     clerkUser?.emailAddresses?.[0]?.emailAddress.split('@')[0] || 
+                     `user_${auth.userId.substring(auth.userId.indexOf('_') + 1)}`;
 
-  if (!occupation) {
-    return new Response(JSON.stringify({ error: 'Occupation is required' }), { status: 400 });
-  }
-
-  // ── Derive username from Clerk or name ──
-  const username =
-    clerkUser?.username ||
-    clerkUser?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ||
-    (full_name || 'user').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-
-  // ── Upsert profile ──
-  try {
-    const profile = await upsertUserProfile(userId, {
-      full_name: full_name || clerkUser?.fullName || 'Carcblog User',
+    // Prepare profile data for upsert
+    const profile = {
       username,
+      full_name: fullName,
       role,
       occupation,
-      bio: bio || null,
-      avatar_url: clerkUser?.imageUrl || null,
-    });
+      bio: bio ?? null,
+    };
 
-    return new Response(JSON.stringify({ ok: true, profile }), { status: 200 });
-  } catch (err: any) {
-    console.error('Onboarding upsert failed:', err);
+    await upsertUserProfile(auth.userId, profile);
+
     return new Response(
-      JSON.stringify({ error: err?.message || 'Failed to save profile' }),
-      { status: 500 }
+      JSON.stringify({ success: true, role }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } }
+    );
+  } catch (error) {
+    console.error('Onboarding API error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 };

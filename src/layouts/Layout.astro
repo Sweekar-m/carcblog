@@ -2,28 +2,10 @@
 // Dashboard layout
 import Layout from '@/components/layout/Layout.astro';
 import SidebarNav from '@/components/dashboard/SidebarNav.astro';
-import { hasCompletedOnboarding } from '@/lib/supabase';
 export const prerender = false;
 
-// Get auth data safely
-let userId = null;
-if (typeof Astro.locals?.auth === 'function') {
-  const auth = await Astro.locals.auth();
-  userId = auth?.userId;
-}
-
-// Redirect to sign-in if not authenticated
-if (!userId) {
-  return Astro.redirect('/sign-in');
-}
-
-// Redirect to onboarding if profile setup is not complete
-const onboardingDone = await hasCompletedOnboarding(userId);
-if (!onboardingDone) {
-  return Astro.redirect('/onboarding');
-}
-
 const pathname = new URL(Astro.request.url).pathname;
+
 ---
 <Layout title="Dashboard - Carcblog" description="Your writer dashboard">
   <div class="dashboard-layout min-h-[calc(100vh-var(--header-height))] bg-background-alt">

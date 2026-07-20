@@ -1,10 +1,9 @@
 ---
 // User Onboarding Page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
-import { upsertUserProfile, getUserProfile } from '@/lib/supabase';
+import { getUserProfile, hasCompletedOnboarding, upsertUserProfile } from '@/lib/supabase';
 
 export const prerender = false;
-console.log('Onboarding component loaded');
 
 // 1. Ensure user is authenticated
 let userId = null;
@@ -26,35 +25,38 @@ let existingProfile = null;
 try {
   existingProfile = await getUserProfile(userId);
   if (existingProfile?.onboarding_completed) {
-    return Astro.redirect('/dashboard');
+    return Astro.redirect(existingProfile.role === 'writer' ? '/dashboard' : '/');
   }
 } catch (e) {
   // Profile doesn't exist yet, which is expected
 }
 
-// 3. Handle Form Submission
+const url = new URL(Astro.request.url);
+const redirectUrl = url.searchParams.get('redirect_url') || '';
+
+// 3. Handle Form Submission (for server-side fallback if JS is disabled)
 let errorMessage = '';
 if (Astro.request.method === 'POST') {
   try {
     const formData = await Astro.request.formData();
-    const fullName = formData.get('fullName')?.toString() || '';
-    const role = formData.get('role')?.toString() as 'reader' | 'writer';
-    const occupation = formData.get('occupation')?.toString() || '';
-    const bio = formData.get('bio')?.toString() || '';
+    const fullName = formData.get('fullName')?.toString()?.trim() || '';
+    const role = formData.get('role') as 'reader' | 'writer' || '';
+    const occupation = formData.get('occupation')?.toString()?.trim() || '';
+    const bio = formData.get('bio')?.toString()?.trim() || '';
 
     if (!fullName || !role || !occupation) {
       errorMessage = 'Please fill in all required fields.';
     } else {
       await upsertUserProfile(userId, {
         full_name: fullName,
-        role: role,
-        occupation: occupation,
-        bio: bio,
-        username: clerkUser?.username || clerkUser?.emailAddresses?.[0]?.emailAddress.split('@')[0] || 'user',
-        avatar_url: clerkUser?.imageUrl || null,
+        role,
+        occupation,
+        bio: bio || null,
       });
-
-      return Astro.redirect('/dashboard');
+      if (redirectUrl) {
+        return Astro.redirect(redirectUrl);
+      }
+      return Astro.redirect(role === 'writer' ? '/dashboard' : '/');
     }
   } catch (error) {
     console.error('Onboarding failed:', error);
@@ -67,11 +69,11 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
 
 <Layout title="Welcome — Setup Your Profile" description="Complete your onboarding to access your writer dashboard.">
   <div class="onboarding-container">
-    <!-- Atmospheric background orbs -->
+    {/* Atmospheric background orbs */}
     <div class="atm-orb onboarding-orb-mint" aria-hidden="true"></div>
     <div class="atm-orb onboarding-orb-peach" aria-hidden="true"></div>
 
-    <!-- White surface card, hairline, xl radius -->
+    {/* White surface card, hairline, xl radius */}
     <div class="onboarding-card">
       <div class="onboarding-header">
         <h1 class="onboarding-title">Welcome to Carcblog</h1>
@@ -90,13 +92,13 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
       )}
 
       <form method="POST" class="onboarding-form" id="onboarding-form">
-        <!-- Name Input -->
+        {/* Name Input */}
         <div class="form-group">
           <label for="fullName" class="form-label">Full Name <span class="required" aria-hidden="true">*</span></label>
           <input
             type="text"
-            name="fullName"
             id="fullName"
+            name="fullName"
             value={prefilledName}
             placeholder="e.g. Sweekar M"
             required
@@ -104,36 +106,42 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
           />
         </div>
 
-        <!-- Role Cards Selection -->
+        {/* Role Cards Selection */}
         <div class="form-group">
           <label class="form-label">Choose your Role <span class="required" aria-hidden="true">*</span></label>
           <div class="role-grid">
-            <button
-              type="button"
-              class="role-card"
-              data-role-btn="reader"
-              aria-label="Select Reader role"
-            >
-              <div class="role-icon-box">📖</div>
-              <div class="role-title">Reader</div>
-              <div class="role-desc">Read founder stories, discover news, and follow startups.</div>
-            </button>
-
-            <button
-              type="button"
-              class="role-card"
-              data-role-btn="writer"
-              aria-label="Select Writer role"
-            >
-              <div class="role-icon-box">✍️</div>
-              <div class="role-title">Writer</div>
-              <div class="role-desc">Publish articles, share startup profiles, and write updates.</div>
-            </button>
+            <label class="role-card-label">
+              <input
+                type="radio"
+                name="role"
+                value="reader"
+                class="role-radio"
+                required
+              />
+              <div class="role-card">
+                <div class="role-icon-box">📖</div>
+                <div class="role-title">Reader</div>
+                <div class="role-desc">Read founder stories, discover news, and follow startups.</div>
+              </div>
+            </label>
+            <label class="role-card-label">
+              <input
+                type="radio"
+                name="role"
+                value="writer"
+                class="role-radio"
+                required
+              />
+              <div class="role-card">
+                <div class="role-icon-box">✍️</div>
+                <div class="role-title">Writer</div>
+                <div class="role-desc">Publish articles, share startup profiles, and write updates.</div>
+              </div>
+            </label>
           </div>
-          <input type="hidden" name="role" id="selected-role" required />
         </div>
 
-        <!-- Occupation Radio Pills -->
+        {/* Occupation Radio Pills */}
         <div class="form-group">
           <label class="form-label">Occupation <span class="required" aria-hidden="true">*</span></label>
           <div class="occupation-pills">
@@ -144,7 +152,7 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
               'Founder',
               'Other'
             ].map((occ) => (
-              <label class="occ-pill-label">
+              <label class="occ-pill-label" key={occ}>
                 <input
                   type="radio"
                   name="occupation"
@@ -158,21 +166,21 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
           </div>
         </div>
 
-        <!-- Bio Textarea -->
+        {/* Bio Textarea */}
         <div class="form-group">
           <label for="bio" class="form-label">Short Bio <span class="optional">(Optional)</span></label>
           <textarea
-            name="bio"
             id="bio"
+            name="bio"
             rows="3"
             placeholder="Tell us a bit about yourself..."
             class="form-textarea"
           ></textarea>
         </div>
 
-        <!-- Submit Button: ink pill CTA -->
-        <button type="submit" class="btn-primary submit-btn">
-          <span>Complete Onboarding</span>
+        {/* Submit Button: ink pill CTA */}
+        <button type="submit" class="btn-primary submit-btn" id="submitButton">
+          <span id="submitButtonText">Complete Onboarding</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="btn-arrow" aria-hidden="true">
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />
@@ -184,41 +192,97 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
 </Layout>
 
 <script is:inline>
-  // Handlers for Role card selection
-  const roleCards = document.querySelectorAll('[data-role-btn]');
-  const roleInput = document.getElementById('selected-role');
+  // Handle form submission via fetch to show loading state and errors
+  const form = document.getElementById('onboarding-form');
+  const submitButton = document.getElementById('submitButton');
+  const submitButtonText = document.getElementById('submitButtonText');
 
-  roleCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const selectedRole = card.getAttribute('data-role-btn');
-      
-      // Update hidden input
-      roleInput.value = selectedRole;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent default form submission
 
-      // Update active UI classes
-      roleCards.forEach(c => {
-        if (c.getAttribute('data-role-btn') === selectedRole) {
-          c.classList.add('active');
-        } else {
-          c.classList.remove('active');
-        }
+    // Show loading state
+    submitButton.disabled = true;
+    submitButtonText.textContent = 'Setting up...';
+    // Optionally add a spinner icon here
+
+    // Collect form data
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData);
+
+    // Basic client-side validation (optional, but good for UX)
+    if (!data.fullName || !data.role || !data.occupation) {
+      showError('Please fill in all required fields.');
+      resetButtonState();
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/onboarding', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: data.fullName.trim(),
+          role: data.role,
+          occupation: data.occupation.trim(),
+          bio: data.bio?.trim() || '',
+        }),
       });
-    });
-  });
-</script>
 
-<style>
-  @keyframes slide-up {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit');
+      }
+
+      // Successfully submitted, redirect appropriately
+      const params = new URLSearchParams(window.location.search);
+      const redirectUrl = params.get('redirect_url');
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        window.location.href = result.role === 'writer' ? '/dashboard' : '/';
+      }
+    } catch (err) {
+      console.error('Onboarding submission error:', err);
+      showError(err.message || 'Something went wrong. Please try again.');
+      resetButtonState();
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  });
+
+  function showError(message) {
+    // Remove any existing error banner
+    const existingError = document.querySelector('.error-banner');
+    if (existingError) existingError.remove();
+
+    // Create and insert error banner above the form
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-banner';
+    errorDiv.setAttribute('role', 'alert');
+    errorDiv.innerHTML = `
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="error-icon" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <span>${message}</span>
+    `;
+
+    const form = document.getElementById('onboarding-form');
+    form.parentNode.insertBefore(errorDiv, form);
   }
 
+  function resetButtonState() {
+    submitButton.disabled = false;
+    submitButtonText.textContent = 'Complete Onboarding';
+  }
+
+  // Role card click handlers removed - styled natively via CSS :checked sibling selectors
+</script>
+
+<style is:global>
+  /* Re-use existing styles from the original onboarding.astro for consistency */
   .onboarding-container {
     position: relative;
     display: flex;
@@ -236,6 +300,7 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     top: -100px; left: 10%;
     pointer-events: none;
   }
+
   .onboarding-orb-peach {
     width: 350px; height: 350px;
     background: radial-gradient(circle, rgba(244, 197, 168, 0.35) 0%, transparent 70%);
@@ -243,7 +308,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     pointer-events: none;
   }
 
-  /* white surface card, hairline border, xl radius */
   .onboarding-card {
     position: relative;
     z-index: 10;
@@ -262,7 +326,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     margin-bottom: var(--space-xl);
   }
 
-  /* display-md: EB Garamond 300 */
   .onboarding-title {
     font-family: var(--font-serif);
     font-size: var(--fs-display-md);
@@ -304,6 +367,7 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     color: var(--color-semantic-error);
     margin-left: 2px;
   }
+
   .optional {
     color: var(--color-muted-soft);
     font-size: var(--fs-caption);
@@ -323,6 +387,7 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     box-sizing: border-box;
     transition: border-color var(--duration-150) var(--ease-out);
   }
+
   .form-textarea {
     width: 100%;
     padding: 12px var(--space-sm);
@@ -350,6 +415,14 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     gap: var(--space-sm);
   }
 
+  .role-card-label {
+    display: block;
+  }
+
+  .role-radio {
+    display: none;
+  }
+
   .role-card {
     display: flex;
     flex-direction: column;
@@ -369,7 +442,7 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
   }
 
   /* Active role selection: surface-strong bg, ink border */
-  .role-card.active {
+  .role-radio:checked + .role-card {
     border-color: var(--color-ink);
     background-color: var(--color-surface-strong);
     border-width: 1.5px;
@@ -387,7 +460,8 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     justify-content: center;
     margin-bottom: var(--space-xs);
   }
-  .role-card.active .role-icon-box {
+
+  .role-radio:checked + .role-card .role-icon-box {
     background: var(--color-surface-card);
     border-color: var(--color-hairline-strong);
   }
@@ -422,7 +496,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     display: none;
   }
 
-  /* badge-pill style pills */
   .occ-pill-text {
     display: inline-block;
     padding: 6px 14px;
@@ -441,7 +514,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     color: var(--color-ink);
   }
 
-  /* Active occ pill: ink bg, on-primary text */
   .occ-pill-input:checked + .occ-pill-text {
     background-color: var(--color-primary);
     border-color: var(--color-primary);

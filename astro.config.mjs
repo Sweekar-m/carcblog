@@ -7,7 +7,7 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   site: 'https://carcblog.com',
-  output: 'static',
+  output: 'server',
   adapter: vercel(),
   devToolbar: {
     enabled: false

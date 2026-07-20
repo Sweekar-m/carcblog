@@ -2,6 +2,18 @@ import { supabase } from './supabase';
 
 // Auth utilities
 export async function getCurrentUser(locals?: any) {
+  // If locals has the user profile populated by middleware, reuse it
+  if (locals?.user && locals.user.username) {
+    return {
+      id: locals.user.userId,
+      full_name: locals.user.full_name || 'Carcblog Writer',
+      username: locals.user.username,
+      role: locals.user.role || 'writer',
+      bio: locals.user.bio || 'Carcblog staff writer.',
+      avatar_url: locals.user.avatar_url || null
+    };
+  }
+
   // If Astro locals is provided, attempt to retrieve authentic Clerk user
   if (locals && typeof locals.auth === 'function') {
     try {
