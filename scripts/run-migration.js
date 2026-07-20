@@ -41,7 +41,7 @@ async function runMigration() {
     await client.connect();
     console.log('Connected successfully. Reading migration file...');
 
-    const migrationSql = fs.readFileSync('articles-migration.sql', 'utf8');
+    const migrationSql = fs.readFileSync('./db/articles-migration.sql', 'utf8');
     console.log('Running migration...');
     
     await client.query(migrationSql);
