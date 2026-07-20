@@ -1,28 +1,45 @@
 ---
 // Article detail page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
-import { getArticleBySlugWithFallback } from '@/lib/supabase';
+import { getSanityArticleBySlug, urlFor, portableTextToHtml } from '@/lib/sanity';
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const articleSlug = typeof slug === 'string' ? slug : (Array.isArray(slug) ? slug.join('/') : '');
-const articleRaw = await getArticleBySlugWithFallback(articleSlug);
+const articleSlug = typeof slug === 'string'
+  ? slug
+  : Array.isArray(slug)
+    ? slug.filter(s => s !== '').join('/')
+    : '';
+const articleRaw = await getSanityArticleBySlug(articleSlug);
 
 if (!articleRaw) {
   return Astro.redirect('/404');
 }
 
+// Helper to extract plain text from Portable Text for excerpt if needed
+const extractPlainText = (blocks) => {
+  if (!blocks || !Array.isArray(blocks)) return '';
+  return blocks
+    .map(block =>
+      block.children?.map(child => child.text || '').join(' ') || ''
+    )
+    .join('\n\n')
+    .replace(/\n+/g, ' ')
+    .trim();
+};
+
 const article = {
   title: articleRaw.title,
-  excerpt: articleRaw.excerpt ?? articleRaw.content?.substring(0, 150) + '...',
-  publishedAt: articleRaw.published_at,
+  excerpt: articleRaw.excerpt ??
+    (articleRaw.body ? extractPlainText(articleRaw.body).substring(0, 150) + '...' : '(no excerpt)'),
+  publishedAt: articleRaw.publishedAt,
   author: {
-    name: articleRaw.author?.full_name ?? articleRaw.author?.username ?? 'Unknown',
-    image: articleRaw.author?.avatar_url
+    name: articleRaw.author?.name ?? 'Unknown',
+    image: articleRaw.author?.image ? urlFor(articleRaw.author?.image).url() : undefined
   },
-  coverImage: articleRaw.cover_image_url,
-  body: articleRaw.content
+  coverImage: articleRaw.coverImage ? urlFor(articleRaw.coverImage).url() : undefined,
+  body: articleRaw.body
 };
 
 const authorInitial = article.author.name.charAt(0).toUpperCase();
@@ -89,7 +106,7 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
       <!-- ── Article Body — 680px reading column ── -->
       <article class="article-body reading-col">
         {article.body ? (
-          <div class="prose" set:html={article.body.replace(/\n/g, '<br/>')} />
+          <div class="prose" set:html={portableTextToHtml(article.body)} />
         ) : (
           <p class="article-empty">Article content loading…</p>
         )}

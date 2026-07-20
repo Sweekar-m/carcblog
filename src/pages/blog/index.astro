@@ -1,0 +1,105 @@
+---
+// Blog page — list of articles
+import Layout from '@/components/layout/Layout.astro';
+import { getSanityArticles } from '@/lib/sanity';
+import ArticleCard from '@/components/ui/ArticleCard.astro';
+
+const articles = await getSanityArticles({ limit: 100 });
+const articleData = articles.map(article => ({
+  title: article.title,
+  excerpt: article.excerpt ?? "(no excerpt)",
+  publishedAt: article.publishedAt,
+  authorName: article.author?.name ?? "Unknown",
+  authorImage: article.author?.image,
+  slug: article.slug.current,
+  coverImage: article.coverImage ? article.urlFor(article.coverImage).url() : undefined
+}));
+---
+
+<Layout title="Blog — Carcblog" description="Read all articles on Carcblog, the editorial platform for the startup ecosystem.">
+
+  <section class="blog-section">
+    <div class="page-container">
+      <div class="blog-header">
+        <h1 class="blog-title">Blog</h1>
+        <p class="blog-subtitle">
+          Latest stories from writers building the future.
+        </p>
+      </div>
+
+      {articleData.length > 0 ? (
+        <>
+          <div class="articles-grid reveal-grid">
+            {articleData.map((article) => (
+              <ArticleCard
+                title={article.title}
+                excerpt={article.excerpt}
+                publishedAt={article.publishedAt}
+                authorName={article.authorName}
+                authorImage={article.authorImage}
+                slug={article.slug}
+                coverImage={article.coverImage}
+              />
+            ))}
+          </div>
+
+          {/* Optional: Load more button if needed */}
+          <div class="load-more reveal-single" style={{ textAlign: 'center', marginTop: 'var(--space-xxl)' }}>
+            <a href="/feed" class="btn-outline">See more in Feed</a>
+          </div>
+        </>
+      ) : (
+        <div class="empty-state reveal-single" role="status">
+          <p class="badge-pill empty-eyebrow">No articles yet</p>
+          <h2 class="empty-title">Be the first to write</h2>
+          <p class="empty-body">
+            Publish your first article and share your ideas with the world.
+          </p>
+          <a href="/dashboard/articles/new" class="btn-primary" id="empty-state-write-cta">
+            Write your first story
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+
+</Layout>
+
+<style>
+  .blog-section {
+    padding: var(--space-section) 0;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+  .blog-title {
+    font-family: var(--font-serif);
+    font-size: var(--fs-display-xl);
+    font-weight: var(--fw-light);
+    color: var(--color-ink);
+    line-height: var(--lh-display-xl);
+    letter-spacing: var(--ls-display-xl);
+    margin-bottom: var(--space-sm);
+  }
+  .blog-subtitle {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-md);
+    font-weight: var(--fw-regular);
+    color: var(--color-body);
+    max-width: 560px;
+  }
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+  }
+  @media (max-width: 1024px) {
+    .articles-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .articles-grid { grid-template-columns: 1fr; }
+  }
+  .load-more {
+    margin-top: var(--space-xxl);
+    text-align: center;
+  }
+</style>

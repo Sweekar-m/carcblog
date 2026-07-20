@@ -2,18 +2,18 @@
 // Feed page — ElevenLabs editorial design system
 export const prerender = false;
 import Layout from '@/components/layout/Layout.astro';
-import { getPublishedArticlesWithFallback } from '@/lib/supabase';
+import { getSanityArticles, urlFor } from '@/lib/sanity';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
 
-const articles = await getPublishedArticlesWithFallback(12);
-const recentArticles = articles.map(article => ({
+const sanityArticles = await getSanityArticles({ limit: 12 });
+const recentArticles = sanityArticles.map(article => ({
   title: article.title,
-  excerpt: article.excerpt ?? article.content?.substring(0, 150) + '...',
-  publishedAt: article.published_at,
-  authorName: article.author?.full_name ?? article.author?.username ?? 'Unknown',
-  authorImage: article.author?.avatar_url,
-  slug: article.slug,
-  coverImage: article.cover_image_url
+  excerpt: article.excerpt ?? "(no excerpt)",
+  publishedAt: article.publishedAt,
+  authorName: article.author?.name ?? "Unknown",
+  authorImage: article.author?.image,
+  slug: article.slug.current,
+  coverImage: article.coverImage ? urlFor(article.coverImage).url() : undefined
 }));
 ---
 
