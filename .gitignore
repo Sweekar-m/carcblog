@@ -21,12 +21,14 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 .env.development
-#agent files
+# agent files
 .agents
 .claude 
 .antigravity
 .astro
 .vercel
+scratch/
+
 # OS files
 .DS_Store
 Thumbs.db

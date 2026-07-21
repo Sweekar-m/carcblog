@@ -63,7 +63,7 @@ export async function authorizeArticleAction(
     return {
       userId,
       profile,
-      errorResponse: errorResponse('Forbidden: Admin access required', 403),
+      errorResponse: errorResponse(`Forbidden: Admin access required. Your current role is '${profile.role}'.`, 403),
     };
   }
 
@@ -71,7 +71,7 @@ export async function authorizeArticleAction(
     return {
       userId,
       profile,
-      errorResponse: errorResponse('Forbidden: Writer or Admin access required', 403),
+      errorResponse: errorResponse(`Forbidden: Writer or Admin access required. Your current role is '${profile.role}'. Only approved writers may publish articles.`, 403),
     };
   }
 
@@ -106,13 +106,14 @@ export async function authorizeArticleAction(
           userId,
           profile,
           article,
-          errorResponse: errorResponse('Forbidden: You do not own this article', 403),
+          errorResponse: errorResponse(`Forbidden: You do not own this article. Article owner identity does not match your session identity.`, 403),
         };
       }
     }
 
     return { userId, profile, article };
   }
+
 
   return { userId, profile };
 }
