@@ -1,9 +1,24 @@
 ---
 // Article detail page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
-import { getSanityArticleBySlug, urlFor, portableTextToHtml } from '@/lib/sanity';
+import { getSanityArticleBySlugForUser, safeImageUrl, portableTextToHtml } from '@/lib/sanity';
+
+import { requireAuth } from '@/lib/requireAuth';
+import { getUserProfile } from '@/lib/supabase';
 
 export const prerender = false;
+
+let userId: string | null = null;
+let isAdmin = false;
+try {
+  userId = await requireAuth(Astro.locals);
+  if (userId) {
+    const profile = await getUserProfile(userId);
+    isAdmin = profile?.role === 'admin';
+  }
+} catch {
+  // Unauthenticated guest request
+}
 
 const { slug } = Astro.params;
 const articleSlug = typeof slug === 'string'
@@ -11,7 +26,8 @@ const articleSlug = typeof slug === 'string'
   : Array.isArray(slug)
     ? slug.filter(s => s !== '').join('/')
     : '';
-const articleRaw = await getSanityArticleBySlug(articleSlug);
+
+const articleRaw = await getSanityArticleBySlugForUser(articleSlug, userId, isAdmin);
 
 if (!articleRaw) {
   return Astro.redirect('/404');
@@ -29,18 +45,26 @@ const extractPlainText = (blocks) => {
     .trim();
 };
 
+const isOwner = userId != null && articleRaw.author?.clerkUserId === userId;
+const canManage = isOwner || isAdmin;
+const status = articleRaw.status ?? (articleRaw.publishedAt ? 'published' : 'draft');
+
 const article = {
+  id: articleRaw._id,
   title: articleRaw.title,
   excerpt: articleRaw.excerpt ??
     (articleRaw.body ? extractPlainText(articleRaw.body).substring(0, 150) + '...' : '(no excerpt)'),
   publishedAt: articleRaw.publishedAt,
+  status,
   author: {
     name: articleRaw.author?.name ?? 'Unknown',
-    image: articleRaw.author?.image ? urlFor(articleRaw.author?.image).url() : undefined
+    image: safeImageUrl(articleRaw.author?.image)
   },
-  coverImage: articleRaw.coverImage ? urlFor(articleRaw.coverImage).url() : undefined,
+  coverImage: safeImageUrl(articleRaw.coverImage, articleRaw.body),
   body: articleRaw.body
 };
+
+
 
 const authorInitial = article.author.name.charAt(0).toUpperCase();
 ---
@@ -55,6 +79,30 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
   <div class="article-page">
     <div class="page-container">
       <div class="article-glass-column">
+
+        {canManage && (
+          <!-- Owner / Admin Action Bar -->
+          <div class="owner-manage-bar" data-article-id={article.id}>
+            <div class="owner-status-pill">
+              <span class={`status-badge status-${article.status}`}>
+                {article.status.toUpperCase()}
+              </span>
+              {article.status === 'draft' && (
+                <span class="draft-notice">Draft Preview (Only Visible To You)</span>
+              )}
+            </div>
+            <div class="owner-actions">
+              {article.status !== 'published' && (
+                <button type="button" class="btn-publish-global" id="btnPublishGlobal">
+                  🚀 Publish Globally
+                </button>
+              )}
+              <button type="button" class="btn-delete-article" id="btnDeleteArticle">
+                🗑️ Delete Article
+              </button>
+            </div>
+          </div>
+        )}
 
         <!-- ── Article Header ── -->
         <header class="article-header">
@@ -78,14 +126,19 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
               <span class="author-title">Carcblog Contributor</span>
             </div>
           </div>
-          <time class="publish-date" datetime={article.publishedAt}>
-            {new Date(article.publishedAt).toLocaleDateString(undefined, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })} · 5 min read
+          <time class="publish-date" datetime={article.publishedAt ?? undefined}>
+            {article.publishedAt ? (
+              new Date(article.publishedAt).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })
+            ) : (
+              'Draft (Unpublished)'
+            )} · 5 min read
           </time>
         </div>
+
 
         <!-- Headline: display-xl, EB Garamond 300, 48px, -0.96px tracking, ink -->
         <h1 class="article-title">{article.title}</h1>
@@ -98,6 +151,7 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
               alt={article.title}
               class="article-cover"
               loading="eager"
+              referrerpolicy="no-referrer"
             />
           </div>
         )}
@@ -120,6 +174,7 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
               src={article.author.image}
               alt={article.author.name}
               class="author-card-avatar"
+              referrerpolicy="no-referrer"
             />
           ) : (
             <div class="author-card-avatar-fallback">
@@ -150,10 +205,128 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
       progressBar.style.width = `${Math.min(progress, 100)}%`;
     }, { passive: true });
   }
+
+  const manageBar = document.querySelector('.owner-manage-bar');
+  if (manageBar) {
+    const articleId = manageBar.getAttribute('data-article-id');
+    const btnPublish = document.getElementById('btnPublishGlobal');
+    const btnDelete = document.getElementById('btnDeleteArticle');
+
+    if (btnPublish && articleId) {
+      btnPublish.addEventListener('click', async () => {
+        if (!confirm('Publish this article globally now?')) return;
+        btnPublish.setAttribute('disabled', 'true');
+        btnPublish.textContent = 'Publishing...';
+        try {
+          const res = await fetch(`/api/articles/${articleId}/publish`, { method: 'POST' });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert('Article published globally successfully!');
+            window.location.reload();
+          } else {
+            alert('Failed to publish article: ' + (data.error || 'Unknown error'));
+            btnPublish.removeAttribute('disabled');
+            btnPublish.textContent = '🚀 Publish Globally';
+          }
+        } catch (err: any) {
+          alert('Error: ' + err.message);
+          btnPublish.removeAttribute('disabled');
+          btnPublish.textContent = '🚀 Publish Globally';
+        }
+      });
+    }
+
+    if (btnDelete && articleId) {
+      btnDelete.addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
+        btnDelete.setAttribute('disabled', 'true');
+        btnDelete.textContent = 'Deleting...';
+        try {
+          const res = await fetch(`/api/articles/${articleId}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            alert('Article deleted successfully.');
+            window.location.href = '/dashboard/articles';
+          } else {
+            alert('Failed to delete article: ' + (data.error || 'Unknown error'));
+            btnDelete.removeAttribute('disabled');
+            btnDelete.textContent = '🗑️ Delete Article';
+          }
+        } catch (err: any) {
+          alert('Error: ' + err.message);
+          btnDelete.removeAttribute('disabled');
+          btnDelete.textContent = '🗑️ Delete Article';
+        }
+      });
+    }
+  }
 </script>
 
 <style>
+/* ── Owner / Admin Action Bar ── */
+.owner-manage-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  padding: 12px 18px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+.owner-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.status-draft { background: #fef08a; color: #854d0e; }
+.status-published { background: #dcfce7; color: #166534; }
+.status-scheduled { background: #e0f2fe; color: #075985; }
+.draft-notice {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+.owner-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-publish-global {
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+.btn-publish-global:hover { opacity: 0.9; }
+.btn-delete-article {
+  background: #ef4444;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+.btn-delete-article:hover { opacity: 0.9; }
+
 /* ── Reading progress bar — 2px ink-colored line ── */
+
 .reading-progress-bar {
   position: fixed;
   top: var(--h-nav);                       /* sits below the 64px nav */

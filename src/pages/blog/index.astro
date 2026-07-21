@@ -1,19 +1,21 @@
 ---
 // Blog page — list of articles
 import Layout from '@/components/layout/Layout.astro';
-import { getSanityArticles } from '@/lib/sanity';
+import { getSanityArticles, safeImageUrl } from '@/lib/sanity';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
 
 const articles = await getSanityArticles({ limit: 100 });
 const articleData = articles.map(article => ({
   title: article.title,
   excerpt: article.excerpt ?? "(no excerpt)",
-  publishedAt: article.publishedAt,
+  publishedAt: article.publishedAt ?? new Date().toISOString(),
   authorName: article.author?.name ?? "Unknown",
-  authorImage: article.author?.image,
-  slug: article.slug.current,
-  coverImage: article.coverImage ? article.urlFor(article.coverImage).url() : undefined
+  authorImage: safeImageUrl(article.author?.image) ?? null,
+  slug: typeof article.slug === 'string' ? article.slug : (article.slug as any)?.current ?? '',
+  coverImage: safeImageUrl(article.coverImage) ?? null
 }));
+
+
 ---
 
 <Layout title="Blog — Carcblog" description="Read all articles on Carcblog, the editorial platform for the startup ecosystem.">

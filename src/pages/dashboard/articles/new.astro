@@ -1,379 +1,56 @@
 ---
-// New article form page — ElevenLabs editorial design system
-import Layout from '@/layouts/Layout.astro';
+/**
+ * /dashboard/articles/new — Publishing Studio entry point.
+ * Uses EditorLayout (no nav/footer) and mounts ArticleEditorShell as client:only="react".
+ * Auth is enforced by middleware.ts — this page is writer-only.
+ */
+import EditorLayout from '@/layouts/EditorLayout.astro';
+import { ArticleEditorShell } from '@/components/islands/ArticleEditorShell';
+import { EditorLoadingSkeleton } from '@/components/islands/editor/LoadingSkeleton';
 
 export const prerender = false;
+
+let clerkUserId = '';
+if (typeof Astro.locals?.auth === 'function') {
+  const auth = await Astro.locals.auth();
+  clerkUserId = auth?.userId || '';
+}
+
+if (!clerkUserId) {
+  return Astro.redirect('/auth/sign-in');
+}
 ---
-<Layout title="New Article - Dashboard" description="Create a new article on Carcblog">
-  <div class="page-content">
-    <header class="page-header">
-      <h1 class="page-title">New Article</h1>
-      <p class="page-sub">Share your thoughts and ideas with the world.</p>
-    </header>
 
-    <!-- Form container: white surface-card, hairline, xl radius -->
-    <div class="form-container">
-      <form id="articleForm" action="/api/articles" method="POST" class="article-form">
-        <!-- Title -->
-        <div class="form-group">
-          <label class="form-label" for="titleInput">Title <span class="required" aria-hidden="true">*</span></label>
-          <input type="text" name="title" id="titleInput" required
-                 class="form-input" placeholder="Enter article title" autocomplete="off" />
-        </div>
 
-        <!-- Slug -->
-        <div class="form-group">
-          <label class="form-label" for="slugInput">Slug (optional)</label>
-          <input type="text" name="slug" id="slugInput"
-                 class="form-input" placeholder="Leave blank to auto-generate from title" autocomplete="off" />
-        </div>
-
-        <!-- Cover Image URL -->
-        <div class="form-group">
-          <label class="form-label" for="coverImageUrl">Cover Image URL (optional)</label>
-          <input type="url" name="coverImageUrl" id="coverImageUrl"
-                 class="form-input" placeholder="https://example.com/image.jpg" autocomplete="off" />
-        </div>
-
-        <!-- Excerpt -->
-        <div class="form-group">
-          <label class="form-label" for="excerptInput">Excerpt (optional)</label>
-          <textarea name="excerpt" id="excerptInput" rows="3"
-                    class="form-textarea" placeholder="Enter a short summary"></textarea>
-        </div>
-
-        <!-- Content -->
-        <div class="form-group content-group">
-          <label class="form-label" for="contentInput">Content <span class="required" aria-hidden="true">*</span></label>
-          <div class="textarea-wrap">
-            <textarea name="body" id="contentInput" rows="18"
-                      class="form-textarea form-textarea--content" placeholder="Write your article here..." required></textarea>
-            <span id="word-count" class="word-counter">0 words</span>
-          </div>
-        </div>
-
-        <!-- Publish Options -->
-        <div class="form-group checkbox-group">
-          <label class="checkbox-label">
-            <input type="checkbox" name="status" value="published" id="publish-immediate" checked class="form-checkbox" />
-            <div class="checkbox-text">
-              <p class="checkbox-title">Publish immediately</p>
-              <p class="checkbox-desc">Make this article visible site-wide as soon as it is created.</p>
-            </div>
-          </label>
-        </div>
-
-        <!-- Submit -->
-        <div class="form-actions">
-          <button type="submit" id="submitButton" class="btn-primary">
-            Publish Article
-          </button>
-        </div>
-      </form>
-
-      <div id="formResponse" class="form-response hidden"></div>
-    </div>
+<EditorLayout title="New Article">
+  <!--
+    SSR placeholder: shown between Astro serving the HTML and React hydrating.
+    EditorLoadingSkeleton is a pure JSX component rendered server-side to prevent blank flash.
+  -->
+  <div id="editor-ssr-skeleton" aria-hidden="true">
+    <EditorLoadingSkeleton />
   </div>
-</Layout>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('articleForm') as HTMLFormElement;
-    const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-    const responseDiv = document.getElementById('formResponse') as HTMLDivElement;
-    const titleInput = document.getElementById('titleInput') as HTMLInputElement;
-    const slugInput = document.getElementById('slugInput') as HTMLInputElement;
-    const contentInput = document.getElementById('contentInput') as HTMLTextAreaElement;
-    const wordCount = document.getElementById('word-count') as HTMLSpanElement;
+  <!--
+    React island: client:only="react" — nothing is server-rendered for the shell.
+    The skeleton above fills the gap. Once React mounts, it takes over the viewport.
+  -->
+  <ArticleEditorShell client:only="react" clerkUserId={clerkUserId} />
 
-    if (!form || !submitButton || !responseDiv || !titleInput || !slugInput || !contentInput || !wordCount) return;
 
-    // Auto-generate slug from title
-    const generateSlug = (title: string) => {
-      return title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)+/g, '')
-        .substring(0, 60);
-    };
-
-    const updateSlug = () => {
-      if (!slugInput.value.trim()) {
-        slugInput.placeholder = titleInput.value ? generateSlug(titleInput.value) : 'Leave blank to auto-generate from title';
-      }
-    };
-
-    titleInput.addEventListener('input', updateSlug);
-
-    // Calculate word count
-    contentInput.addEventListener('input', () => {
-      const text = contentInput.value.trim();
-      const count = text ? text.split(/\s+/).length : 0;
-      wordCount.textContent = `${count} word${count === 1 ? '' : 's'}`;
-    });
-
-    // Form submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      submitButton.disabled = true;
-      const originalText = submitButton.textContent;
-      submitButton.textContent = 'Publishing…';
-
-      responseDiv.className = 'form-response hidden';
-      responseDiv.textContent = '';
-
-      const formData = new FormData(form);
-      const data = {
-        title: formData.get('title'),
-        slug: formData.get('slug') || slugInput.placeholder,
-        coverImageUrl: formData.get('coverImageUrl'),
-        excerpt: formData.get('excerpt'),
-        body: formData.get('body'),
-        status: formData.get('status') || 'draft'
-      };
-
-      try {
-        const response = await fetch(form.action, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.message || 'Something went wrong');
+  <script is:inline>
+    // Hide the SSR skeleton as soon as the React shell mounts
+    document.addEventListener('DOMContentLoaded', () => {
+      // ArticleEditorShell mounts into a sibling div — hide skeleton once React runs
+      const observer = new MutationObserver(() => {
+        const shell = document.getElementById('publishing-studio');
+        const skeleton = document.getElementById('editor-ssr-skeleton');
+        if (shell && skeleton) {
+          skeleton.style.display = 'none';
+          observer.disconnect();
         }
-
-        responseDiv.className = 'form-response form-response--success';
-        responseDiv.textContent = 'Article published successfully!';
-        // Redirect to the article page using the slug from the response
-        const slug = result.article?.slug?.current;
-        if (slug) {
-          window.location.href = `/article/${slug}`;
-        } else {
-          // fallback to dashboard if slug missing
-          setTimeout(() => {
-            window.location.href = '/dashboard/articles';
-          }, 1200);
-        }
-        // No need to reset form as we are leaving the page
-
-      } catch (err: any) {
-        responseDiv.className = 'form-response form-response--error';
-        responseDiv.textContent = err.message || 'Failed to publish article. Please try again.';
-        submitButton.disabled = false;
-        submitButton.textContent = originalText;
-      }
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
     });
-  });
-</script>
-
-<style>
-  .page-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);                   /* 32px */
-    max-width: 800px;
-  }
-
-  /* ── Page header ── */
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--color-hairline);
-  }
-
-  /* display-md: EB Garamond 300, 32px */
-  .page-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-md);
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
-    margin: 0;
-    line-height: var(--lh-display-md);
-    letter-spacing: var(--ls-display-md);
-  }
-
-  .page-sub {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-muted);
-    margin: 0;
-  }
-
-  /* ── Form Card ── */
-  .form-container {
-    background: var(--color-surface-card);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
-    transition: box-shadow var(--duration-200) var(--ease-out);
-  }
-  .form-container:hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  .article-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-  }
-
-  .form-label {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-medium);
-    color: var(--color-body-strong);
-  }
-
-  .required {
-    color: var(--color-semantic-error);
-    margin-left: 2px;
-  }
-
-  /* text-input standard styling */
-  .form-input {
-    width: 100%;
-    padding: 10px var(--space-sm);
-    border: 1px solid var(--color-hairline-strong);
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-ink);
-    background: var(--color-surface-card);
-    box-sizing: border-box;
-    transition: border-color var(--duration-150) var(--ease-out);
-  }
-
-  .form-textarea {
-    width: 100%;
-    padding: 12px var(--space-sm);
-    border: 1px solid var(--color-hairline-strong);
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-ink);
-    background: var(--color-surface-card);
-    box-sizing: border-box;
-    resize: vertical;
-    transition: border-color var(--duration-150) var(--ease-out);
-  }
-
-  .form-input:focus, .form-textarea:focus {
-    outline: none;
-    border-color: var(--color-ink);
-    border-width: 1.5px;
-  }
-
-  /* ── Content Textarea with Counter ── */
-  .textarea-wrap {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .form-textarea--content {
-    font-family: var(--font-mono);
-    font-size: var(--fs-caption);
-    line-height: 1.6;
-  }
-
-  .word-counter {
-    position: absolute;
-    bottom: 12px;
-    right: 14px;
-    font-family: var(--font-sans);
-    font-size: 11px;
-    color: var(--color-muted-soft);
-    background: var(--color-surface-card);
-    border: 1px solid var(--color-hairline-soft);
-    padding: 2px 6px;
-    border-radius: var(--radius-xs);
-    pointer-events: none;
-  }
-
-  /* ── Checkbox custom layout ── */
-  .checkbox-group {
-    padding: 4px 0;
-  }
-
-  .checkbox-label {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-sm);
-    cursor: pointer;
-  }
-
-  .form-checkbox {
-    width: 16px;
-    height: 16px;
-    margin-top: 3px;
-    accent-color: var(--color-primary);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .checkbox-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .checkbox-title {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    font-weight: var(--fw-medium);
-    color: var(--color-body-strong);
-    margin: 0;
-  }
-
-  .checkbox-desc {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption);
-    color: var(--color-muted);
-    margin: 0;
-  }
-
-  /* ── Form Actions ── */
-  .form-actions {
-    margin-top: var(--space-xs);
-  }
-
-  /* ── Response banner ── */
-  .form-response {
-    margin-top: var(--space-md);
-    padding: var(--space-sm) var(--space-base);
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    font-weight: var(--fw-medium);
-  }
-
-  .form-response--success {
-    background: rgba(22, 163, 74, 0.08);
-    color: var(--color-semantic-success);
-    border: 1px solid rgba(22, 163, 74, 0.15);
-  }
-
-  .form-response--error {
-    background: rgba(220, 26, 26, 0.08);
-    color: var(--color-semantic-error);
-    border: 1px solid rgba(220, 26, 26, 0.15);
-  }
-
-  .hidden {
-    display: none !important;
-  }
-</style>
+  </script>
+</EditorLayout>

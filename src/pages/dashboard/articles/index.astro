@@ -1,7 +1,7 @@
 ---
 // Dashboard articles listing — ElevenLabs editorial design system
 import Layout from '@/layouts/Layout.astro';
-import { getSanityArticlesByAuthor, urlFor } from '@/lib/sanity';
+import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
@@ -11,17 +11,18 @@ const rawArticles = user ? await getSanityArticlesByAuthor(user.id) : [];
 const articles = rawArticles.map(article => ({
   _id: article._id,
   title: article.title,
-  slug: article.slug,
+  slug: typeof article.slug === 'string' ? article.slug : (article.slug as any)?.current ?? '',
   excerpt: article.excerpt ?? '(no excerpt)',
   publishedAt: article.publishedAt,
-  coverImage: article.coverImage ? urlFor(article.coverImage).url() : undefined,
+  coverImage: article.coverImage ?? undefined, // already a CDN URL string from GROQ
   author: {
     name: article.author?.name ?? 'Unknown',
     image: article.author?.image,
   }
 }));
-const publishedArticles = articles.filter(a => a.publishedAt !== null);
-const draftArticles = articles.filter(a => a.publishedAt === null);
+const publishedArticles = articles.filter(a => a.publishedAt != null);
+const draftArticles = articles.filter(a => a.publishedAt == null);
+
 ---
 <Layout title="My Articles - Dashboard" description="Manage your published articles and drafts on Carcblog">
   <div class="page-content">
@@ -104,7 +105,11 @@ const draftArticles = articles.filter(a => a.publishedAt === null);
                   <span>{article.author?.name || 'Anonymous'}</span>
                 </div>
               </div>
-              <a href={`/article/${article.slug}`} class="btn-outline btn-small" id={`preview-draft-${article.slug}`}>Preview</a>
+              <div class="row-actions">
+                <a href={`/article/${article.slug}`} class="btn-outline btn-small" id={`preview-draft-${article.slug}`}>Preview</a>
+                <button type="button" class="btn-primary btn-small btn-dash-publish" data-id={article._id}>Publish</button>
+                <button type="button" class="btn-outline btn-small btn-dash-delete" data-id={article._id}>Delete</button>
+              </div>
             </article>
           ))}
         </div>
@@ -118,12 +123,75 @@ const draftArticles = articles.filter(a => a.publishedAt === null);
   </div>
 </Layout>
 
+<script>
+  document.querySelectorAll('.btn-dash-publish').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      const target = e.currentTarget as HTMLButtonElement;
+      const id = target.getAttribute('data-id');
+      if (!id || !confirm('Publish this draft globally?')) return;
+      target.disabled = true;
+      target.textContent = 'Publishing...';
+      try {
+        const res = await fetch(`/api/articles/${id}/publish`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Article published globally!');
+          window.location.reload();
+        } else {
+          alert('Failed to publish: ' + (data.error || 'Unknown error'));
+          target.disabled = false;
+          target.textContent = 'Publish';
+        }
+      } catch (err: any) {
+        alert('Error: ' + err.message);
+        target.disabled = false;
+        target.textContent = 'Publish';
+      }
+    });
+  });
+
+  document.querySelectorAll('.btn-dash-delete').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      const target = e.currentTarget as HTMLButtonElement;
+      const id = target.getAttribute('data-id');
+      if (!id || !confirm('Delete this article?')) return;
+      target.disabled = true;
+      target.textContent = 'Deleting...';
+      try {
+        const res = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Article deleted.');
+          window.location.reload();
+        } else {
+          alert('Failed to delete: ' + (data.error || 'Unknown error'));
+          target.disabled = false;
+          target.textContent = 'Delete';
+        }
+      } catch (err: any) {
+        alert('Error: ' + err.message);
+        target.disabled = false;
+        target.textContent = 'Delete';
+      }
+    });
+  });
+</script>
+
+
 <style>
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
   .page-content {
     display: flex;
     flex-direction: column;
     gap: var(--space-xl);                   /* 32px */
   }
+
 
   /* ── Page header ── */
   .page-header {

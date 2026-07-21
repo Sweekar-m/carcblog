@@ -30,7 +30,8 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
           alt={title}
           class="card-img"
           loading="lazy"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          referrerpolicy="no-referrer"
+          onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"
         />
       ) : null}
       <!-- Atmospheric orb placeholder — never dark gradient -->
@@ -63,7 +64,8 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
               src={authorImage}
               alt={authorName}
               class="author-avatar"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              referrerpolicy="no-referrer"
+              onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
             />
           ) : null}
           <div class="author-avatar-fallback" style={authorImage ? 'display:none' : 'display:flex'}>
@@ -74,6 +76,7 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
         <span class="card-read-label">Read</span>
       </div>
     </div>
+
   </a>
 </article>
 

@@ -1,0 +1,48 @@
+---
+/**
+ * EditorLayout — Dedicated full-viewport layout for the Publishing Studio.
+ * No navigation bar, no footer, no particles background.
+ * noindex: the editor is not a public page.
+ */
+import '@/styles/globals.css';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'New Article' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en" dir="ltr" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} — Carcblog</title>
+    <!-- Editor is private — never index it -->
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" href="/favicon.svg" />
+
+    <!-- Fonts (same as main layout to avoid FOUT) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Reduced-motion detection — must run before paint -->
+    <script is:inline>
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('reduced-motion');
+      }
+    </script>
+  </head>
+
+  <body
+    class="antialiased"
+    style="margin:0;padding:0;background:#fafaf8;overflow:hidden;"
+  >
+    <slot />
+  </body>
+</html>

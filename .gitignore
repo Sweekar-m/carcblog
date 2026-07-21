@@ -2,7 +2,10 @@
 dist/
 .astro/
 .vercel/
-
+.playwright-mcp/
+.agent
+.brag-output-2026-07-21-120031/
+.impeccable/
 # dependency directories
 node_modules/
 

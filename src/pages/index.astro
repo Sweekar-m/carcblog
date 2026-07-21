@@ -2,19 +2,21 @@
 // Home page — ElevenLabs editorial design system
 export const prerender = false;
 import Layout from '@/components/layout/Layout.astro';
-import { getSanityArticles, urlFor } from '@/lib/sanity';
+import { getSanityArticles, safeImageUrl } from '@/lib/sanity';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
 
 const sanityArticles = await getSanityArticles({ limit: 6 });
 const articleData = sanityArticles.map(article => ({
   title: article.title,
   excerpt: article.excerpt ?? "(no excerpt)",
-  publishedAt: article.publishedAt,
+  publishedAt: article.publishedAt ?? new Date().toISOString(),
   authorName: article.author?.name ?? "Unknown",
-  authorImage: article.author?.image,
-  slug: article.slug,
-  coverImage: article.coverImage ? urlFor(article.coverImage).url() : undefined
+  authorImage: safeImageUrl(article.author?.image) ?? null,
+  slug: typeof article.slug === 'string' ? article.slug : (article.slug as any)?.current ?? '',
+  coverImage: safeImageUrl(article.coverImage, article.body) ?? null
 }));
+
+
 const heroArticle = articleData[0] || null;
 const gridArticles = articleData.slice(1);
 ---
@@ -89,7 +91,7 @@ const gridArticles = articleData.slice(1);
         <div class="section-header">
           <span class="badge-pill" aria-label="Section: Featured Story">Featured Story</span>
         </div>
-        <a href={`/article/${heroArticle.slug.current ?? heroArticle.slug}`} class="spotlight-card reveal-single" aria-label={`Read featured article: ${heroArticle.title}`}>
+        <a href={`/article/${heroArticle.slug}`} class="spotlight-card reveal-single" aria-label={`Read featured article: ${heroArticle.title}`}>
           <div class="spotlight-image-col">
             {heroArticle.coverImage ? (
               <img

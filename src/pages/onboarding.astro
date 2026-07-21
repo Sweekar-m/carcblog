@@ -1,7 +1,7 @@
 ---
 // User Onboarding Page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
-import { getUserProfile, hasCompletedOnboarding, upsertUserProfile } from '@/lib/supabase';
+import { getUserProfile, upsertUserProfile } from '@/lib/supabase';
 
 export const prerender = false;
 
@@ -25,38 +25,43 @@ let existingProfile = null;
 try {
   existingProfile = await getUserProfile(userId);
   if (existingProfile?.onboarding_completed) {
+    // Redirect based on actual stored role — never trusting query params or form data
     return Astro.redirect(existingProfile.role === 'writer' ? '/dashboard' : '/');
   }
 } catch (e) {
-  // Profile doesn't exist yet, which is expected
+  // Profile doesn't exist yet, which is expected for new users
 }
 
 const url = new URL(Astro.request.url);
 const redirectUrl = url.searchParams.get('redirect_url') || '';
 
-// 3. Handle Form Submission (for server-side fallback if JS is disabled)
+// 3. Handle Form Submission (server-side fallback for JS-disabled browsers)
+//    SECURITY: `role` is NEVER read from the form. All new users are hard-coded
+//    as 'reader'. Role elevation requires a separate admin action.
 let errorMessage = '';
 if (Astro.request.method === 'POST') {
   try {
     const formData = await Astro.request.formData();
     const fullName = formData.get('fullName')?.toString()?.trim() || '';
-    const role = formData.get('role') as 'reader' | 'writer' || '';
     const occupation = formData.get('occupation')?.toString()?.trim() || '';
     const bio = formData.get('bio')?.toString()?.trim() || '';
 
-    if (!fullName || !role || !occupation) {
+    if (!fullName || !occupation) {
       errorMessage = 'Please fill in all required fields.';
     } else {
+      // Hard-code role to 'reader' — never read from client input
       await upsertUserProfile(userId, {
         full_name: fullName,
-        role,
+        role: 'reader',
         occupation,
         bio: bio || null,
       });
+
       if (redirectUrl) {
         return Astro.redirect(redirectUrl);
       }
-      return Astro.redirect(role === 'writer' ? '/dashboard' : '/');
+      // All onboarding users are readers — redirect to home
+      return Astro.redirect('/');
     }
   } catch (error) {
     console.error('Onboarding failed:', error);
@@ -106,40 +111,8 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
           />
         </div>
 
-        {/* Role Cards Selection */}
-        <div class="form-group">
-          <label class="form-label">Choose your Role <span class="required" aria-hidden="true">*</span></label>
-          <div class="role-grid">
-            <label class="role-card-label">
-              <input
-                type="radio"
-                name="role"
-                value="reader"
-                class="role-radio"
-                required
-              />
-              <div class="role-card">
-                <div class="role-icon-box">📖</div>
-                <div class="role-title">Reader</div>
-                <div class="role-desc">Read founder stories, discover news, and follow startups.</div>
-              </div>
-            </label>
-            <label class="role-card-label">
-              <input
-                type="radio"
-                name="role"
-                value="writer"
-                class="role-radio"
-                required
-              />
-              <div class="role-card">
-                <div class="role-icon-box">✍️</div>
-                <div class="role-title">Writer</div>
-                <div class="role-desc">Publish articles, share startup profiles, and write updates.</div>
-              </div>
-            </label>
-          </div>
-        </div>
+        {/* Role field intentionally removed from the form.
+            All users register as 'reader'. Writers are promoted by an admin. */}
 
         {/* Occupation Radio Pills */}
         <div class="form-group">
@@ -192,25 +165,23 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
 </Layout>
 
 <script is:inline>
-  // Handle form submission via fetch to show loading state and errors
+  // Handle form submission via fetch to show loading state and errors.
+  // SECURITY: `role` is never collected or sent. The server always assigns 'reader'.
   const form = document.getElementById('onboarding-form');
   const submitButton = document.getElementById('submitButton');
   const submitButtonText = document.getElementById('submitButtonText');
 
   form.addEventListener('submit', async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
-    // Show loading state
     submitButton.disabled = true;
     submitButtonText.textContent = 'Setting up...';
-    // Optionally add a spinner icon here
 
-    // Collect form data
+    // Collect only the fields the server accepts — role is intentionally excluded
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
 
-    // Basic client-side validation (optional, but good for UX)
-    if (!data.fullName || !data.role || !data.occupation) {
+    if (!data.fullName || !data.occupation) {
       showError('Please fill in all required fields.');
       resetButtonState();
       return;
@@ -224,9 +195,9 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
         },
         body: JSON.stringify({
           fullName: data.fullName.trim(),
-          role: data.role,
           occupation: data.occupation.trim(),
           bio: data.bio?.trim() || '',
+          // role is intentionally absent — server hard-codes 'reader'
         }),
       });
 
@@ -236,14 +207,10 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
         throw new Error(result.error || 'Failed to submit');
       }
 
-      // Successfully submitted, redirect appropriately
+      // All new users land on home — writers are promoted by admin separately
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get('redirect_url');
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
-      } else {
-        window.location.href = result.role === 'writer' ? '/dashboard' : '/';
-      }
+      window.location.href = redirectUrl || '/';
     } catch (err) {
       console.error('Onboarding submission error:', err);
       showError(err.message || 'Something went wrong. Please try again.');
@@ -252,11 +219,9 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
   });
 
   function showError(message) {
-    // Remove any existing error banner
     const existingError = document.querySelector('.error-banner');
     if (existingError) existingError.remove();
 
-    // Create and insert error banner above the form
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-banner';
     errorDiv.setAttribute('role', 'alert');
@@ -277,8 +242,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     submitButton.disabled = false;
     submitButtonText.textContent = 'Complete Onboarding';
   }
-
-  // Role card click handlers removed - styled natively via CSS :checked sibling selectors
 </script>
 
 <style is:global>
@@ -408,79 +371,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     border-width: 1.5px;
   }
 
-  /* Role Selection Cards Grid */
-  .role-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
-  }
-
-  .role-card-label {
-    display: block;
-  }
-
-  .role-radio {
-    display: none;
-  }
-
-  .role-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: var(--space-md);
-    background-color: var(--color-surface-card);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: border-color var(--duration-150) var(--ease-out), background-color var(--duration-150) var(--ease-out);
-  }
-
-  .role-card:hover {
-    border-color: var(--color-hairline-strong);
-    background-color: var(--color-canvas-soft);
-  }
-
-  /* Active role selection: surface-strong bg, ink border */
-  .role-radio:checked + .role-card {
-    border-color: var(--color-ink);
-    background-color: var(--color-surface-strong);
-    border-width: 1.5px;
-  }
-
-  /* voice-icon-circular avatar */
-  .role-icon-box {
-    font-size: 20px;
-    width: 44px; height: 44px;
-    background: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: var(--space-xs);
-  }
-
-  .role-radio:checked + .role-card .role-icon-box {
-    background: var(--color-surface-card);
-    border-color: var(--color-hairline-strong);
-  }
-
-  .role-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-title-md);
-    font-weight: var(--fw-medium);
-    color: var(--color-ink);
-    margin-bottom: var(--space-xxs);
-  }
-
-  .role-desc {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-muted);
-    line-height: var(--lh-body-sm);
-  }
-
   /* Occupation Radio Pills */
   .occupation-pills {
     display: flex;
@@ -555,8 +445,8 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
   }
 
   @media (max-width: 640px) {
-    .role-grid {
-      grid-template-columns: 1fr;
+    .occupation-pills {
+      flex-direction: column;
     }
   }
 </style>

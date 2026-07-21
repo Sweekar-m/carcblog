@@ -92,7 +92,8 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   website: string | null;
-  role: 'reader' | 'writer';
+  role: 'reader' | 'writer' | 'admin';
+
   occupation: string | null;
   onboarding_completed: boolean;
   created_at: string;

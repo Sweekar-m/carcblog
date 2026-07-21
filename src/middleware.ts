@@ -16,27 +16,7 @@ function isStaticAsset(pathname: string): boolean {
 }
 
 export const onRequest = clerkMiddleware(async (auth, context, next) => {
-  let { userId, redirectToSignIn } = auth();
-  
-  // Dev-mode test hook: bypass Clerk and simulate user state via cookie
-  const testCookie = context.cookies.get('__test_user_id')?.value;
-  if (testCookie) {
-    userId = testCookie === 'null' ? null : testCookie;
-    
-    // Inject mock auth resolver so API routes and pages get the simulated user ID
-    context.locals.auth = () => Promise.resolve({ userId });
-    
-    // Inject mock currentUser resolver
-    context.locals.currentUser = () => Promise.resolve(userId ? {
-      id: userId,
-      fullName: 'Test User',
-      firstName: 'Test',
-      lastName: 'User',
-      username: `user_${userId.substring(userId.indexOf('_') + 1)}`,
-      imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      emailAddresses: [{ emailAddress: `${userId}@example.com` }]
-    } : null);
-  }
+  const { userId, redirectToSignIn } = auth();
 
   const url = new URL(context.request.url);
   const pathname = url.pathname;

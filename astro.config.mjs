@@ -24,7 +24,27 @@ export default defineConfig({
       tailwind()
     ],
     ssr: {
-      external: ['cloudflare:workers']
+      external: ['cloudflare:workers'],
+      noExternal: [
+        '@blocknote/core',
+        '@blocknote/react',
+        '@blocknote/mantine',
+        '@mantine/core',
+        '@mantine/hooks',
+        'nanostores',
+        '@nanostores/react',
+      ],
+    },
+    optimizeDeps: {
+      include: [
+        '@blocknote/core',
+        '@blocknote/react',
+        '@blocknote/mantine',
+        '@mantine/core',
+        '@mantine/hooks',
+        'nanostores',
+        '@nanostores/react',
+      ],
     },
     build: {
       rollupOptions: {
