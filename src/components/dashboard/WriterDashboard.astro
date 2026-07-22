@@ -154,15 +154,15 @@ function formatDate(ts: string) {
     padding-bottom: var(--space-lg);
     border-bottom: 1px solid var(--color-hairline);
   }
-  /* display-md: EB Garamond 300, 32px */
+  /* heading-md: DM Sans 600, 32px */
   .welcome-heading {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-md);
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-heading-md);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0;
-    line-height: var(--lh-display-md);
-    letter-spacing: var(--ls-display-md);
+    line-height: var(--lh-heading-md);
+    letter-spacing: -0.01em;
   }
   .welcome-sub {
     font-family: var(--font-sans);
@@ -197,7 +197,7 @@ function formatDate(ts: string) {
     transition: box-shadow var(--duration-200) var(--ease-out);
   }
   .stat-card:hover {
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-card);
   }
 
   .stat-header {
@@ -222,22 +222,22 @@ function formatDate(ts: string) {
   /* caption-uppercase */
   .stat-label {
     font-family: var(--font-sans);
-    font-size: var(--fs-caption-upper);
+    font-size: 11px;
     font-weight: var(--fw-semibold);
-    letter-spacing: var(--ls-caption-upper);
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: var(--color-muted);
+    color: var(--color-steel);
   }
 
-  /* EB Garamond 300 display-xl for stat numbers */
+  /* DM Sans 600 display-lg for stat numbers */
   .stat-value {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-xl);        /* 48px */
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-display-lg);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0;
     line-height: 1;
-    letter-spacing: var(--ls-display-xl);
+    letter-spacing: -0.02em;
   }
   .stat-unit {
     font-family: var(--font-sans);

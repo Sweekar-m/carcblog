@@ -171,15 +171,14 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
     margin-bottom: var(--space-sm);               /* Increased from 8px to 12px */
   }
 
-  /* display-sm: EB Garamond 300, 24px, lh 1.2 — card title */
+  /* card-title: DM Sans 600, 20px, lh 1.4 */
   .card-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-sm);              /* 24px */
-    font-weight: var(--fw-light);                 /* 300 */
+    font-family: var(--font-sans);
+    font-size: var(--fs-card-title);
+    font-weight: var(--fw-semibold);
     color: var(--color-ink);
-    line-height: var(--lh-display-sm);            /* 1.2 */
-    letter-spacing: var(--ls-display-sm);         /* 0 */
-    margin-bottom: var(--space-md);               /* Increased from 8px to 20px */
+    line-height: var(--lh-card-title);
+    margin-bottom: var(--space-md);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

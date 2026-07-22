@@ -35,18 +35,16 @@ let particlesMask = "none";
       }
     </script>
 
-    <!-- Fonts: EB Garamond 300 (display/editorial) + Inter (UI/body/nav) + Fira Code (code) -->
-    <!-- EB Garamond is the open-source substitute for Waldenburg Light per Design.md §Known Gaps -->
+    <!-- Fonts: DM Sans (UI/Headings/Nav) + Cormorant Garamond (Article Body Prose) + Fira Code (Code) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
     <ViewTransitions />
   </head>
-  <body class:list={["text-foreground antialiased min-h-screen flex flex-col", className]} style={`--bg-particles-opacity: ${particlesOpacity}; --bg-particles-mask: ${particlesMask};`}>
-    <ParticlesBackground client:load transition:persist />
+  <body class:list={["bg-canvas text-ink antialiased min-h-screen flex flex-col font-sans", className]}>
     <Nav />
     <main class="flex-grow w-full">
       <slot />

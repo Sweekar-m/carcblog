@@ -421,14 +421,14 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
   letter-spacing: var(--ls-body-sm);
 }
 
-/* ── Headline: display-xl spec: EB Garamond 300, 48px ── */
+/* ── Headline: DM Sans 600, 40px/48px ── */
 .article-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-xl);          /* 48px */
-  font-weight: var(--fw-light);             /* 300 — NEVER bold */
-  line-height: var(--lh-display-xl);        /* 1.08 */
-  letter-spacing: var(--ls-display-xl);     /* -0.02em ≈ -0.96px */
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-heading-md), 4vw, var(--fs-heading-lg));
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading-lg);
+  letter-spacing: var(--ls-heading-lg);
+  color: var(--color-ink-strong);
   margin-bottom: var(--space-xl);
 }
 
@@ -454,25 +454,23 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
   font-style: italic;
 }
 
-/* ── Prose styles — editorial body typography ── */
-/* body-md spec: Inter 400, 16px, lh 1.65, +0.16px tracking */
+/* ── Prose styles — Cormorant Garamond serif for reading prose (Option B) ── */
 .prose {
-  font-family: var(--font-sans);
-  font-size: var(--fs-body-md);             /* 16px */
-  font-weight: var(--fw-regular);
-  line-height: 1.65;                        /* Increased to 1.65 for readability */
-  letter-spacing: var(--ls-body);           /* +0.16px */
-  color: var(--color-body);
+  font-family: var(--font-serif);
+  font-size: 1.1875rem;                     /* ~19px reading serif */
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--color-charcoal);
 }
 
 .prose p {
-  margin-bottom: 1.75rem;                   /* Increased to 1.75rem (28px, >1.5x font-size) */
-  color: var(--color-body);
+  margin-bottom: 1.75rem;
+  color: var(--color-charcoal);
 }
 
 .prose strong {
-  font-weight: var(--fw-medium);
-  color: var(--color-body-strong);
+  font-weight: 600;
+  color: var(--color-ink-strong);
 }
 
 .prose em { font-style: italic; }
@@ -490,31 +488,31 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
   opacity: 1;
 }
 
-/* Headings in body — EB Garamond 300 at display-sm/display-md sizes */
+/* Headings in body — DM Sans 600 */
 .prose h2 {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-md);          /* 32px */
-  font-weight: var(--fw-light);
-  line-height: var(--lh-display-md);
-  letter-spacing: var(--ls-display-md);
-  color: var(--color-ink);
-  margin-top: var(--space-xxl);             /* 48px */
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading-md);
+  letter-spacing: var(--ls-heading-md);
+  color: var(--color-ink-strong);
+  margin-top: var(--space-xxl);
   margin-bottom: var(--space-md);
 }
 .prose h3 {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-sm);          /* 24px — display-sm */
-  font-weight: var(--fw-light);
-  line-height: var(--lh-display-sm);
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-sm);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-heading-sm);
+  color: var(--color-ink-strong);
   margin-top: var(--space-xl);
   margin-bottom: var(--space-sm);
 }
 .prose h4 {
   font-family: var(--font-sans);
-  font-size: var(--fs-title-md);
-  font-weight: var(--fw-medium);
-  color: var(--color-ink);
+  font-size: var(--fs-card-title);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
   margin-top: var(--space-lg);
   margin-bottom: var(--space-xs);
 }

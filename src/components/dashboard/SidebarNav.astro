@@ -98,18 +98,17 @@ const navItems = [
     gap: 2px;
   }
 
-  /* ── Individual nav link / buttons — nav-link spec: Inter 500 15px, ink/muted ── */
+  /* ── Individual nav link / buttons — MiniMax sidebar-nav-item spec ── */
   .nav-link, .logout-btn {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    padding: 8px var(--space-sm);
-    border-radius: var(--radius-md);
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
     font-family: var(--font-sans);
-    font-size: var(--fs-nav-link);
+    font-size: var(--fs-body-sm);
     font-weight: var(--fw-medium);
-    line-height: var(--lh-nav-link);
-    color: var(--color-muted);
+    color: var(--color-steel);
     text-decoration: none;
     transition: background var(--duration-150) var(--ease-out), color var(--duration-150) var(--ease-out);
     outline: none;
@@ -121,22 +120,23 @@ const navItems = [
     box-sizing: border-box;
   }
   .nav-link:hover, .logout-btn:hover {
-    background: var(--color-surface-strong);
-    color: var(--color-ink);
+    background: var(--color-surface);
+    color: var(--color-ink-strong);
   }
   .nav-link:focus-visible, .logout-btn:focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 2px;
   }
 
-  /* ── Active link: surface-strong bg, ink text — NO blue ── */
+  /* ── Active link: surface bg, ink text ── */
   .nav-link--active {
-    background: var(--color-surface-strong);
-    color: var(--color-ink);
+    background: var(--color-surface-soft);
+    color: var(--color-ink-strong);
+    font-weight: var(--fw-semibold);
   }
   .nav-link--active:hover {
-    background: var(--color-hairline-soft);
-    color: var(--color-ink);
+    background: var(--color-surface-soft);
+    color: var(--color-ink-strong);
   }
 
   /* ── Icons ── */

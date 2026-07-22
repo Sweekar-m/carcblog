@@ -27,41 +27,39 @@ const gridArticles = articleData.slice(1);
        SECTION 1: HERO BAND
        hero-band spec: canvas bg, display-mega, atmospheric orbs, two CTAs
   ═══════════════════════════════════════════════ -->
+  <!-- ═══════════════════════════════════════════════
+       SECTION 1: HERO BAND (MiniMax 80px display, DM Sans, flat canvas)
+  ═══════════════════════════════════════════════ -->
   <section class="hero-band" id="hero">
-    <!-- Atmospheric gradient orbs — decoration ONLY, never content containers -->
-    <div class="atm-orb hero-orb-mint"   aria-hidden="true"></div>
-    <div class="atm-orb hero-orb-peach"  aria-hidden="true"></div>
-    <div class="atm-orb hero-orb-lavender" aria-hidden="true"></div>
-
     <div class="hero-inner">
       <!-- Eyebrow label -->
       <div class="hero-eyebrow">
-        <span class="badge-pill">Startup Media</span>
+        <span class="badge-pill">Startup Media Platform</span>
       </div>
 
-      <!-- Main headline — display-mega: EB Garamond 300, 64px, ink -->
+      <!-- Main headline — hero-display: DM Sans 600, 80px, tight leading -->
       <h1 class="hero-headline">
         Where great startup<br />
         ideas go public.
       </h1>
 
-      <!-- Sub — body-md: Inter 400, body color -->
+      <!-- Sub — subtitle: DM Sans 500, steel color -->
       <p class="hero-sub">
         News, founder stories, funding updates, and product launches —
         curated for the people building what's next.
       </p>
 
-      <!-- CTA row: ink pill primary + outline secondary -->
+      <!-- CTA row: black pill primary + outline secondary -->
       <div class="hero-cta-row">
         <a href="/discover" class="btn-primary" id="hero-explore-cta">
           Explore stories
         </a>
-        <a href="/auth/sign-up" class="btn-outline" id="hero-join-cta">
+        <a href="/auth/sign-up" class="btn-secondary" id="hero-join-cta">
           Join as a writer
         </a>
       </div>
 
-      <!-- Social proof — Inter 500 numbers, caption-uppercase labels -->
+      <!-- Social proof -->
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-num">12K+</span>
@@ -77,6 +75,75 @@ const gridArticles = articleData.slice(1);
           <span class="stat-num">2.4M</span>
           <span class="stat-label">Monthly Readers</span>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
+       SECTION 2: VIBRANT CATEGORY MATRIX (MiniMax Product Encoding)
+  ═══════════════════════════════════════════════ -->
+  <section class="category-matrix-section">
+    <div class="page-container">
+      <div class="section-header-flex">
+        <div>
+          <h2 class="matrix-title">Ecosystem Matrix</h2>
+          <p class="matrix-subtitle">Deep-dive startup journalism encoded by topic</p>
+        </div>
+        <a href="/topics" class="matrix-link">View all topics →</a>
+      </div>
+
+      <div class="matrix-grid">
+        <!-- Card 1: Funding (Volcanic Coral) -->
+        <a href="/topics" class="product-card product-card-coral">
+          <div>
+            <span class="card-badge">Funding & Capital</span>
+            <h3 class="card-hero-title">Seed to Series C</h3>
+            <p class="card-desc">Exclusive breakdowns of capital raises, valuation metrics, and lead investor notes.</p>
+          </div>
+          <div class="card-bottom">
+            <span class="card-meta">2,480 Stories</span>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>
+
+        <!-- Card 2: Product Launches (Deep Blue) -->
+        <a href="/topics" class="product-card product-card-blue">
+          <div>
+            <span class="card-badge">Product Launches</span>
+            <h3 class="card-hero-title">Launch Radar</h3>
+            <p class="card-desc">First look at new B2B tools, developer platforms, and AI-native products.</p>
+          </div>
+          <div class="card-bottom">
+            <span class="card-meta">1,940 Stories</span>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>
+
+        <!-- Card 3: Founder Stories (Saturated Magenta) -->
+        <a href="/topics" class="product-card product-card-magenta">
+          <div>
+            <span class="card-badge">Founder Stories</span>
+            <h3 class="card-hero-title">Raw Journeys</h3>
+            <p class="card-desc">Unfiltered founder postmortems, pivot strategies, and product-market fit stories.</p>
+          </div>
+          <div class="card-bottom">
+            <span class="card-meta">3,120 Stories</span>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>
+
+        <!-- Card 4: AI & Tech Trends (Royal Purple) -->
+        <a href="/topics" class="product-card product-card-purple">
+          <div>
+            <span class="card-badge">AI & Infra</span>
+            <h3 class="card-hero-title">Deep Tech</h3>
+            <p class="card-desc">LLM architecture, agentic workflows, GPU cluster economics, and tech trends.</p>
+          </div>
+          <div class="card-bottom">
+            <span class="card-meta">4,200 Stories</span>
+            <span class="card-arrow">→</span>
+          </div>
+        </a>
       </div>
     </div>
   </section>
@@ -303,16 +370,148 @@ const gridArticles = articleData.slice(1);
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
 }
 
-/* display-mega spec: EB Garamond 300, 64px, lh 1.05, ls -1.92px, ink */
+/* hero-display spec: DM Sans 600, 80px, lh 1.10, ls -2px */
 .hero-headline {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-mega);        /* 64px */
-  font-weight: var(--fw-light);             /* 300 — NEVER bold */
-  line-height: var(--lh-display-mega);      /* 1.05 */
-  letter-spacing: var(--ls-display-mega);   /* -0.12em ≈ -1.92px */
+  font-family: var(--font-sans);
+  font-size: var(--fs-hero-display);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-hero-display);
+  letter-spacing: var(--ls-hero-display);
+  color: var(--color-ink-strong);
+  margin-bottom: var(--space-lg);
+  max-width: 840px;
+}
+
+/* Category Matrix Styles */
+.category-matrix-section {
+  padding: var(--space-section) var(--space-lg);
+  background: var(--color-canvas);
+  border-bottom: 1px solid var(--color-hairline);
+}
+.section-header-flex {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+.matrix-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.matrix-subtitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: var(--color-steel);
+  margin: 4px 0 0 0;
+}
+.matrix-link {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  font-weight: var(--fw-semibold);
   color: var(--color-ink);
-  margin-bottom: var(--space-lg);           /* 24px */
-  max-width: 720px;
+  text-decoration: underline;
+}
+
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: var(--space-xl);
+}
+@media (min-width: 640px) { .matrix-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .matrix-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.product-card {
+  border-radius: var(--radius-hero);
+  padding: var(--space-xxl);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 340px;
+  transition: transform 250ms var(--ease-out), box-shadow 250ms var(--ease-out);
+}
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-atmospheric);
+}
+
+.product-card-coral {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  color: #ffffff;
+}
+.product-card-blue {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  color: #ffffff;
+}
+.product-card-magenta {
+  background: linear-gradient(135deg, #d946ef 0%, #c026d3 50%, #a21caf 100%);
+  color: #ffffff;
+}
+.product-card-purple {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+  color: #ffffff;
+}
+
+.card-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+.card-hero-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  line-height: 1.15;
+  margin: 0 0 var(--space-xs) 0;
+  letter-spacing: -0.015em;
+}
+.card-desc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-sm);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+  margin: 0;
+}
+.card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-xl);
+}
+.card-meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  color: rgba(255, 255, 255, 0.9);
+}
+.card-arrow {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #ffffff;
+  transition: background 200ms ease, color 200ms ease;
+}
+.product-card:hover .card-arrow {
+  background: #ffffff;
+  color: #0f172a;
 }
 
 /* body-md spec: Inter 400, 16px, lh 1.5, ls +0.16px, body color */

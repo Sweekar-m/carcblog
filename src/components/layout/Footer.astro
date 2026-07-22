@@ -85,18 +85,16 @@
    Semi-transparent canvas bg with blur, body text color
 ════════════════════════════════════════════════════════════ */
 .footer {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  color: var(--color-body);
-  border-top: 1px solid rgba(231, 229, 228, 0.6);
+  background: #0f172a;
+  color: #94a3b8;
+  border-top: 1px solid #1e293b;
   font-family: var(--font-sans);
 }
 
 .footer-container {
-  max-width: 1200px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 64px 48px;                      /* footer spec: 64px × 48px */
+  padding: 64px 32px;
 }
 @media (max-width: 768px) {
   .footer-container { padding: var(--space-xxl) var(--space-lg); }
@@ -106,18 +104,14 @@
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr repeat(4, 1fr);
-  gap: var(--space-xl);                    /* 32px */
-  padding-bottom: var(--space-xxl);        /* 48px before bottom row */
+  gap: var(--space-xl);
+  padding-bottom: var(--space-xxl);
 }
 @media (max-width: 768px) {
-  .footer-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 480px) {
-  .footer-grid {
-    grid-template-columns: 1fr;
-  }
+  .footer-grid { grid-template-columns: 1fr; }
 }
 
 /* ── Brand column ── */
@@ -128,26 +122,23 @@
   grid-column: 1;
 }
 
-/* EB Garamond 300 — editorial wordmark, ink */
 .footer-wordmark {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-sm);         /* 24px */
-  font-weight: var(--fw-light);            /* 300 */
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-sm);
+  font-weight: var(--fw-bold);
+  color: #ffffff;
   text-decoration: none;
   line-height: 1;
-  letter-spacing: var(--ls-display-sm);
+  letter-spacing: -0.02em;
 }
 
-/* body-sm: Inter 400, 15px, body color */
 .footer-tagline {
   font-family: var(--font-sans);
   font-size: var(--fs-body-sm);
   font-weight: var(--fw-regular);
-  color: var(--color-body);
+  color: #94a3b8;
   line-height: var(--lh-body-sm);
-  letter-spacing: var(--ls-body-sm);
-  max-width: 240px;
+  max-width: 280px;
   margin: 0;
 }
 
@@ -161,31 +152,27 @@
   flex-direction: column;
 }
 
-/* caption-uppercase: column headers */
 .footer-col-head {
   font-family: var(--font-sans);
-  font-size: var(--fs-caption-upper);      /* 12px */
-  font-weight: var(--fw-semibold);         /* 600 */
-  letter-spacing: var(--ls-caption-upper); /* 0.08em */
+  font-size: 12px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--color-ink);
-  margin-bottom: var(--space-sm);          /* 12px */
+  color: #ffffff;
+  margin-bottom: var(--space-sm);
 }
 
-/* footer-link spec: body color, body-sm type */
 .footer-link {
   font-family: var(--font-sans);
-  font-size: var(--fs-body-sm);            /* 15px */
+  font-size: var(--fs-body-sm);
   font-weight: var(--fw-regular);
-  line-height: 2.4;                        /* generous editorial link spacing */
-  letter-spacing: var(--ls-body-sm);
-  color: var(--color-body);
+  line-height: 2.2;
+  color: #94a3b8;
   text-decoration: none;
   transition: color var(--duration-150) var(--ease-out);
 }
 .footer-link:hover {
-  color: var(--color-ink);
-  opacity: 1;
+  color: #ffffff;
 }
 
 /* ── Bottom row ── */
@@ -195,15 +182,14 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-md);
-  padding-top: var(--space-lg);            /* 24px */
-  border-top: 1px solid var(--color-hairline);
+  padding-top: var(--space-lg);
+  border-top: 1px solid #1e293b;
 }
 
 .footer-copy {
   font-family: var(--font-sans);
-  font-size: var(--fs-caption);            /* 14px */
-  color: var(--color-muted-soft);
-  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+  font-size: var(--fs-caption);
+  color: #64748b;
 }
 
 .footer-legal-row {
@@ -213,19 +199,18 @@
 }
 
 .footer-sep {
-  color: var(--color-hairline-strong);
+  color: #334155;
   font-size: var(--fs-caption);
 }
 
 .footer-legal-link {
   font-family: var(--font-sans);
   font-size: var(--fs-caption);
-  color: var(--color-muted-soft);
+  color: #64748b;
   text-decoration: none;
   transition: color var(--duration-150) var(--ease-out);
 }
 .footer-legal-link:hover {
-  color: var(--color-ink);
-  opacity: 1;
+  color: #ffffff;
 }
 </style>

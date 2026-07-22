@@ -5,7 +5,6 @@ module.exports = {
     './src/**/*.{astro,html,js,jsx,ts,tsx,vue}',
   ],
   theme: {
-    // Override container to cap at 1200px (design.md spec)
     container: {
       center: true,
       padding: {
@@ -20,147 +19,141 @@ module.exports = {
         md: '768px',
         lg: '1024px',
         xl: '1280px',
-        '2xl': '1200px', // content cap from design.md
+        '2xl': '1280px',
       },
     },
     extend: {
-      // ─── Colors — exact tokens from design.md ───
+      // ─── Colors — MiniMax v2 palette ───
       colors: {
-        // Primary / ink
-        primary: '#292524',
-        'primary-active': '#0c0a09',
-        ink: '#0c0a09',
+        primary: '#0F172A',
+        'primary-active': '#000000',
+        ink: '#0F172A',
+        'ink-strong': '#000000',
 
-        // Text
-        body: '#4e4e4e',
-        'body-strong': '#292524',
-        muted: '#777169',
-        'muted-soft': '#a8a29e',
-
-        // Hairlines
-        hairline: '#e7e5e4',
-        'hairline-soft': '#f0efed',
-        'hairline-strong': '#d6d3d1',
+        // Text & Neutral Tones
+        charcoal: '#334155',
+        slate: '#475569',
+        steel: '#64748B',
+        stone: '#94A3B8',
+        body: '#334155',
+        'body-strong': '#0F172A',
+        muted: '#64748B',
+        'muted-soft': '#94A3B8',
 
         // Surfaces / Canvas
-        canvas: '#f5f5f5',
-        'canvas-soft': '#fafafa',
-        'canvas-deep': '#0c0a09',
-        'surface-card': '#ffffff',
-        'surface-strong': '#f0efed',
-        'surface-dark': '#0c0a09',
-        'surface-dark-elevated': '#1c1917',
+        canvas: '#FFFFFF',
+        surface: '#F8FAFC',
+        'surface-soft': '#F1F5F9',
+        'surface-card': '#FFFFFF',
+        'surface-strong': '#F1F5F9',
+
+        // Hairlines
+        hairline: '#E2E8F0',
+        'hairline-soft': '#F1F5F9',
+        'hairline-strong': '#CBD5E1',
 
         // On-color
-        'on-primary': '#ffffff',
-        'on-dark': '#ffffff',
-        'on-dark-soft': '#a8a29e',
+        'on-primary': '#FFFFFF',
+        'on-dark': '#FFFFFF',
+        'on-dark-soft': '#94A3B8',
 
-        // Atmospheric gradient orbs (background decoration ONLY)
-        'gradient-mint': '#a7e5d3',
-        'gradient-peach': '#f4c5a8',
-        'gradient-lavender': '#c8b8e0',
-        'gradient-sky': '#a8c8e8',
-        'gradient-rose': '#e8b8c4',
+        // Category Brand Accent Colors (MiniMax Product Encoding)
+        'brand-coral': '#F97316',      // Funding & Investments
+        'brand-magenta': '#D946EF',    // Founder Stories & Podcasts
+        'brand-blue': '#0EA5E9',       // Product Launches & Tech
+        'brand-purple': '#8B5CF6',     // AI & Deep Tech
+        'brand-cyan': '#06B6D4',
+        'brand-blue-deep': '#0284C7',
+        'brand-blue-700': '#0369A1',
+        'brand-blue-200': '#E0F2FE',
 
         // Semantic
-        'semantic-success': '#16a34a',
-        'semantic-error': '#dc2626',
+        'semantic-success': '#059669',
+        'semantic-error': '#DC2626',
+        'semantic-warning': '#D97706',
       },
 
       // ─── Font Families ───
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['"EB Garamond"', '"Times New Roman"', 'serif'],
+        sans: ['"DM Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         mono: ['"Fira Code"', 'monospace'],
       },
 
-      // ─── Font Sizes (design.md typography scale) ───
+      // ─── Font Sizes (MiniMax typography scale) ───
       fontSize: {
-        'display-mega': ['4rem', { lineHeight: '1.05', letterSpacing: '-0.03em' }],       // 64px
-        'display-xl':   ['3rem', { lineHeight: '1.08', letterSpacing: '-0.02em' }],       // 48px
-        'display-lg':   ['2.25rem', { lineHeight: '1.17', letterSpacing: '-0.01em' }],    // 36px
-        'display-md':   ['2rem', { lineHeight: '1.13', letterSpacing: '-0.01em' }],       // 32px
-        'display-sm':   ['1.5rem', { lineHeight: '1.2', letterSpacing: '0' }],            // 24px
-        'title-md':     ['1.25rem', { lineHeight: '1.35', letterSpacing: '0' }],          // 20px
-        'title-sm':     ['1.125rem', { lineHeight: '1.44', letterSpacing: '0.01em' }],    // 18px
-        'body-md':      ['1rem', { lineHeight: '1.5', letterSpacing: '0.01em' }],         // 16px
-        'body-sm':      ['0.9375rem', { lineHeight: '1.47', letterSpacing: '0.009em' }],  // 15px
-        'caption':      ['0.875rem', { lineHeight: '1.5', letterSpacing: '0' }],          // 14px
-        'caption-upper':['0.75rem', { lineHeight: '1.4', letterSpacing: '0.08em' }],      // 12px
-        'btn':          ['0.9375rem', { lineHeight: '1', letterSpacing: '0' }],           // 15px
-        'nav-link':     ['0.9375rem', { lineHeight: '1.4', letterSpacing: '0' }],         // 15px
+        'hero-display': ['5rem', { lineHeight: '1.10', letterSpacing: '-0.025em' }],     // 80px
+        'display-lg':   ['3.5rem', { lineHeight: '1.10', letterSpacing: '-0.02em' }],     // 56px
+        'heading-lg':   ['2.5rem', { lineHeight: '1.20', letterSpacing: '-0.015em' }],    // 40px
+        'heading-md':   ['2rem', { lineHeight: '1.25', letterSpacing: '-0.01em' }],      // 32px
+        'heading-sm':   ['1.5rem', { lineHeight: '1.30', letterSpacing: '0' }],           // 24px
+        'card-title':   ['1.25rem', { lineHeight: '1.40', letterSpacing: '0' }],         // 20px
+        'subtitle':     ['1.125rem', { lineHeight: '1.50', letterSpacing: '0' }],        // 18px
+        'body-md':      ['1rem', { lineHeight: '1.50', letterSpacing: '0' }],            // 16px
+        'body-sm':      ['0.875rem', { lineHeight: '1.50', letterSpacing: '0' }],        // 14px
+        'caption':      ['0.8125rem', { lineHeight: '1.70', letterSpacing: '0' }],       // 13px
+        'micro':        ['0.75rem', { lineHeight: '1.50', letterSpacing: '0' }],          // 12px
+        'button-md':    ['0.875rem', { lineHeight: '1.40', letterSpacing: '0' }],        // 14px
       },
 
       // ─── Font Weights ───
       fontWeight: {
-        light:    '300',
         regular:  '400',
         medium:   '500',
         semibold: '600',
         bold:     '700',
       },
 
-      // ─── Border Radius — design.md rounded scale ───
+      // ─── Border Radius Scale ───
       borderRadius: {
-        'none': '0px',
         'xs':   '4px',
         'sm':   '6px',
         'md':   '8px',
         'lg':   '12px',
         'xl':   '16px',
-        'xxl':  '24px',
+        'xxl':  '20px',
+        'xxxl': '24px',
+        'hero': '32px',
         'pill': '9999px',
         'full': '9999px',
       },
 
-      // ─── Spacing — design.md spacing scale ───
+      // ─── Spacing Scale ───
       spacing: {
         'xxs': '4px',
         'xs':  '8px',
         'sm':  '12px',
-        'base': '16px',
-        'md':  '20px',
-        'lg':  '24px',
-        'xl':  '32px',
-        'xxl': '48px',
-        'section': '96px',
+        'md':  '16px',
+        'lg':  '20px',
+        'xl':  '24px',
+        'xxl': '32px',
+        'xxxl': '40px',
+        'section-sm': '48px',
+        'section': '64px',
+        'section-lg': '80px',
+        'hero': '96px',
       },
 
-      // ─── Box Shadows — single soft drop (design.md elevation) ───
+      // ─── Box Shadows ───
       boxShadow: {
-        'card-hover': '0 4px 16px rgba(0, 0, 0, 0.04)',
-        'soft':       '0 4px 16px rgba(0, 0, 0, 0.04)',
-        'none':       'none',
+        'subtle': '0px 1px 2px 0px rgba(0, 0, 0, 0.04)',
+        'card': '0px 4px 6px 0px rgba(0, 0, 0, 0.08)',
+        'atmospheric': '0px 0px 22px 0px rgba(0, 0, 0, 0.08)',
+        'modal': '0px 12px 16px -4px rgba(36, 36, 36, 0.08)',
       },
 
       // ─── Height tokens ───
       height: {
         'nav': '64px',
         'btn': '40px',
-        'input': '44px',
+        'input': '40px',
       },
 
       // ─── Max Width ───
       maxWidth: {
-        'content': '1200px',
-        'reading': '680px',
-      },
-
-      // ─── Keyframes (accordion only) ───
-      keyframes: {
-        'accordion-down': {
-          from: { height: '0' },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: '0' },
-        },
-      },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
+        'content': '1280px',
+        'prose': '720px',
+        'reading': '720px',
       },
     },
   },
