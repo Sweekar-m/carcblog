@@ -98,15 +98,15 @@ export async function authorizeArticleAction(
 
     const checkOwnership = options.requireOwnership ?? true;
     if (checkOwnership) {
-      const isOwner = article.author?.clerkUserId === userId;
-      const isAdmin = profile.role === 'admin';
+      const isOwner = !article.author?.clerkUserId || article.author.clerkUserId === userId;
+      const isWriterOrAdmin = profile.role === 'writer' || profile.role === 'admin';
 
-      if (!isOwner && !isAdmin) {
+      if (!isOwner && !isWriterOrAdmin) {
         return {
           userId,
           profile,
           article,
-          errorResponse: errorResponse(`Forbidden: You do not own this article. Article owner identity does not match your session identity.`, 403),
+          errorResponse: errorResponse(`Forbidden: You do not have permission to manage this article. Writer or Admin access required.`, 403),
         };
       }
     }
