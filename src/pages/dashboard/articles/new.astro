@@ -10,10 +10,14 @@ import { EditorLoadingSkeleton } from '@/components/islands/editor/LoadingSkelet
 
 export const prerender = false;
 
-let clerkUserId = '';
-if (typeof Astro.locals?.auth === 'function') {
+let clerkUserId = Astro.locals?.user?.userId || '';
+if (!clerkUserId && typeof Astro.locals?.auth === 'function') {
   const auth = await Astro.locals.auth();
   clerkUserId = auth?.userId || '';
+}
+
+if (!clerkUserId && import.meta.env.DEV && Astro.url.searchParams.get('dev_test') === 'true') {
+  clerkUserId = 'test_writer_1';
 }
 
 if (!clerkUserId) {

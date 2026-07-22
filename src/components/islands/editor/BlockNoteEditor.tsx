@@ -250,7 +250,111 @@ export function BlockNoteEditor({ onContentChange }: BlockNoteEditorProps) {
     };
 
     window.addEventListener('editor:insert-image', handleInsertImage as EventListener);
-    return () => window.removeEventListener('editor:insert-image', handleInsertImage as EventListener);
+
+    // AI Writer: Insert Outline / Story
+    const handleInsertOutline = async (e: CustomEvent<{ text: string }>) => {
+      const outlineText = e.detail?.text;
+      if (!outlineText || !editor) return;
+
+      try {
+        const blocksToInsert = await editor.tryParseMarkdownToBlocks(outlineText);
+        if (blocksToInsert && blocksToInsert.length > 0) {
+          const doc = editor.document;
+          if (doc && doc.length > 0) {
+            const lastBlock = doc[doc.length - 1];
+            editor.insertBlocks(blocksToInsert, lastBlock, 'after');
+            // If initial block was an empty default block, clean it up
+            if (doc.length === 1 && (!doc[0].content || (Array.isArray(doc[0].content) && doc[0].content.length === 0))) {
+              try { editor.removeBlocks([doc[0]]); } catch (err) {}
+            }
+          } else {
+            try { editor.replaceBlocks(doc, blocksToInsert); } catch (err) {}
+          }
+        }
+      } catch (parseErr) {
+        console.error('Failed to parse Markdown with BlockNote, applying line fallback:', parseErr);
+        const lines = outlineText.split('\n').map((l) => l.trim()).filter(Boolean);
+        const fallbackBlocks: any[] = [];
+        for (const line of lines) {
+          if (line.startsWith('# ')) {
+            fallbackBlocks.push({ type: 'heading', props: { level: 1 }, content: line.slice(2).trim() });
+          } else if (line.startsWith('## ')) {
+            fallbackBlocks.push({ type: 'heading', props: { level: 2 }, content: line.slice(3).trim() });
+          } else if (line.startsWith('### ')) {
+            fallbackBlocks.push({ type: 'heading', props: { level: 3 }, content: line.slice(4).trim() });
+          } else if (line.startsWith('- ') || line.startsWith('* ')) {
+            fallbackBlocks.push({ type: 'bulletListItem', content: line.slice(2).trim() });
+          } else {
+            fallbackBlocks.push({ type: 'paragraph', content: line });
+          }
+        }
+        if (fallbackBlocks.length > 0) {
+          const doc = editor.document;
+          const lastBlock = doc && doc.length > 0 ? doc[doc.length - 1] : undefined;
+          if (lastBlock) {
+            editor.insertBlocks(fallbackBlocks, lastBlock, 'after');
+          }
+        }
+      }
+    };
+
+    // AI Writer: Append / Continue Text
+    const handleAppendText = async (e: CustomEvent<{ text: string }>) => {
+      const text = e.detail?.text;
+      if (!text || !editor) return;
+
+      try {
+        const blocksToInsert = await editor.tryParseMarkdownToBlocks(text);
+        if (blocksToInsert && blocksToInsert.length > 0) {
+          const doc = editor.document;
+          const lastBlock = doc && doc.length > 0 ? doc[doc.length - 1] : undefined;
+          if (lastBlock) {
+            editor.insertBlocks(blocksToInsert, lastBlock, 'after');
+          } else {
+            try { editor.replaceBlocks(doc, blocksToInsert); } catch (err) {}
+          }
+        }
+      } catch (parseErr) {
+        const paragraphs = text.split('\n\n').map((p) => p.trim()).filter(Boolean);
+        const blocksToInsert = paragraphs.map((p) => ({ type: 'paragraph', content: p }));
+        if (blocksToInsert.length > 0) {
+          const doc = editor.document;
+          const lastBlock = doc && doc.length > 0 ? doc[doc.length - 1] : undefined;
+          if (lastBlock) {
+            editor.insertBlocks(blocksToInsert, lastBlock, 'after');
+          }
+        }
+      }
+    };
+
+    // AI Writer: Replace Selection (Improve Selection)
+    const handleReplaceSelection = (e: CustomEvent<{ text: string }>) => {
+      const text = e.detail?.text;
+      if (!text || !editor) return;
+
+      const activeBlock = editor.getTextCursorPosition()?.block;
+      const paragraphs = text.split('\n\n').map((p) => p.trim()).filter(Boolean);
+      const blocksToInsert = paragraphs.map((p) => ({ type: 'paragraph', content: p }));
+
+      if (activeBlock && blocksToInsert.length > 0) {
+        editor.insertBlocks(blocksToInsert, activeBlock, 'after');
+        editor.removeBlocks([activeBlock]);
+      } else if (blocksToInsert.length > 0) {
+        const lastBlock = editor.document[editor.document.length - 1];
+        editor.insertBlocks(blocksToInsert, lastBlock, 'after');
+      }
+    };
+
+    window.addEventListener('editor:ai-insert-outline', handleInsertOutline as EventListener);
+    window.addEventListener('editor:ai-append-text', handleAppendText as EventListener);
+    window.addEventListener('editor:ai-replace-selection', handleReplaceSelection as EventListener);
+
+    return () => {
+      window.removeEventListener('editor:insert-image', handleInsertImage as EventListener);
+      window.removeEventListener('editor:ai-insert-outline', handleInsertOutline as EventListener);
+      window.removeEventListener('editor:ai-append-text', handleAppendText as EventListener);
+      window.removeEventListener('editor:ai-replace-selection', handleReplaceSelection as EventListener);
+    };
   }, [editor]);
 
   // Keyboard shortcut: Cmd+S → explicit save trigger

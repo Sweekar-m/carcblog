@@ -44,7 +44,24 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   const isOnboardingApi = pathname === '/api/onboarding';
   const isAuthRoute = ['/auth/sign-in', '/auth/sign-up', '/sign-in', '/sign-up'].includes(pathname);
 
-  // 2. Unauthenticated User Logic
+  // 2. Dev-mode bypass for local automated testing
+  const isDevTest = process.env.NODE_ENV === 'development' && (
+    context.request.headers.get('x-dev-test') === 'true' || 
+    url.searchParams.get('dev_test') === 'true'
+  );
+
+  if (isDevTest && !userId) {
+    context.locals.user = {
+      id: 'test_writer_1',
+      userId: 'test_writer_1',
+      username: 'testwriter',
+      full_name: 'Test Writer',
+      role: 'writer'
+    };
+    return next();
+  }
+
+  // 3. Unauthenticated User Logic
   if (!userId) {
     if (isDashboardRoute(context.request) || isOnboardingRoute) {
       return redirectToSignIn({

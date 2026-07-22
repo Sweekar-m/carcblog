@@ -373,8 +373,10 @@ export async function createSanityArticle(data: {
 /* Portable text to HTML */
 import { toHTML } from '@portabletext/to-html';
 
-export function portableTextToHtml(value: any): string {
+export function portableTextToHtml(value: any, coverImageUrl?: string): string {
   if (!value) return '';
+
+  const normCoverUrl = coverImageUrl && typeof coverImageUrl === 'string' ? coverImageUrl.trim().toLowerCase() : undefined;
 
   return toHTML(value, {
     components: {
@@ -382,6 +384,9 @@ export function portableTextToHtml(value: any): string {
         imageBlock: ({ value }: any) => {
           const url = value?.url || value?.src || (value?.asset ? safeImageUrl(value) : '');
           if (!url) return '';
+          if (normCoverUrl && url.trim().toLowerCase() === normCoverUrl) {
+            return '';
+          }
           const alt = value?.alt ? String(value.alt).replace(/"/g, '&quot;') : 'Blog image';
           const caption = value?.caption ? `<figcaption class="image-caption">${value.caption}</figcaption>` : '';
           return `<figure class="article-image-figure" style="margin: 24px 0;"><img src="${url}" alt="${alt}" class="article-body-img" loading="lazy" referrerpolicy="no-referrer" style="width:100%; height:auto; border-radius:12px; display:block;" />${caption}</figure>`;
@@ -389,6 +394,9 @@ export function portableTextToHtml(value: any): string {
         image: ({ value }: any) => {
           const url = safeImageUrl(value) || value?.url || value?.src;
           if (!url) return '';
+          if (normCoverUrl && url.trim().toLowerCase() === normCoverUrl) {
+            return '';
+          }
           const alt = value?.alt ? String(value.alt).replace(/"/g, '&quot;') : 'Blog image';
           const caption = value?.caption ? `<figcaption class="image-caption">${value.caption}</figcaption>` : '';
           return `<figure class="article-image-figure" style="margin: 24px 0;"><img src="${url}" alt="${alt}" class="article-body-img" loading="lazy" referrerpolicy="no-referrer" style="width:100%; height:auto; border-radius:12px; display:block;" />${caption}</figure>`;
@@ -396,6 +404,9 @@ export function portableTextToHtml(value: any): string {
         img: ({ value }: any) => {
           const url = value?.url || value?.src || safeImageUrl(value);
           if (!url) return '';
+          if (normCoverUrl && url.trim().toLowerCase() === normCoverUrl) {
+            return '';
+          }
           const alt = value?.alt ? String(value.alt).replace(/"/g, '&quot;') : 'Blog image';
           return `<img src="${url}" alt="${alt}" class="article-body-img" loading="lazy" referrerpolicy="no-referrer" style="width:100%; height:auto; border-radius:12px; display:block;" />`;
         },

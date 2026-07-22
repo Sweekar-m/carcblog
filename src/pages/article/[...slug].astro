@@ -160,7 +160,7 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
       <!-- ── Article Body — 680px reading column ── -->
       <article class="article-body reading-col">
         {article.body ? (
-          <div class="prose" set:html={portableTextToHtml(article.body)} />
+          <div class="prose" set:html={portableTextToHtml(article.body, article.coverImage)} />
         ) : (
           <p class="article-empty">Article content loading…</p>
         )}

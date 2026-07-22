@@ -24,6 +24,7 @@ import {
   toggleRightPanel,
 } from './editorStore';
 import type { DraftStatus } from '@/types/editor';
+import { AIWriterMenu } from './AIWriterMenu';
 
 // ─── Auto-save status badge ───────────────────────────────────────────────────
 
@@ -316,6 +317,8 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
         </TertiaryButton>
 
         <ToolbarDivider />
+
+        <AIWriterMenu />
 
         <TertiaryButton
           id="editor-media-btn"
