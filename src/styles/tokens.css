@@ -44,6 +44,7 @@
   /* ── Semantic ── */
   --color-success:              #16a34a;
   --color-error:                #dc2626;
+  --color-warning:              #D97706;  /* amber — from AGENTS.md §5.1 */
 
   /* ── Elevation — single soft shadow tier ── */
   --shadow-card-hover:          0 4px 16px rgba(0, 0, 0, 0.04);

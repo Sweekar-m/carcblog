@@ -50,6 +50,13 @@ export function SubtitleInput() {
 
   return (
     <div style={{ position: 'relative', width: '100%' }}>
+      {/* Scoped placeholder style — browser default overrides inline color */}
+      <style>{`
+        #editor-subtitle-input::placeholder {
+          color: var(--color-muted);  /* #777169 — subtitle-level muted hint */
+          opacity: 1;
+        }
+      `}</style>
       <textarea
         id="editor-subtitle-input"
         ref={textareaRef}
@@ -70,8 +77,9 @@ export function SubtitleInput() {
           fontWeight: 'var(--fw-regular)',   /* 400 — body weight for readability */
           fontSize: 'var(--fs-title-md)',    /* 20px */
           lineHeight: 'var(--lh-title-md)',  /* 1.35 */
-          letterSpacing: 'var(--tracking-title-md)',
+          letterSpacing: '0',          /* design.md title-md: letterSpacing 0 */
           color: 'var(--color-muted)',
+          caretColor: 'var(--color-ink)',
           border: 'none',
           outline: 'none',
           background: 'transparent',

@@ -10,17 +10,9 @@ import { ChevronLeft, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { $outline, $stats, $ui, $title, toggleLeftSidebar } from './editorStore';
 import type { OutlineItem } from '@/types/editor';
 
-// ─── Stats display ─────────────────────────────────────────────────────────────
-
-interface StatItemProps {
-  label: string;
-  value: string | number;
-  className?: string;
-}
-
-function StatItem({ label, value, className = 'flex flex-col gap-xxs' }: StatItemProps) {
+function StatItem({ label, value, style }: { label: string; value: string | number; style?: React.CSSProperties }) {
   return (
-    <div className={className}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xxs)', ...style }}>
       <span
         style={{
           fontFamily: 'var(--font-sans)',
@@ -36,9 +28,10 @@ function StatItem({ label, value, className = 'flex flex-col gap-xxs' }: StatIte
       <span
         style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--fs-title-sm)',
+          fontSize: 'var(--fs-body-md)',   /* 16px — was title-sm (18px), too large for sidebar */
           fontWeight: 'var(--fw-medium)',
           color: 'var(--color-body-strong)',
+          lineHeight: 'var(--lh-body)',
         }}
       >
         {value}
@@ -46,6 +39,7 @@ function StatItem({ label, value, className = 'flex flex-col gap-xxs' }: StatIte
     </div>
   );
 }
+
 
 // ─── Outline item ─────────────────────────────────────────────────────────────
 
@@ -73,33 +67,44 @@ function OutlineItemRow({ item, isSkipped }: OutlineItemRowProps) {
     }
   }, [item.id]);
 
-  const sizeClass = item.level === 1
-    ? 'text-body-sm font-medium'
-    : item.level === 2
-      ? 'text-caption font-medium'
-      : 'text-caption font-regular';
+  // Font size per heading level — inline to guarantee token resolution
+  const fontSize = item.level === 1
+    ? 'var(--fs-body-sm)'
+    : 'var(--fs-caption)';
+  const fontWeight = item.level <= 2
+    ? 'var(--fw-medium)'
+    : 'var(--fw-regular)';
 
   return (
-    <div className="flex items-center justify-between w-full group relative">
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative' }}>
       <button
         type="button"
         onClick={handleClick}
         style={{
           fontFamily: 'var(--font-sans)',
+          fontSize,
+          fontWeight,
+          color: 'var(--color-muted)',
           border: 'none',
           background: 'transparent',
           cursor: 'pointer',
           textAlign: 'left',
           paddingTop: 'var(--space-xxs)',
           paddingBottom: 'var(--space-xxs)',
+          paddingRight: 'var(--space-lg)',
           borderRadius: 'var(--radius-xs)',
+          transition: `color var(--duration-150) var(--ease-out)`,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          flex: 1,
+          minWidth: 0,
         }}
-        className={[
-          HEADING_INDENT[item.level] ?? 'pl-0',
-          sizeClass,
-          'text-muted hover:text-body-strong transition-colors duration-100 truncate flex-1 min-w-0 pr-6',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink',
-        ].join(' ')}
+        className={HEADING_INDENT[item.level] ?? 'pl-0'}
+        onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-body-strong)'; }}
+        onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-muted)'; }}
+        onFocus={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-body-strong)'; }}
+        onBlur={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-muted)'; }}
         title={item.text}
       >
         {item.text}
@@ -107,7 +112,13 @@ function OutlineItemRow({ item, isSkipped }: OutlineItemRowProps) {
 
       {isSkipped && (
         <span
-          className="absolute right-1 text-orange-500 cursor-help"
+          style={{
+            position: 'absolute',
+            right: 'var(--space-xxs)',
+            color: 'var(--color-warning)',
+            cursor: 'help',
+            flexShrink: 0,
+          }}
           title="Accessibility warning: Heading levels skipped (e.g., H1 directly to H3). Check nesting hierarchy."
         >
           <AlertTriangle size={12} strokeWidth={2.5} />
@@ -122,22 +133,34 @@ function OutlineItemRow({ item, isSkipped }: OutlineItemRowProps) {
 function SidebarSection({
   title,
   children,
+  divider = false,
 }: {
   title: string;
   children: React.ReactNode;
+  divider?: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-xs">
+    <section
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'var(--space-xs)',
+        ...(divider && {
+          borderTop: '1px solid var(--color-hairline)',
+          paddingTop: 'var(--space-xl)',
+        }),
+      }}
+    >
       <h2
         style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--fs-caption-upper)',
-          fontWeight: 'var(--fw-semibold)',
-          letterSpacing: 'var(--ls-caption-upper)',
-          color: 'var(--color-muted)',
+          fontSize: 'var(--fs-caption-upper)',       /* 12px */
+          fontWeight: 'var(--fw-semibold)',           /* 600 */
+          letterSpacing: 'var(--ls-caption-upper)',  /* +0.96px */
+          color: 'var(--color-muted)',               /* #777169 */
           textTransform: 'uppercase',
           margin: 0,
-          marginBottom: 'var(--space-xs)',
+          marginBottom: 'var(--space-xs)',            /* 8px gap below label */
         }}
       >
         {title}
@@ -250,55 +273,87 @@ export function LeftSidebar() {
     <aside
       id="editor-left-sidebar"
       aria-label="Article outline and statistics"
-      className="relative flex-shrink-0 border-r border-hairline transition-all duration-300 ease-out overflow-hidden"
       style={{
+        position: 'relative',
+        flexShrink: 0,
+        borderRight: '1px solid var(--color-hairline-strong)', /* visible separator */
+        transition: 'width var(--duration-300) var(--ease-out), opacity var(--duration-300) var(--ease-out)',
+        overflow: 'hidden',
         width: ui.leftSidebarOpen ? '260px' : '0px',
         opacity: ui.leftSidebarOpen ? 1 : 0,
       }}
     >
       <div
-        className="w-[260px] h-full flex flex-col gap-xl px-lg py-xl overflow-y-auto"
-        style={{ background: 'var(--color-canvas-soft)' }}
+        style={{
+          width: '260px',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0,               /* gaps handled by SidebarSection dividers */
+          padding: 'var(--space-xl) var(--space-lg)', /* 32px top/bottom, 24px sides */
+          overflowY: 'auto',
+          background: 'rgba(245, 245, 245, 0.82)', /* canvas at 82% — orbs bleed through */
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        }}
       >
         {/* Writing stats */}
         <SidebarSection title="Statistics">
-          <div className="flex flex-col gap-sm">
-            <div className="grid grid-cols-2 gap-sm">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
               <StatItem label="Words" value={stats.wordCount.toLocaleString()} />
               <StatItem label="Characters" value={stats.charCount.toLocaleString()} />
               <StatItem label="Paragraphs" value={stats.paragraphCount} />
               <StatItem label="Read time" value={readingTime} />
             </div>
-            
+
             {stats.wordCount > 0 && (
-              <StatItem 
-                label="Readability Ease" 
-                value={`${stats.readabilityScore ?? 100} (${stats.readabilityLabel ?? 'Standard'})`} 
-                className="flex flex-col gap-xxs border-t border-hairline pt-sm"
+              <StatItem
+                label="Readability"
+                value={`${stats.readabilityScore ?? 100} — ${stats.readabilityLabel ?? 'Standard'}`}
+                style={{
+                  borderTop: '1px solid var(--color-hairline)',
+                  paddingTop: 'var(--space-sm)',
+                }}
               />
             )}
           </div>
         </SidebarSection>
 
         {/* Advisor */}
-        <SidebarSection title="Structure Advisor">
-          <div className="flex flex-col gap-xs">
+        <SidebarSection title="Structure Advisor" divider>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xs)' }}>
             {advisorTips.length === 0 ? (
-              <div className="flex items-start gap-xs text-caption text-emerald-600" style={{ fontFamily: 'var(--font-sans)' }}>
-                <CheckCircle size={14} className="mt-[2px] flex-shrink-0" />
-                <span>Nesting, title size, and readability scores look excellent!</span>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 'var(--space-xs)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 'var(--fs-caption)',
+                  color: 'var(--color-success)',
+                }}
+              >
+                <CheckCircle size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
+                <span>Nesting, title size, and readability look excellent!</span>
               </div>
             ) : (
               advisorTips.map((tip, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex items-start gap-xs text-caption ${tip.type === 'warning' ? 'text-amber-600' : 'text-muted'}`}
-                  style={{ fontFamily: 'var(--font-sans)' }}
+                <div
+                  key={idx}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: 'var(--space-xs)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 'var(--fs-caption)',
+                    color: tip.type === 'warning' ? 'var(--color-warning)' : 'var(--color-muted)',
+                  }}
                 >
                   {tip.type === 'warning' ? (
-                    <AlertTriangle size={14} className="mt-[2px] flex-shrink-0" />
+                    <AlertTriangle size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
                   ) : (
-                    <Info size={14} className="mt-[2px] flex-shrink-0" />
+                    <Info size={14} style={{ marginTop: '2px', flexShrink: 0 }} />
                   )}
                   <span>{tip.text}</span>
                 </div>
@@ -309,9 +364,9 @@ export function LeftSidebar() {
 
         {/* Article outline */}
         {outline.length > 0 ? (
-          <SidebarSection title="Outline">
+          <SidebarSection title="Outline" divider>
             <nav aria-label="Article headings outline">
-              <ol className="flex flex-col gap-[2px]" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
                 {outline.map((item, index) => {
                   const prev = index > 0 ? outline[index - 1] : null;
                   const isSkipped = prev ? item.level > prev.level + 1 : false;
@@ -325,7 +380,7 @@ export function LeftSidebar() {
             </nav>
           </SidebarSection>
         ) : (
-          <SidebarSection title="Outline">
+          <SidebarSection title="Outline" divider>
             <p
               style={{
                 fontFamily: 'var(--font-sans)',

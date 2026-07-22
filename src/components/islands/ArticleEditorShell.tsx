@@ -285,11 +285,136 @@ export function ArticleEditorShell({ clerkUserId }: ArticleEditorShellProps) {
       style={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh', // Exact viewport height
+        height: '100vh',
         background: 'var(--color-canvas)',
         overflow: 'hidden',
+        position: 'relative', // establish stacking context for orbs
       }}
     >
+      {/* ── Atmospheric gradient orbs — design.md signature decoration ── */}
+      <style>{`
+        @keyframes editor-orb-drift-1 {
+          0%   { transform: translate(0, 0) scale(1); }
+          33%  { transform: translate(5%, 3%) scale(1.07); }
+          66%  { transform: translate(-3%, 6%) scale(0.95); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+        @keyframes editor-orb-drift-2 {
+          0%   { transform: translate(0, 0) scale(1); }
+          40%  { transform: translate(-6%, -4%) scale(1.05); }
+          80%  { transform: translate(4%, -2%) scale(0.97); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+        @keyframes editor-orb-drift-3 {
+          0%   { transform: translate(0, 0) scale(1); }
+          50%  { transform: translate(3%, -5%) scale(1.08); }
+          100% { transform: translate(0, 0) scale(1); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .editor-atm-orb { animation: none !important; }
+        }
+      `}</style>
+
+      {/* Orb 1 — mint, top-left, large */}
+      <div
+        className="editor-atm-orb"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: '-10%',
+          left: '-8%',
+          width: '500px',
+          height: '500px',
+          borderRadius: '50%',
+          background: 'var(--color-gradient-mint)', /* #a7e5d3 */
+          filter: 'blur(100px)',
+          opacity: 0.35,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'editor-orb-drift-1 22s ease-in-out infinite',
+        }}
+      />
+      {/* Orb 2 — peach, top-right */}
+      <div
+        className="editor-atm-orb"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: '-5%',
+          right: '-5%',
+          width: '420px',
+          height: '420px',
+          borderRadius: '50%',
+          background: 'var(--color-gradient-peach)', /* #f4c5a8 */
+          filter: 'blur(90px)',
+          opacity: 0.3,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'editor-orb-drift-2 18s ease-in-out infinite',
+          animationDelay: '-6s',
+        }}
+      />
+      {/* Orb 3 — lavender, center-left */}
+      <div
+        className="editor-atm-orb"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          top: '35%',
+          left: '5%',
+          width: '380px',
+          height: '380px',
+          borderRadius: '50%',
+          background: 'var(--color-gradient-lavender)', /* #c8b8e0 */
+          filter: 'blur(110px)',
+          opacity: 0.25,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'editor-orb-drift-3 26s ease-in-out infinite',
+          animationDelay: '-12s',
+        }}
+      />
+      {/* Orb 4 — sky, bottom-right */}
+      <div
+        className="editor-atm-orb"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          bottom: '-8%',
+          right: '10%',
+          width: '460px',
+          height: '460px',
+          borderRadius: '50%',
+          background: 'var(--color-gradient-sky)', /* #a8c8e8 */
+          filter: 'blur(120px)',
+          opacity: 0.28,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'editor-orb-drift-1 24s ease-in-out infinite',
+          animationDelay: '-9s',
+        }}
+      />
+      {/* Orb 5 — rose, bottom-left */}
+      <div
+        className="editor-atm-orb"
+        aria-hidden="true"
+        style={{
+          position: 'fixed',
+          bottom: '5%',
+          left: '20%',
+          width: '340px',
+          height: '340px',
+          borderRadius: '50%',
+          background: 'var(--color-gradient-rose)', /* #e8b8c4 */
+          filter: 'blur(90px)',
+          opacity: 0.22,
+          pointerEvents: 'none',
+          zIndex: 0,
+          animation: 'editor-orb-drift-2 20s ease-in-out infinite',
+          animationDelay: '-3s',
+        }}
+      />
+
       {/* Toolbar */}
       <EditorErrorBoundary label="toolbar">
         <EditorToolbar onPublishClick={handlePublishClick} />
@@ -310,6 +435,8 @@ export function ArticleEditorShell({ clerkUserId }: ArticleEditorShellProps) {
           display: 'flex',
           flex: 1,
           overflow: 'hidden',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         {/* Left sidebar */}
@@ -327,7 +454,9 @@ export function ArticleEditorShell({ clerkUserId }: ArticleEditorShellProps) {
             overflowY: 'auto',
             minWidth: 0,
             transition: 'flex var(--duration-200) var(--ease-out)',
-            backgroundColor: 'var(--color-surface-card)', // Clean, paper-white sheet background
+            backgroundColor: 'rgba(255, 255, 255, 0.88)', /* semi-transparent so orbs bleed through */
+            backdropFilter: 'blur(2px)',
+            WebkitBackdropFilter: 'blur(2px)',
           }}
         >
           <div

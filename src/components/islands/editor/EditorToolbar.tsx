@@ -228,7 +228,7 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
         paddingRight: 'var(--space-base)',
         borderBottom: `1px solid ${scrolled ? 'var(--color-hairline)' : 'transparent'}`,
         // Frosted glass: uses utility class from tailwind.css
-        backgroundColor: 'var(--color-canvas-soft)',
+        backgroundColor: 'var(--color-canvas)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         transition: `border-color var(--duration-200) var(--ease-out)`,

@@ -33,15 +33,33 @@ export const ParticlesBackground: React.FC = () => {
       return;
     }
 
-    // 3. Initialize Swarm
+    // 3. Initialize Swarm dynamically so Three.js is code-split out of island chunk
     if (containerRef.current) {
-      try {
-        const swarm = new ParticlesSwarm(containerRef.current);
-        swarmRef.current = swarm;
-      } catch (err) {
-        console.warn('Failed to initialize particle swarm:', err);
-        setUseFallback(true);
-      }
+      let isMounted = true;
+      import('../../lib/three/ParticlesSwarm')
+        .then(({ ParticlesSwarm }) => {
+          if (isMounted && containerRef.current) {
+            try {
+              const swarm = new ParticlesSwarm(containerRef.current);
+              swarmRef.current = swarm;
+            } catch (err) {
+              console.warn('Failed to initialize particle swarm:', err);
+              setUseFallback(true);
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('Failed to load particle swarm module:', err);
+          if (isMounted) setUseFallback(true);
+        });
+
+      return () => {
+        isMounted = false;
+        if (swarmRef.current) {
+          swarmRef.current.dispose();
+          swarmRef.current = null;
+        }
+      };
     }
 
     // Cleanup
@@ -79,3 +97,5 @@ export const ParticlesBackground: React.FC = () => {
     />
   );
 };
+
+export default ParticlesBackground;

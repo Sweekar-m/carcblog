@@ -59,39 +59,49 @@ export function TitleInput() {
   }, []);
 
   return (
-    <textarea
-      id="editor-title-input"
-      ref={textareaRef}
-      value={titleValue}
-      onChange={handleChange}
-      onKeyDown={handleKeyDown}
-      onInput={autoGrow}
-      placeholder={PLACEHOLDER}
-      rows={1}
-      aria-label="Article title"
-      aria-required="true"
-      spellCheck
-      autoComplete="off"
-      autoCorrect="on"
-      autoCapitalize="sentences"
-      style={{
-        // display-xl token: EB Garamond 300, 48px, lh 1.08, ls -0.01em
-        fontFamily: 'var(--font-serif)',
-        fontWeight: 'var(--fw-light)',      /* 300 — never bold per design.md */
-        fontSize: 'var(--fs-display-xl)',   /* 48px */
-        lineHeight: 'var(--lh-display-xl)', /* 1.08 */
-        letterSpacing: 'var(--ls-display-xl)', /* -0.01em */
-        color: 'var(--color-ink)',
-        // Invisible input — pure writing surface
-        border: 'none',
-        outline: 'none',
-        background: 'transparent',
-        resize: 'none',
-        width: '100%',
-        padding: '0',
-        margin: '0',
-        overflow: 'hidden',
-      }}
-    />
+    <>
+      {/* Scoped placeholder style — browser default placeholder gray overrides inline color */}
+      <style>{`
+        #editor-title-input::placeholder {
+          color: var(--color-muted-soft);  /* #a8a29e — design.md disabled/placeholder token */
+          opacity: 1;
+        }
+      `}</style>
+      <textarea
+        id="editor-title-input"
+        ref={textareaRef}
+        value={titleValue}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onInput={autoGrow}
+        placeholder={PLACEHOLDER}
+        rows={1}
+        aria-label="Article title"
+        aria-required="true"
+        spellCheck
+        autoComplete="off"
+        autoCorrect="on"
+        autoCapitalize="sentences"
+        style={{
+          // display-xl token: EB Garamond 300, 48px, lh 1.08, ls -0.01em
+          fontFamily: 'var(--font-serif)',
+          fontWeight: 'var(--fw-light)',      /* 300 — never bold per design.md */
+          fontSize: 'var(--fs-display-xl)',   /* 48px */
+          lineHeight: 'var(--lh-display-xl)', /* 1.08 */
+          letterSpacing: 'var(--ls-display-xl)', /* -0.01em */
+          color: 'var(--color-ink)',
+          caretColor: 'var(--color-ink)',
+          // Invisible input — pure writing surface
+          border: 'none',
+          outline: 'none',
+          background: 'transparent',
+          resize: 'none',
+          width: '100%',
+          padding: '0',
+          margin: '0',
+          overflow: 'hidden',
+        }}
+      />
+    </>
   );
 }

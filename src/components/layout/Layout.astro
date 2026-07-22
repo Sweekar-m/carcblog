@@ -4,9 +4,7 @@ import Nav from '@/components/layout/Nav.astro';
 import Footer from '@/components/layout/Footer.astro';
 import '@/styles/globals.css';
 // Dynamically import ParticlesBackground to avoid large initial bundle
-// const { ParticlesBackground } = await import('@/components/islands/ParticlesBackground');
-// Note: The original static import is removed to avoid bundling the large three.js code in the initial chunk.
-import { ParticlesBackground } from '../islands/ParticlesBackground';
+import ParticlesBackground from '../islands/ParticlesBackground';
 import { ViewTransitions } from 'astro:transitions';
 
 
@@ -48,7 +46,7 @@ let particlesMask = "none";
     <ViewTransitions />
   </head>
   <body class:list={["text-foreground antialiased min-h-screen flex flex-col", className]} style={`--bg-particles-opacity: ${particlesOpacity}; --bg-particles-mask: ${particlesMask};`}>
-    <ParticlesBackground client:only="react" transition:persist />
+    <ParticlesBackground client:load transition:persist />
     <Nav />
     <main class="flex-grow w-full">
       <slot />
