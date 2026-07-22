@@ -178,23 +178,22 @@ import Layout from '@/components/layout/Layout.astro';
   z-index: 2;
   max-width: 680px;
 }
-/* display-mega: EB Garamond 300, 64px */
+/* hero-display: DM Sans 600, 56px/80px */
 .discover-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-mega);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-mega);
-  letter-spacing: var(--ls-display-mega);
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-heading-lg), 5vw, var(--fs-hero-display));
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-hero-display);
+  letter-spacing: -0.025em;
   margin-bottom: var(--space-md);
 }
 .discover-sub {
   font-family: var(--font-sans);
-  font-size: var(--fs-body-md);
+  font-size: var(--fs-subtitle);
   font-weight: var(--fw-regular);
-  color: var(--color-body);
-  line-height: var(--lh-body);
-  letter-spacing: var(--ls-body);
+  color: var(--color-steel);
+  line-height: 1.5;
   max-width: 540px;
 }
 
@@ -223,20 +222,20 @@ import Layout from '@/components/layout/Layout.astro';
   flex-wrap: wrap;
   gap: var(--space-md);
 }
-/* display-lg: EB Garamond 300, 36px */
+/* heading-md: DM Sans 600, 32px */
 .sec-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-lg);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-lg);
-  letter-spacing: var(--ls-display-lg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-md);
+  letter-spacing: -0.01em;
   margin-bottom: var(--space-xs);
 }
 .sec-sub {
   font-family: var(--font-sans);
   font-size: var(--fs-body-sm);
-  color: var(--color-muted);
+  color: var(--color-steel);
   line-height: var(--lh-body-sm);
 }
 

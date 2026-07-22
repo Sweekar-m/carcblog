@@ -205,33 +205,33 @@ const draftArticles = articles.filter(a => a.publishedAt == null);
   }
   .header-text { flex: 1; }
 
-  /* display-md: EB Garamond 300, 32px */
+  /* heading-md: DM Sans 600, 32px */
   .page-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-md);
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-heading-md);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0 0 var(--space-xxs);
-    line-height: var(--lh-display-md);
-    letter-spacing: var(--ls-display-md);
+    line-height: var(--lh-heading-md);
+    letter-spacing: -0.01em;
   }
 
   .page-sub {
     font-family: var(--font-sans);
     font-size: var(--fs-body-sm);
-    color: var(--color-muted);
+    color: var(--color-steel);
     margin: 0;
   }
 
   /* ── Section ── */
   .dashboard-section { display: flex; flex-direction: column; gap: var(--space-sm); }
 
-  /* title-sm: Inter 500, 18px */
+  /* card-title: DM Sans 600, 20px */
   .section-title {
     font-family: var(--font-sans);
-    font-size: var(--fs-title-sm);
-    font-weight: var(--fw-medium);
-    color: var(--color-ink);
+    font-size: var(--fs-card-title);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0;
   }
 

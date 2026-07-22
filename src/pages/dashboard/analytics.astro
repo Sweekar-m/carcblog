@@ -132,21 +132,21 @@ const user = await getCurrentUser(Astro.locals);
     border-bottom: 1px solid var(--color-hairline);
   }
 
-  /* display-md: EB Garamond 300, 32px */
+  /* heading-md: DM Sans 600, 32px */
   .page-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-md);
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-heading-md);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0;
-    line-height: var(--lh-display-md);
-    letter-spacing: var(--ls-display-md);
+    line-height: var(--lh-heading-md);
+    letter-spacing: -0.01em;
   }
 
   .page-sub {
     font-family: var(--font-sans);
     font-size: var(--fs-body-sm);
-    color: var(--color-muted);
+    color: var(--color-steel);
     margin: 0;
     line-height: var(--lh-body-sm);
   }
@@ -167,7 +167,7 @@ const user = await getCurrentUser(Astro.locals);
     transition: box-shadow var(--duration-200) var(--ease-out);
   }
   .metric-card:hover {
-    box-shadow: var(--shadow-card-hover);
+    box-shadow: var(--shadow-card);
   }
 
   .metric-top {
@@ -192,11 +192,11 @@ const user = await getCurrentUser(Astro.locals);
   /* caption-uppercase */
   .metric-period {
     font-family: var(--font-sans);
-    font-size: var(--fs-caption-upper);
-    color: var(--color-muted-soft);
+    font-size: 11px;
+    color: var(--color-steel);
     margin: 0;
     text-transform: uppercase;
-    letter-spacing: var(--ls-caption-upper);
+    letter-spacing: 0.05em;
   }
 
   /* voice-icon-circular: surface-strong bg */
@@ -211,15 +211,15 @@ const user = await getCurrentUser(Astro.locals);
     flex-shrink: 0;
   }
 
-  /* display-xl: EB Garamond 300 for numbers */
+  /* display-lg: DM Sans 600 for numbers */
   .metric-value {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-xl);        /* 48px */
-    font-weight: var(--fw-light);           /* 300 */
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-display-lg);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin: 0;
     line-height: 1;
-    letter-spacing: var(--ls-display-xl);
+    letter-spacing: -0.02em;
   }
 
   /* ── Charts ── */

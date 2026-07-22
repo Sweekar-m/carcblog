@@ -119,22 +119,22 @@ const recentArticles = sanityArticles.map(article => ({
 }
 .fh-text { flex: 1; }
 
-/* display-xl: EB Garamond 300, 48px */
+/* heading-lg: DM Sans 600, 40px */
 .feed-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-xl);
-  font-weight: var(--fw-light);            /* 300 */
-  color: var(--color-ink);
-  line-height: var(--lh-display-xl);
-  letter-spacing: var(--ls-display-xl);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-lg);
+  letter-spacing: -0.015em;
   margin-bottom: var(--space-xs);
 }
-/* body-sm: Inter 400, 15px, body color */
+/* body-sm: DM Sans 400, 15px */
 .feed-sub {
   font-family: var(--font-sans);
   font-size: var(--fs-body-sm);
   font-weight: var(--fw-regular);
-  color: var(--color-muted);
+  color: var(--color-steel);
   line-height: var(--lh-body-sm);
 }
 
@@ -148,23 +148,23 @@ const recentArticles = sanityArticles.map(article => ({
 }
 .filter-pill {
   font-family: var(--font-sans);
-  font-size: var(--fs-caption-upper);      /* 12px */
-  font-weight: var(--fw-semibold);         /* 600 */
-  letter-spacing: var(--ls-caption-upper); /* 0.08em */
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-ink);
-  background: var(--color-surface-strong); /* #f0efed */
+  background: var(--color-surface);
   border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-pill);
-  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
   cursor: pointer;
   transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
 }
 .filter-pill:hover {
-  background: var(--color-hairline-soft);
+  background: var(--color-surface-soft);
   border-color: var(--color-hairline-strong);
 }
-/* Active filter: ink background, on-primary text */
+/* Active filter: ink background, white text */
 .filter-pill--active {
   background: var(--color-primary);
   color: var(--color-on-primary);
@@ -199,7 +199,7 @@ const recentArticles = sanityArticles.map(article => ({
   text-align: center;
 }
 
-/* ── Empty state — atmospheric orb decoration ── */
+/* ── Empty state — clean flat card ── */
 .empty-state {
   text-align: center;
   padding: var(--space-section) var(--space-lg);
@@ -209,37 +209,21 @@ const recentArticles = sanityArticles.map(article => ({
   gap: 0;
   position: relative;
   overflow: hidden;
-  border: 1px dashed var(--color-hairline-strong);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-xl);
+  background: var(--color-canvas);
 }
-.empty-orb-sky {
-  position: absolute;
-  width: 300px; height: 300px;
-  background: radial-gradient(circle, rgba(168, 200, 232, 0.4) 0%, transparent 70%);
-  filter: blur(50px);
-  border-radius: 50%;
-  top: -80px; left: 10%;
-  pointer-events: none;
-}
-.empty-orb-rose {
-  position: absolute;
-  width: 260px; height: 260px;
-  background: radial-gradient(circle, rgba(232, 184, 196, 0.35) 0%, transparent 70%);
-  filter: blur(50px);
-  border-radius: 50%;
-  bottom: -60px; right: 10%;
-  pointer-events: none;
-}
+.empty-orb-sky, .empty-orb-rose { display: none; }
 .empty-eyebrow {
   margin-bottom: var(--space-sm);
   position: relative;
   z-index: 1;
 }
 .empty-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-md);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
   margin-bottom: var(--space-sm);
   position: relative;
   z-index: 1;

@@ -197,53 +197,53 @@ import Layout from '@/components/layout/Layout.astro';
 .hero-eyebrow {
   margin-bottom: var(--space-lg);
 }
-/* display-mega: EB Garamond 300, 64px */
+/* hero-display: DM Sans 600, 56px/80px */
 .hero-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-mega);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-mega);
-  letter-spacing: var(--ls-display-mega);
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-heading-lg), 5vw, var(--fs-hero-display));
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-hero-display);
+  letter-spacing: -0.025em;
   margin-bottom: var(--space-md);
 }
 .hero-sub {
   font-family: var(--font-sans);
-  font-size: var(--fs-body-md);
-  color: var(--color-body);
-  line-height: var(--lh-body);
+  font-size: var(--fs-subtitle);
+  color: var(--color-steel);
+  line-height: 1.5;
   max-width: 500px;
   margin: 0 auto;
 }
 
 /* ── Sections ── */
 .writers-section {
-  background: var(--color-surface-card);
+  background: transparent;
   padding: var(--space-section) 0;
   border-bottom: 1px solid var(--color-hairline);
 }
 .writers-section--soft {
-  background: var(--color-canvas-soft);
+  background: transparent;
 }
 
 .sec-header {
   text-align: center;
   margin-bottom: var(--space-xl);
 }
-/* display-lg: EB Garamond 300, 36px */
+/* heading-md: DM Sans 600, 32px */
 .sec-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-lg);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-lg);
-  letter-spacing: var(--ls-display-lg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-md);
+  letter-spacing: -0.01em;
   margin-bottom: var(--space-xs);
 }
 .sec-sub {
   font-family: var(--font-sans);
   font-size: var(--fs-body-sm);
-  color: var(--color-muted);
+  color: var(--color-steel);
 }
 
 /* ── Writer Cards Grid — white surface-card, hairline, xl radius ── */

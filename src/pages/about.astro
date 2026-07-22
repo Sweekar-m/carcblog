@@ -188,22 +188,22 @@ import Layout from '@/components/layout/Layout.astro';
   margin-bottom: var(--space-lg);
 }
 
-/* display-mega: EB Garamond 300, 64px */
+/* hero-display: DM Sans 600, 56px/80px */
 .hero-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-mega);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-mega);
-  letter-spacing: var(--ls-display-mega);
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-heading-lg), 5vw, var(--fs-hero-display));
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-hero-display);
+  letter-spacing: -0.025em;
   margin-bottom: var(--space-md);
 }
 
 .hero-desc {
   font-family: var(--font-sans);
-  font-size: var(--fs-body-md);
-  color: var(--color-body);
-  line-height: var(--lh-body);
+  font-size: var(--fs-subtitle);
+  color: var(--color-steel);
+  line-height: 1.5;
   max-width: 560px;
   margin: 0 auto var(--space-xl);
 }
@@ -213,13 +213,11 @@ import Layout from '@/components/layout/Layout.astro';
   display: inline-flex;
   align-items: center;
   gap: var(--space-lg);
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  box-shadow: var(--shadow-card);
   border-radius: var(--radius-xl);
   padding: var(--space-md) var(--space-xl);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
 }
 @media (max-width: 640px) {
   .hero-stats-card {
@@ -230,12 +228,17 @@ import Layout from '@/components/layout/Layout.astro';
   .hs-sep { display: none; }
 }
 
-.hs-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.hs-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
 .hs-num {
   font-family: var(--font-sans);
-  font-size: var(--fs-title-md);
+  font-size: var(--fs-heading-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-ink);
+  color: var(--color-ink-strong);
   line-height: 1;
 }
 .hs-label {
