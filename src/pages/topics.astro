@@ -5,13 +5,75 @@ import Layout from '@/components/layout/Layout.astro';
 <Layout title="Topics — Carcblog" description="Browse and explore all topics on Carcblog">
 
   <!-- ═══════════════════════════════════════════════
+       SECTION 0: ECOSYSTEM MATRIX
+       Deep-dive startup journalism cards encoded by topic
+  ═══════════════════════════════════════════════ -->
+  <section class="topics-section topics-matrix-section">
+    <div class="page-container">
+      <div class="sec-header">
+        <h1 class="sec-title">Ecosystem Matrix</h1>
+        <p class="sec-sub">Deep-dive startup journalism and structured directories encoded by topic.</p>
+      </div>
+
+      <div class="matrix-grid">
+        <a href="/funding" class="matrix-card matrix-card-coral">
+          <div>
+            <span class="matrix-badge">Funding &amp; Capital</span>
+            <h2 class="matrix-card-title">Seed to Series C</h2>
+            <p class="matrix-card-desc">Exclusive breakdowns of capital raises, valuation metrics, and lead investor notes.</p>
+          </div>
+          <div class="matrix-card-bottom">
+            <span class="matrix-card-meta">5,978 Deals &amp; Profiles</span>
+            <span class="matrix-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="/startups" class="matrix-card matrix-card-blue">
+          <div>
+            <span class="matrix-badge">Product Launches</span>
+            <h2 class="matrix-card-title">Launch Radar</h2>
+            <p class="matrix-card-desc">First look at new B2B tools, developer platforms, and AI-native products.</p>
+          </div>
+          <div class="matrix-card-bottom">
+            <span class="matrix-card-meta">5,978 Companies</span>
+            <span class="matrix-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="/founders" class="matrix-card matrix-card-magenta">
+          <div>
+            <span class="matrix-badge">Founder Stories</span>
+            <h2 class="matrix-card-title">Raw Journeys</h2>
+            <p class="matrix-card-desc">Unfiltered founder postmortems, pivot strategies, and product-market fit stories.</p>
+          </div>
+          <div class="matrix-card-bottom">
+            <span class="matrix-card-meta">11,182 Founders</span>
+            <span class="matrix-card-arrow">→</span>
+          </div>
+        </a>
+
+        <a href="/topics#all-topics" class="matrix-card matrix-card-purple">
+          <div>
+            <span class="matrix-badge">AI &amp; Infra</span>
+            <h2 class="matrix-card-title">Deep Tech</h2>
+            <p class="matrix-card-desc">LLM architecture, agentic workflows, GPU cluster economics, and tech trends.</p>
+          </div>
+          <div class="matrix-card-bottom">
+            <span class="matrix-card-meta">1,420 AI Profiles</span>
+            <span class="matrix-card-arrow">→</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════
        SECTION 1: TRENDING TOPICS
-       canvas-soft bg, display-lg title, feature-card categories
   ═══════════════════════════════════════════════ -->
   <section class="topics-section topics-section--soft">
     <div class="page-container">
       <div class="sec-header">
-        <h1 class="sec-title">Trending Topics</h1>
+        <h2 class="sec-title">Trending Topics</h2>
         <p class="sec-sub">Browse popular segments of the publishing canvas.</p>
       </div>
 
@@ -263,6 +325,108 @@ import Layout from '@/components/layout/Layout.astro';
   line-height: 1.5;
   max-width: 500px;
   margin-bottom: var(--space-xl);
+}
+
+/* ── Matrix Grid Styles (design.md compliant) ── */
+.matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+@media (max-width: 1024px) { .matrix-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .matrix-grid { grid-template-columns: 1fr; } }
+
+.matrix-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  border-radius: var(--radius-hero, 32px);
+  text-decoration: none;
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease;
+  box-shadow: var(--shadow-card);
+}
+.matrix-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-atmospheric);
+}
+
+.matrix-card-coral {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #7c2d12 100%);
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+.matrix-card-blue {
+  background: linear-gradient(135deg, #0f172a 0%, #0c4a6e 50%, #0369a1 100%);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+.matrix-card-magenta {
+  background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #831843 100%);
+  border: 1px solid rgba(217, 70, 239, 0.3);
+}
+.matrix-card-purple {
+  background: linear-gradient(135deg, #0f172a 0%, #312e81 50%, #4c1d95 100%);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.matrix-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.matrix-card-title {
+  font-family: var(--font-sans);
+  font-size: 22px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.matrix-card-desc {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.matrix-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.matrix-card-meta {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.matrix-card-arrow {
+  color: #ffffff;
+  font-size: 16px;
+  transition: transform 150ms ease;
+}
+.matrix-card:hover .matrix-card-arrow {
+  transform: translateX(4px);
 }
 
 /* ── Responsive ── */
