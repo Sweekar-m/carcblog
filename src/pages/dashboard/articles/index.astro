@@ -136,7 +136,14 @@ const draftArticles = articles.filter(a => a.publishedAt == null);
       target.textContent = 'Publishing...';
       try {
         const res = await fetch(`/api/articles/${id}/publish`, { method: 'POST' });
-        const data = await res.json();
+        const contentType = res.headers.get('content-type');
+        let data: any = {};
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(text || `Server error (${res.status})`);
+        }
         if (res.ok && data.success) {
           alert('Article published globally!');
           window.location.reload();
@@ -162,7 +169,14 @@ const draftArticles = articles.filter(a => a.publishedAt == null);
       target.textContent = 'Deleting...';
       try {
         const res = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const contentType = res.headers.get('content-type');
+        let data: any = {};
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(text || `Server error (${res.status})`);
+        }
         if (res.ok && data.success) {
           alert('Article deleted successfully.');
           window.location.reload();

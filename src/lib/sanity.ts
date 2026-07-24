@@ -1,10 +1,13 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
 
+const sanityProjectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID || import.meta.env.SANITY_PROJECT_ID || 'jvm4i678';
+const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || import.meta.env.SANITY_DATASET || 'production';
+
 // ---------- READ-ONLY (public) client ----------
 export const sanityClient = createClient({
-  projectId: import.meta.env.PUBLIC_SANITY_PROJECT_ID,
-  dataset: import.meta.env.PUBLIC_SANITY_DATASET,
+  projectId: sanityProjectId,
+  dataset: sanityDataset,
   apiVersion: import.meta.env.SANITY_API_VERSION ?? '2023-05-03',
   useCdn: true,
 });
@@ -13,8 +16,8 @@ export const sanityClient = createClient({
 const sanityApiToken = import.meta.env.SANITY_API_TOKEN;
 // Token presence is verified at startup — never log token values.
 export const sanityWriteClient = createClient({
-  projectId: import.meta.env.SANITY_PROJECT_ID ?? import.meta.env.PUBLIC_SANITY_PROJECT_ID,
-  dataset: import.meta.env.SANITY_DATASET ?? import.meta.env.PUBLIC_SANITY_DATASET,
+  projectId: sanityProjectId,
+  dataset: sanityDataset,
   apiVersion: import.meta.env.SANITY_API_VERSION ?? '2023-05-03',
   token: sanityApiToken,
   useCdn: false,

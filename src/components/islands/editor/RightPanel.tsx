@@ -107,11 +107,18 @@ export function RightPanel({ onClose }: RightPanelProps) {
         }),
       });
 
-      const result = (await response.json()) as {
-        success?: boolean;
-        article?: { slug?: { current?: string } };
-        error?: string;
-      };
+      const contentType = response.headers.get('content-type');
+      let result: { success?: boolean; article?: { slug?: { current?: string } }; error?: string } = {};
+      if (contentType && contentType.includes('application/json')) {
+        result = (await response.json()) as {
+          success?: boolean;
+          article?: { slug?: { current?: string } };
+          error?: string;
+        };
+      } else {
+        const text = await response.text();
+        throw new Error(text || `Server error (${response.status})`);
+      }
 
       if (!response.ok) {
         throw new Error(result.error ?? 'Failed to publish article.');

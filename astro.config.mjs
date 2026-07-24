@@ -6,9 +6,12 @@ import clerk from '@clerk/astro';
 import react from '@astrojs/react';
 
 export default defineConfig({
-  site: 'https://carcblog.com',
+  site: 'https://carcblog-kappa.vercel.app/',
   output: 'server',
   adapter: vercel(),
+  security: {
+    checkOrigin: false,
+  },
   devToolbar: {
     enabled: false
   },
