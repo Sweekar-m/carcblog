@@ -51,11 +51,12 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   );
 
   if (isDevTest && !userId) {
+    const customUserId = context.request.headers.get('x-test-user-id') || url.searchParams.get('test_as_user') || 'test_writer_1';
     context.locals.user = {
-      id: 'test_writer_1',
-      userId: 'test_writer_1',
-      username: 'testwriter',
-      full_name: 'Test Writer',
+      id: customUserId,
+      userId: customUserId,
+      username: customUserId,
+      full_name: 'Test Writer (' + customUserId + ')',
       role: 'writer'
     };
     return next();

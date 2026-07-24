@@ -1,6 +1,8 @@
 ---
 // WriterDashboard.astro — ElevenLabs editorial design system
 // surface-card stats, badge-pill status, EB Garamond 300 headings, hairline dividers
+import DashboardTour from '../islands/DashboardTour';
+
 interface Props {
   stats: {
     articleCount: number;
@@ -27,6 +29,7 @@ function formatDate(ts: string) {
 ---
 
 <div class="dashboard-content">
+  <DashboardTour client:idle />
 
   <!-- Welcome header: EB Garamond 300 -->
   <div class="welcome-block">

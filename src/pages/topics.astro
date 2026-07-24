@@ -17,15 +17,14 @@ import Layout from '@/components/layout/Layout.astro';
 
       <div class="categories-grid">
         {[
-          { href: '/discover#technology', icon: '📱', name: 'Technology', count: '1.2M', desc: 'Latest insights on software, developer tools, and neural innovations.' },
-          { href: '/discover#science',    icon: '🔬', name: 'Science',    count: '850K', desc: 'Breakthroughs, aerospace discoveries, and research progress reports.' },
-          { href: '/discover#culture',    icon: '🎨', name: 'Arts & Culture', count: '620K', desc: 'Exploring modern design systems, creative expressions, and aesthetics.' },
-          { href: '/discover#history',    icon: '🏛️', name: 'History',    count: '480K', desc: 'Historical records, retro analysis, and stories that explain the present.' },
-          { href: '/discover#business',   icon: '💼', name: 'Business',   count: '550K', desc: 'SaaS architecture, startup ecosystems, and business leadership strategies.' },
-          { href: '/discover#travel',     icon: '🌍', name: 'Travel',     count: '310K', desc: 'Destinations, cultural journals, and global landscape photography.' }
-        ].map(({ href, icon, name, count, desc }) => (
+          { href: '/discover#technology', icon: '', name: 'Technology', count: '1.2M', desc: 'Latest insights on software, developer tools, and neural innovations.' },
+          { href: '/discover#science',    icon: '', name: 'Science',    count: '850K', desc: 'Breakthroughs, aerospace discoveries, and research progress reports.' },
+          { href: '/discover#culture',    icon: '', name: 'Arts & Culture', count: '620K', desc: 'Exploring modern design systems, creative expressions, and aesthetics.' },
+          { href: '/discover#history',    icon: '', name: 'History',    count: '480K', desc: 'Historical records, retro analysis, and stories that explain the present.' },
+          { href: '/discover#business',   icon: '', name: 'Business',   count: '550K', desc: 'SaaS architecture, startup ecosystems, and business leadership strategies.' },
+          { href: '/discover#travel',     icon: '', name: 'Travel',     count: '310K', desc: 'Destinations, cultural journals, and global landscape photography.' }
+        ].map(({ href, name, count, desc }) => (
           <a href={href} class="category-card" aria-label={`Explore ${name} topic — ${count} articles`}>
-            <div class="cat-icon-box" aria-hidden="true">{icon}</div>
             <div class="cat-body">
               <div class="cat-meta">
                 <h3 class="cat-name">{name}</h3>

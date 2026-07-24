@@ -263,4 +263,174 @@ export async function getArticleBySlugWithFallback(slug: string) {
   }
 }
 
+// -------------------------------------------------------------
+// Startup & Founder Directory Types & API Helper Functions
+// -------------------------------------------------------------
+
+export interface Startup {
+  id: string;
+  name: string;
+  slug: string;
+  website: string | null;
+  description: string | null;
+  industry: string | null;
+  funding_stage: string | null;
+  country: string | null;
+  city: string | null;
+  logo_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Founder {
+  id: string;
+  name: string;
+  slug: string;
+  bio: string | null;
+  avatar_url: string | null;
+  job_title: string | null;
+  linkedin_url: string | null;
+  twitter_url: string | null;
+  email: string | null;
+  phone: string | null;
+  country: string | null;
+  city: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StartupWithFounders extends Startup {
+  founders: Array<Founder & { job_title: string | null }>;
+}
+
+export interface FounderWithStartups extends Founder {
+  startups: Array<Startup & { job_title: string | null }>;
+}
+
+export async function getStartups(options: { search?: string; industry?: string; limit?: number; offset?: number } = {}) {
+  let query = supabase.from('startups').select('*', { count: 'exact' });
+
+  if (options.search && options.search.trim()) {
+    const term = `%${options.search.trim()}%`;
+    query = query.or(`name.ilike.${term},description.ilike.${term},city.ilike.${term},country.ilike.${term}`);
+  }
+
+  if (options.industry && options.industry.trim() && options.industry !== 'All') {
+    query = query.eq('industry', options.industry);
+  }
+
+  query = query.order('name', { ascending: true });
+
+  if (options.limit) {
+    const offset = options.offset || 0;
+    query = query.range(offset, offset + options.limit - 1);
+  }
+
+  const { data, count, error } = await query;
+  if (error) throw error;
+  return { startups: (data || []) as Startup[], total: count || 0 };
+}
+
+export async function getStartupBySlug(slug: string): Promise<StartupWithFounders | null> {
+  const { data: startup, error: startupError } = await supabase
+    .from('startups')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (startupError || !startup) {
+    if (startupError?.code === 'PGRST116') return null;
+    throw startupError;
+  }
+
+  const { data: links, error: linksError } = await supabase
+    .from('founder_startups')
+    .select(`
+      job_title,
+      founder:founders (*)
+    `)
+    .eq('startup_id', startup.id);
+
+  if (linksError) throw linksError;
+
+  const founders = (links || [])
+    .filter(l => l.founder)
+    .map(l => ({
+      ...(l.founder as unknown as Founder),
+      job_title: l.job_title || (l.founder as unknown as Founder).job_title
+    }));
+
+  return {
+    ...startup,
+    founders
+  };
+}
+
+export async function getFounders(options: { search?: string; limit?: number; offset?: number } = {}) {
+  let query = supabase.from('founders').select('*', { count: 'exact' });
+
+  if (options.search && options.search.trim()) {
+    const term = `%${options.search.trim()}%`;
+    query = query.or(`name.ilike.${term},job_title.ilike.${term},city.ilike.${term},country.ilike.${term}`);
+  }
+
+  query = query.order('name', { ascending: true });
+
+  if (options.limit) {
+    const offset = options.offset || 0;
+    query = query.range(offset, offset + options.limit - 1);
+  }
+
+  const { data, count, error } = await query;
+  if (error) throw error;
+  return { founders: (data || []) as Founder[], total: count || 0 };
+}
+
+export async function getFounderBySlug(slug: string): Promise<FounderWithStartups | null> {
+  const { data: founder, error: founderError } = await supabase
+    .from('founders')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (founderError || !founder) {
+    if (founderError?.code === 'PGRST116') return null;
+    throw founderError;
+  }
+
+  const { data: links, error: linksError } = await supabase
+    .from('founder_startups')
+    .select(`
+      job_title,
+      startup:startups (*)
+    `)
+    .eq('founder_id', founder.id);
+
+  if (linksError) throw linksError;
+
+  const startups = (links || [])
+    .filter(l => l.startup)
+    .map(l => ({
+      ...(l.startup as unknown as Startup),
+      job_title: l.job_title
+    }));
+
+  return {
+    ...founder,
+    startups
+  };
+}
+
+export async function getStartupIndustries(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('startups')
+    .select('industry')
+    .not('industry', 'is', null);
+
+  if (error) return [];
+  const industries = Array.from(new Set(data.map(d => d.industry).filter(Boolean))) as string[];
+  return industries.sort();
+}
+
+
 

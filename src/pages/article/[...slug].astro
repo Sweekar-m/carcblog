@@ -94,11 +94,11 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
             <div class="owner-actions">
               {article.status !== 'published' && (
                 <button type="button" class="btn-publish-global" id="btnPublishGlobal">
-                  🚀 Publish Globally
+                  Publish Globally
                 </button>
               )}
               <button type="button" class="btn-delete-article" id="btnDeleteArticle">
-                🗑️ Delete Article
+                Delete Article
               </button>
             </div>
           </div>
@@ -226,12 +226,12 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
           } else {
             alert('Failed to publish article: ' + (data.error || 'Unknown error'));
             btnPublish.removeAttribute('disabled');
-            btnPublish.textContent = '🚀 Publish Globally';
+            btnPublish.textContent = 'Publish Globally';
           }
         } catch (err: any) {
           alert('Error: ' + err.message);
           btnPublish.removeAttribute('disabled');
-          btnPublish.textContent = '🚀 Publish Globally';
+          btnPublish.textContent = 'Publish Globally';
         }
       });
     }
@@ -250,12 +250,12 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
           } else {
             alert('Failed to delete article: ' + (data.error || 'Unknown error'));
             btnDelete.removeAttribute('disabled');
-            btnDelete.textContent = '🗑️ Delete Article';
+            btnDelete.textContent = 'Delete Article';
           }
         } catch (err: any) {
           alert('Error: ' + err.message);
           btnDelete.removeAttribute('disabled');
-          btnDelete.textContent = '🗑️ Delete Article';
+          btnDelete.textContent = 'Delete Article';
         }
       });
     }

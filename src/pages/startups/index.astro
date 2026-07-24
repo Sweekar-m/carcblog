@@ -1,0 +1,185 @@
+---
+import Layout from '@/components/layout/Layout.astro';
+import { getStartups, getStartupIndustries } from '@/lib/supabase';
+
+export const prerender = false;
+
+const url = new URL(Astro.request.url);
+const search = url.searchParams.get('q') || '';
+const industry = url.searchParams.get('industry') || 'All';
+const page = parseInt(url.searchParams.get('page') || '1', 10);
+const limit = 24;
+const offset = (page - 1) * limit;
+
+const [{ startups, total }, industries] = await Promise.all([
+  getStartups({ search, industry, limit, offset }),
+  getStartupIndustries()
+]);
+
+const totalPages = Math.ceil(total / limit);
+
+function getPageUrl(p: number) {
+  const params = new URLSearchParams(url.search);
+  params.set('page', p.toString());
+  return `/startups?${params.toString()}`;
+}
+---
+
+<Layout title="Startup Directory" description="Explore high-growth tech startups, venture-backed companies, and emerging founders.">
+  <div style="max-width:1280px;margin:0 auto;padding:40px 24px 80px">
+
+    {/* ── Page Header ── */}
+    <div style="text-align:center;max-width:640px;margin:0 auto 48px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#64748B;margin-bottom:16px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+        Startup Directory
+      </div>
+      <p style="font-family:var(--font-sans);font-size:2.5rem;font-weight:700;line-height:1.2;letter-spacing:-0.02em;color:#0F172A;margin:0 0 12px">
+        Discover the Next Generation of Startups
+      </p>
+      <p style="font-family:var(--font-sans);font-size:1.125rem;font-weight:400;color:#64748B;line-height:1.6;margin:0">
+        Browse {total.toLocaleString()} technology startups, venture-backed ventures, and innovative products.
+      </p>
+    </div>
+
+    {/* ── Search & Filter Bar ── */}
+    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:20px;margin-bottom:40px;box-shadow:0px 1px 2px rgba(0,0,0,0.04)">
+      <form method="GET" action="/startups" style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:240px">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <input
+            type="text"
+            name="q"
+            id="startup-search"
+            value={search}
+            placeholder="Search startups by name, description, or location..."
+            style="width:100%;padding:0 16px 0 42px;height:44px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;transition:border-color 150ms;box-sizing:border-box"
+          />
+        </div>
+
+        {industries.length > 0 && (
+          <div style="position:relative;min-width:180px">
+            <select
+              name="industry"
+              id="industry-filter"
+              onchange="this.form.submit()"
+              style="width:100%;padding:0 36px 0 14px;height:44px;appearance:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;cursor:pointer"
+            >
+              <option value="All" selected={industry === 'All'}>All Industries</option>
+              {industries.map((ind) => (
+                <option value={ind} selected={industry === ind}>{ind}</option>
+              ))}
+            </select>
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            </span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          id="startup-search-submit"
+          class="btn-search"
+          style="padding:0 24px;height:44px;border-radius:9999px;background:#0F172A;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;border:none;cursor:pointer;white-space:nowrap"
+        >
+          Search
+        </button>
+      </form>
+    </div>
+
+    {/* ── Results stats ── */}
+    <div style="margin-bottom:20px">
+      <p style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;margin:0">
+        Showing <strong style="color:#0F172A;font-weight:600">{startups.length}</strong> of <strong style="color:#0F172A;font-weight:600">{total.toLocaleString()}</strong> startups
+        {search && <span> matching "<span style="color:#0284C7">{search}</span>"</span>}
+        {industry !== 'All' && <span> in <span style="color:#0284C7">{industry}</span></span>}
+      </p>
+    </div>
+
+    {/* ── Startup Grid ── */}
+    {startups.length > 0 ? (
+      <div class="startup-grid reveal-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+        {startups.map((startup) => (
+          <a href={`/startups/${startup.slug}`} class="startup-card" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px;text-decoration:none;transition:border-color 200ms,box-shadow 200ms;color:inherit">
+            {/* Card header: logo + industry badge */}
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+              <div style="width:44px;height:44px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                {startup.logo_url ? (
+                  <img src={startup.logo_url} alt={startup.name} style="width:100%;height:100%;object-fit:cover" />
+                ) : (
+                  <span style="font-family:var(--font-sans);font-size:1rem;font-weight:700;color:#64748B">{startup.name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              {startup.industry && (
+                <span style="padding:3px 10px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.75rem;font-weight:600;color:#64748B;flex-shrink:0;white-space:nowrap">
+                  {startup.industry}
+                </span>
+              )}
+            </div>
+
+            {/* Company name */}
+            <p class="startup-name" style="font-family:var(--font-sans);font-size:1.125rem;font-weight:700;color:#0F172A;margin:0 0 8px;line-height:1.3">
+              {startup.name}
+            </p>
+
+            {/* Description */}
+            <p style="font-family:var(--font-sans);font-size:0.875rem;color:#334155;line-height:1.6;margin:0 0 auto;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">
+              {startup.description || 'No description available for this startup profile.'}
+            </p>
+
+            {/* Card footer */}
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #F1F5F9">
+              <div style="display:flex;align-items:center;gap:4px;font-family:var(--font-sans);font-size:0.75rem;color:#64748B">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>{[startup.city, startup.country].filter(Boolean).join(', ') || 'Global'}</span>
+              </div>
+              <span style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">
+                View Profile →
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div style="text-align:center;padding:80px 24px;background:#F8FAFC;border-radius:16px;border:1px solid #E2E8F0">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block" aria-hidden="true"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg>
+        <p style="font-family:var(--font-sans);font-size:1.25rem;font-weight:700;color:#0F172A;margin:0 0 8px">No Startups Found</p>
+        <p style="font-family:var(--font-sans);font-size:0.875rem;color:#64748B;margin:0 0 24px">We couldn't find any startups matching your criteria.</p>
+        <a href="/startups" style="display:inline-flex;align-items:center;padding:10px 24px;border-radius:9999px;background:#0F172A;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none">
+          Reset Search
+        </a>
+      </div>
+    )}
+
+    {/* ── Pagination ── */}
+    {totalPages > 1 && (
+      <div style="margin-top:56px;display:flex;justify-content:center;align-items:center;gap:8px">
+        {page > 1 && (
+          <a href={getPageUrl(page - 1)} class="btn-page" style="padding:8px 20px;border:1px solid #E2E8F0;border-radius:9999px;font-family:var(--font-sans);font-size:0.875rem;font-weight:500;color:#0F172A;text-decoration:none">
+            ← Previous
+          </a>
+        )}
+        <span style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;padding:0 12px">
+          Page {page} of {totalPages}
+        </span>
+        {page < totalPages && (
+          <a href={getPageUrl(page + 1)} class="btn-page" style="padding:8px 20px;border:1px solid #E2E8F0;border-radius:9999px;font-family:var(--font-sans);font-size:0.875rem;font-weight:500;color:#0F172A;text-decoration:none">
+            Next →
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .startup-card:hover {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.08) !important;
+  }
+  .startup-card:hover .startup-name { color: #0284C7 !important; }
+  .btn-search:hover { background: #334155 !important; }
+  .btn-page:hover { background: #F8FAFC; }
+</style>

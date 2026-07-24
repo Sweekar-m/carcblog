@@ -1,0 +1,118 @@
+/* Import driver.js base styles */
+@import 'driver.js/dist/driver.css';
+
+/* Driver.js CarcBlog Design System Overrides */
+.driver-popover {
+  background-color: var(--color-surface-card, #ffffff);
+  border: 1px solid var(--color-hairline, #e5e5e5);
+  border-radius: var(--radius-xl, 16px) !important;
+  box-shadow: var(--shadow-modal, 0 12px 32px rgba(0, 0, 0, 0.12)) !important;
+  padding: var(--space-lg, 20px) !important;
+  max-width: 340px !important;
+  color: var(--color-ink, #0f172a);
+}
+
+/* Popover Arrow */
+.driver-popover-arrow-side-top {
+  border-bottom-color: var(--color-surface-card, #ffffff) !important;
+}
+.driver-popover-arrow-side-bottom {
+  border-top-color: var(--color-surface-card, #ffffff) !important;
+}
+.driver-popover-arrow-side-left {
+  border-right-color: var(--color-surface-card, #ffffff) !important;
+}
+.driver-popover-arrow-side-right {
+  border-left-color: var(--color-surface-card, #ffffff) !important;
+}
+
+/* Popover Title: EB Garamond, 300 weight, editorial ink */
+.driver-popover-title {
+  font-family: var(--font-serif, 'Cormorant Garamond', 'EB Garamond', Georgia, serif) !important;
+  font-size: var(--fs-title-md, 20px) !important;
+  font-weight: var(--fw-light, 300) !important;
+  color: var(--color-ink-strong, #0f172a) !important;
+  line-height: 1.3 !important;
+  margin-bottom: var(--space-xs, 8px) !important;
+}
+
+/* Popover Description: Inter sans-serif, body color */
+.driver-popover-description {
+  font-family: var(--font-sans, Inter, system-ui, sans-serif) !important;
+  font-size: var(--fs-body-sm, 14px) !important;
+  font-weight: var(--fw-regular, 400) !important;
+  color: var(--color-body, #475569) !important;
+  line-height: 1.5 !important;
+  margin-bottom: var(--space-md, 16px) !important;
+}
+
+/* Popover Footer & Buttons */
+.driver-popover-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: var(--space-xs, 8px) !important;
+  margin-top: var(--space-md, 16px) !important;
+  padding-top: var(--space-sm, 12px) !important;
+  border-top: 1px solid var(--color-hairline-soft, #f1f5f9) !important;
+}
+
+.driver-popover-progress-text {
+  font-family: var(--font-sans, Inter, system-ui, sans-serif) !important;
+  font-size: 12px !important;
+  color: var(--color-muted, #94a3b8) !important;
+}
+
+.driver-popover-navigation-objs {
+  display: flex !important;
+  gap: 8px !important;
+}
+
+/* Next & Done Pill Button — matches button-primary */
+.driver-popover-next-btn {
+  font-family: var(--font-sans, Inter, system-ui, sans-serif) !important;
+  font-size: var(--fs-caption, 13px) !important;
+  font-weight: var(--fw-semibold, 600) !important;
+  color: var(--color-on-primary, #ffffff) !important;
+  background-color: var(--color-primary, #0f172a) !important;
+  border: none !important;
+  border-radius: var(--radius-pill, 9999px) !important;
+  padding: 6px 16px !important;
+  cursor: pointer !important;
+  transition: background-color var(--duration-150, 150ms) var(--ease-out, ease-out) !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-next-btn:hover {
+  background-color: var(--color-ink, #1e293b) !important;
+}
+
+/* Previous Pill Button — matches button-outline */
+.driver-popover-prev-btn {
+  font-family: var(--font-sans, Inter, system-ui, sans-serif) !important;
+  font-size: var(--fs-caption, 13px) !important;
+  font-weight: var(--fw-medium, 500) !important;
+  color: var(--color-ink, #0f172a) !important;
+  background-color: transparent !important;
+  border: 1px solid var(--color-hairline-strong, #cbd5e1) !important;
+  border-radius: var(--radius-pill, 9999px) !important;
+  padding: 6px 16px !important;
+  cursor: pointer !important;
+  transition: background-color var(--duration-150, 150ms) var(--ease-out, ease-out) !important;
+  text-shadow: none !important;
+}
+
+.driver-popover-prev-btn:hover {
+  background-color: var(--color-surface, #f8fafc) !important;
+}
+
+/* Close button (top right cross if present) */
+.driver-popover-close-btn {
+  color: var(--color-muted, #94a3b8) !important;
+  padding: 4px !important;
+  border-radius: var(--radius-pill, 9999px) !important;
+}
+.driver-popover-close-btn:hover {
+  color: var(--color-ink, #0f172a) !important;
+  background-color: var(--color-surface, #f8fafc) !important;
+}

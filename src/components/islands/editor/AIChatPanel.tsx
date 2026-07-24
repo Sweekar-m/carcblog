@@ -240,10 +240,10 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
           <div>
             <h3
               style={{
-                fontFamily: 'var(--font-serif)',
-                fontSize: 'var(--fs-title-md)',
-                fontWeight: 'var(--fw-light)',
-                color: 'var(--color-ink)',
+                fontFamily: 'var(--font-sans)',
+                fontSize: 'var(--fs-card-title)',
+                fontWeight: 'var(--fw-semibold)',
+                color: 'var(--color-ink-strong)',
                 margin: 0
               }}
             >
@@ -404,7 +404,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
                       <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-muted)', fontWeight: 'var(--fw-semibold)' }}>
                         Proposed Headline
                       </div>
-                      <div style={{ fontFamily: 'var(--font-serif)', fontSize: '16px', fontWeight: 'var(--fw-light)', color: 'var(--color-ink)', marginTop: '2px' }}>
+                      <div style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 'var(--fw-semibold)', color: 'var(--color-ink-strong)', marginTop: '2px' }}>
                         {msg.structured.headline}
                       </div>
                     </div>

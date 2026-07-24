@@ -97,15 +97,15 @@ export async function authorizeArticleAction(
 
     const checkOwnership = options.requireOwnership ?? true;
     if (checkOwnership) {
-      const isOwner = !article.author?.clerkUserId || article.author.clerkUserId === userId;
-      const isWriterOrAdmin = profile.role === 'writer' || profile.role === 'admin';
+      const isOwner = Boolean(article.author?.clerkUserId && article.author.clerkUserId === userId);
+      const isAdmin = effectiveProfile.role === 'admin';
 
-      if (!isOwner && !isWriterOrAdmin) {
+      if (!isOwner && !isAdmin) {
         return {
           userId,
-          profile,
+          profile: effectiveProfile,
           article,
-          errorResponse: errorResponse(`Forbidden: You do not have permission to manage this article. Writer or Admin access required.`, 403),
+          errorResponse: errorResponse(`Forbidden: You do not have permission to manage this article. Only the author or an admin can manage this article.`, 403),
         };
       }
     }

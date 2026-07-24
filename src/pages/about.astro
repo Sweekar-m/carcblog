@@ -79,16 +79,14 @@ import Layout from '@/components/layout/Layout.astro';
 
       <div class="values-grid">
         {[
-          { icon: '📖', title: 'Quality over quantity', text: 'We prioritize well-researched, thoughtfully written content that adds genuine value to readers\' lives.' },
-          { icon: '💬', title: 'Thoughtful discourse',  text: 'We foster constructive conversations that bridge different perspectives and experiences.' },
-          { icon: '🌱', title: 'Growth mindset',        text: 'We support writers in developing their craft and readers in expanding their horizons.' },
-          { icon: '🤝', title: 'Community first',       text: 'Our platform belongs to our community of writers and readers who shape its direction.' },
-          { icon: '✨', title: 'Creative freedom',     text: 'We empower writers to express their authentic voices without algorithmic constraints.' },
-          { icon: '🔍', title: 'Discoverability',       text: 'We help great content find its audience through thoughtful curation and recommendation.' }
-        ].map(({ icon, title, text }) => (
+          { title: 'Quality over quantity', text: 'We prioritize well-researched, thoughtfully written content that adds genuine value to readers\' lives.' },
+          { title: 'Thoughtful discourse',  text: 'We foster constructive conversations that bridge different perspectives and experiences.' },
+          { title: 'Growth mindset',        text: 'We support writers in developing their craft and readers in expanding their horizons.' },
+          { title: 'Community first',       text: 'Our platform belongs to our community of writers and readers who shape its direction.' },
+          { title: 'Creative freedom',     text: 'We empower writers to express their authentic voices without algorithmic constraints.' },
+          { title: 'Discoverability',       text: 'We help great content find its audience through thoughtful curation and recommendation.' }
+        ].map(({ title, text }) => (
           <div class="value-card feature-card">
-            <!-- voice-icon-circular -->
-            <div class="value-icon-box" aria-hidden="true">{icon}</div>
             <h3 class="value-title">{title}</h3>
             <p class="value-text">{text}</p>
           </div>

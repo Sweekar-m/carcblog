@@ -6,14 +6,16 @@ import { getUserProfile, upsertUserProfile } from '@/lib/supabase';
 export const prerender = false;
 
 // 1. Ensure user is authenticated
-let userId = null;
+let userId = Astro.locals.user?.userId || null;
 let clerkUser = null;
-if (typeof Astro.locals?.auth === 'function') {
-  const auth = await Astro.locals.auth();
-  userId = auth?.userId;
-  if (userId && typeof Astro.locals?.currentUser === 'function') {
-    clerkUser = await Astro.locals.currentUser();
-  }
+if (!userId && typeof Astro.locals?.auth === 'function') {
+  try {
+    const auth = await Astro.locals.auth();
+    userId = auth?.userId;
+  } catch (e) {}
+}
+if (userId && typeof Astro.locals?.currentUser === 'function') {
+  clerkUser = await Astro.locals.currentUser().catch(() => null);
 }
 
 if (!userId) {
@@ -34,25 +36,24 @@ try {
 
 const url = new URL(Astro.request.url);
 const redirectUrl = url.searchParams.get('redirect_url') || '';
+const defaultRole = url.searchParams.get('role') === 'writer' ? 'writer' : 'reader';
 
 // 3. Handle Form Submission (server-side fallback for JS-disabled browsers)
-//    SECURITY: `role` is NEVER read from the form. All new users are hard-coded
-//    as 'reader'. Role elevation requires a separate admin action.
 let errorMessage = '';
 if (Astro.request.method === 'POST') {
   try {
     const formData = await Astro.request.formData();
     const fullName = formData.get('fullName')?.toString()?.trim() || '';
+    const selectedRole = (formData.get('role')?.toString() === 'writer' ? 'writer' : 'reader') as 'reader' | 'writer';
     const occupation = formData.get('occupation')?.toString()?.trim() || '';
     const bio = formData.get('bio')?.toString()?.trim() || '';
 
     if (!fullName || !occupation) {
       errorMessage = 'Please fill in all required fields.';
     } else {
-      // Hard-code role to 'reader' — never read from client input
       await upsertUserProfile(userId, {
         full_name: fullName,
-        role: 'reader',
+        role: selectedRole,
         occupation,
         bio: bio || null,
       });
@@ -60,8 +61,7 @@ if (Astro.request.method === 'POST') {
       if (redirectUrl) {
         return Astro.redirect(redirectUrl);
       }
-      // All onboarding users are readers — redirect to home
-      return Astro.redirect('/');
+      return Astro.redirect(selectedRole === 'writer' ? '/dashboard' : '/');
     }
   } catch (error) {
     console.error('Onboarding failed:', error);
@@ -111,8 +111,45 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
           />
         </div>
 
-        {/* Role field intentionally removed from the form.
-            All users register as 'reader'. Writers are promoted by an admin. */}
+        {/* Role Selection (Reader vs Writer) */}
+        <div class="form-group">
+          <label class="form-label">Account Type <span class="required" aria-hidden="true">*</span></label>
+          <div class="role-selector-grid">
+            <label class="role-card-label">
+              <input
+                type="radio"
+                name="role"
+                value="reader"
+                class="role-card-input"
+                checked={defaultRole === 'reader'}
+                required
+              />
+              <div class="role-card">
+                <div class="role-card-header">
+                  <span class="role-title">Reader</span>
+                </div>
+                <p class="role-desc">Read articles, follow top writers, and save stories to your library.</p>
+              </div>
+            </label>
+
+            <label class="role-card-label">
+              <input
+                type="radio"
+                name="role"
+                value="writer"
+                class="role-card-input"
+                checked={defaultRole === 'writer'}
+                required
+              />
+              <div class="role-card">
+                <div class="role-card-header">
+                  <span class="role-title">Writer & Creator</span>
+                </div>
+                <p class="role-desc">Publish articles, access creator tools, AI writer assistance, and analytics.</p>
+              </div>
+            </label>
+          </div>
+        </div>
 
         {/* Occupation Radio Pills */}
         <div class="form-group">
@@ -165,8 +202,6 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
 </Layout>
 
 <script is:inline>
-  // Handle form submission via fetch to show loading state and errors.
-  // SECURITY: `role` is never collected or sent. The server always assigns 'reader'.
   const form = document.getElementById('onboarding-form');
   const submitButton = document.getElementById('submitButton');
   const submitButtonText = document.getElementById('submitButtonText');
@@ -177,11 +212,10 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     submitButton.disabled = true;
     submitButtonText.textContent = 'Setting up...';
 
-    // Collect only the fields the server accepts — role is intentionally excluded
     const formData = new FormData(form);
     const data = Object.fromEntries(formData);
 
-    if (!data.fullName || !data.occupation) {
+    if (!data.fullName || !data.occupation || !data.role) {
       showError('Please fill in all required fields.');
       resetButtonState();
       return;
@@ -195,9 +229,9 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
         },
         body: JSON.stringify({
           fullName: data.fullName.trim(),
+          role: data.role || 'reader',
           occupation: data.occupation.trim(),
           bio: data.bio?.trim() || '',
-          // role is intentionally absent — server hard-codes 'reader'
         }),
       });
 
@@ -207,10 +241,15 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
         throw new Error(result.error || 'Failed to submit');
       }
 
-      // All new users land on home — writers are promoted by admin separately
+      const assignedRole = result.role || data.role || 'reader';
       const params = new URLSearchParams(window.location.search);
       const redirectUrl = params.get('redirect_url');
-      window.location.href = redirectUrl || '/';
+
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        window.location.href = assignedRole === 'writer' ? '/dashboard' : '/';
+      }
     } catch (err) {
       console.error('Onboarding submission error:', err);
       showError(err.message || 'Something went wrong. Please try again.');
@@ -289,14 +328,15 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     margin-bottom: var(--space-xl);
   }
 
+  /* heading-md: DM Sans 600, 32px */
   .onboarding-title {
-    font-family: var(--font-serif);
-    font-size: var(--fs-display-md);
-    font-weight: var(--fw-light);
-    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--fs-heading-md);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
     margin-bottom: var(--space-xs);
-    line-height: var(--lh-display-md);
-    letter-spacing: var(--ls-display-md);
+    line-height: var(--lh-heading-md);
+    letter-spacing: -0.01em;
   }
 
   .onboarding-subtitle {
@@ -369,6 +409,71 @@ const prefilledName = clerkUser?.fullName || `${clerkUser?.firstName || ''} ${cl
     outline: none;
     border-color: var(--color-ink);
     border-width: 1.5px;
+  }
+
+  /* Role Selector Grid & Cards */
+  .role-selector-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .role-card-label {
+    cursor: pointer;
+    display: block;
+  }
+
+  .role-card-input {
+    display: none;
+  }
+
+  .role-card {
+    height: 100%;
+    padding: var(--space-md);
+    background: var(--color-surface-card);
+    border: 1.5px solid var(--color-hairline-strong);
+    border-radius: var(--radius-lg);
+    transition: all var(--duration-150) var(--ease-out);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-sizing: border-box;
+  }
+
+  .role-card-label:hover .role-card {
+    border-color: var(--color-ink);
+    background-color: var(--color-surface);
+  }
+
+  .role-card-input:checked + .role-card {
+    border-color: var(--color-ink-strong);
+    background-color: var(--color-surface-soft);
+    box-shadow: 0 0 0 1px var(--color-ink-strong);
+  }
+
+  .role-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .role-icon {
+    font-size: 18px;
+  }
+
+  .role-title {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-semibold);
+    color: var(--color-ink-strong);
+  }
+
+  .role-desc {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    color: var(--color-muted);
+    line-height: 1.4;
+    margin: 0;
   }
 
   /* Occupation Radio Pills */

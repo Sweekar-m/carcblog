@@ -7,12 +7,11 @@ import { z } from 'zod';
 export const prerender = false;
 
 /**
- * Onboarding schema — note: `role` is intentionally absent.
- * All new users are created as 'reader'. Role elevation to 'writer'
- * must be performed by an admin; never trust the client to set its own role.
+ * Onboarding schema — accepts user-selected role ('reader' | 'writer').
  */
 const onboardingSchema = z.object({
   fullName: z.string().min(1, 'Full name is required').max(100, 'Full name too long'),
+  role: z.enum(['reader', 'writer']).default('reader'),
   occupation: z.string().min(1, 'Occupation is required').max(100, 'Occupation too long'),
   bio: z.string().max(500, 'Bio too long').optional(),
 });
@@ -37,7 +36,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       return errorResponse('Invalid input data', 400);
     }
 
-    const { fullName, occupation, bio } = parsed.data;
+    const { fullName, role, occupation, bio } = parsed.data;
 
     // Fetch Clerk user details to retrieve or generate a username
     const clerkUser = typeof (locals as any).currentUser === 'function'
@@ -49,19 +48,18 @@ export const POST: APIRoute = async ({ locals, request }) => {
       clerkUser?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ||
       `user_${userId.substring(userId.indexOf('_') + 1)}`;
 
-    // Prepare profile data for upsert.
-    // Role is always 'reader' on initial onboarding — never client-controlled.
+    // Prepare profile data for upsert with user-selected role
     const profile = {
       username,
       full_name: fullName,
-      role: 'reader' as const,
+      role: role as 'reader' | 'writer',
       occupation,
       bio: bio ?? null,
     };
 
     await upsertUserProfile(userId, profile);
 
-    return jsonResponse({ success: true, role: 'reader' }, 200);
+    return jsonResponse({ success: true, role }, 200);
   } catch (error) {
     return errorResponse('Internal server error', 500, error);
   }

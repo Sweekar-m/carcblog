@@ -4,6 +4,7 @@ export const prerender = false;
 import Layout from '@/components/layout/Layout.astro';
 import { getSanityArticles, safeImageUrl } from '@/lib/sanity';
 import ArticleCard from '@/components/ui/ArticleCard.astro';
+import HomeTour from '@/components/islands/HomeTour';
 
 const sanityArticles = await getSanityArticles({ limit: 6 });
 const articleData = sanityArticles.map(article => ({
@@ -19,9 +20,11 @@ const articleData = sanityArticles.map(article => ({
 
 const heroArticle = articleData[0] || null;
 const gridArticles = articleData.slice(1);
+const isLoggedIn = !!Astro.locals.user;
 ---
 
 <Layout title="Carcblog — Where Startup Ideas Go Public" description="Discover insightful writing on startups, founders, funding, and innovation on Carcblog — the editorial platform for the startup ecosystem.">
+  <HomeTour client:idle isLoggedIn={isLoggedIn} />
 
   <!-- ═══════════════════════════════════════════════
        SECTION 1: HERO BAND
@@ -659,14 +662,13 @@ const gridArticles = articleData.slice(1);
   display: block;
 }
 
-/* display-lg: EB Garamond 300, 36px */
+/* heading-md: DM Sans 600, 32px */
 .spotlight-title {
-  font-family: var(--font-serif);
-  font-size: clamp(var(--fs-display-md), 3vw, var(--fs-display-lg));
-  font-weight: var(--fw-light);             /* 300 */
-  color: var(--color-ink);
-  line-height: var(--lh-display-lg);
-  letter-spacing: var(--ls-display-lg);
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-heading-md), 3vw, var(--fs-heading-lg));
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-lg);
   margin-bottom: var(--space-sm);
 }
 .spotlight-excerpt {
@@ -732,14 +734,13 @@ const gridArticles = articleData.slice(1);
   gap: var(--space-sm);
 }
 
-/* display-lg: EB Garamond 300, 36px — section head */
+/* heading-md: DM Sans 600, 32px — section head */
 .grid-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-lg);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
-  line-height: var(--lh-display-lg);
-  letter-spacing: var(--ls-display-lg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-md);
   margin-bottom: 0;
 }
 
@@ -787,10 +788,10 @@ const gridArticles = articleData.slice(1);
   margin: 0 auto var(--space-sm);
 }
 .empty-title {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-md);
-  font-weight: var(--fw-light);
-  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
   margin-bottom: var(--space-sm);
 }
 .empty-body {
@@ -840,14 +841,14 @@ const gridArticles = articleData.slice(1);
   margin-bottom: var(--space-lg);           /* 24px */
 }
 
-/* display-lg: EB Garamond 300, 36px */
+/* heading-md: DM Sans 600, 32px */
 .cta-headline {
-  font-family: var(--font-serif);
-  font-size: var(--fs-display-lg);
-  font-weight: var(--fw-light);             /* 300 */
-  color: var(--color-ink);
-  line-height: var(--lh-display-lg);
-  letter-spacing: var(--ls-display-lg);
+  font-family: var(--font-sans);
+  font-size: var(--fs-heading-md);
+  font-weight: var(--fw-semibold);
+  color: var(--color-ink-strong);
+  line-height: var(--lh-heading-md);
+  letter-spacing: -0.01em;
   margin-bottom: var(--space-md);           /* 20px */
 }
 .cta-body {

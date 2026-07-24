@@ -8,6 +8,9 @@ import { AISettingsForm } from '@/components/islands/AISettingsForm';
 export const prerender = false;
 
 const user = await getCurrentUser(Astro.locals);
+if (!user) {
+  return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
+}
 let profile = null;
 
 if (user) {

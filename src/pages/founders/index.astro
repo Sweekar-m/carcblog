@@ -1,0 +1,162 @@
+---
+import Layout from '@/components/layout/Layout.astro';
+import { getFounders } from '@/lib/supabase';
+
+export const prerender = false;
+
+const url = new URL(Astro.request.url);
+const search = url.searchParams.get('q') || '';
+const page = parseInt(url.searchParams.get('page') || '1', 10);
+const limit = 24;
+const offset = (page - 1) * limit;
+
+const { founders, total } = await getFounders({ search, limit, offset });
+const totalPages = Math.ceil(total / limit);
+
+function getPageUrl(p: number) {
+  const params = new URLSearchParams(url.search);
+  params.set('page', p.toString());
+  return `/founders?${params.toString()}`;
+}
+---
+
+<Layout title="Founder Directory" description="Connect with tech founders, CEOs, and startup creators across top startup ecosystems.">
+  <div style="max-width:1280px;margin:0 auto;padding:40px 24px 80px">
+
+    {/* ── Page Header ── */}
+    <div style="text-align:center;max-width:640px;margin:0 auto 48px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#64748B;margin-bottom:16px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Founder Directory
+      </div>
+      <p style="font-family:var(--font-sans);font-size:2.5rem;font-weight:700;line-height:1.2;letter-spacing:-0.02em;color:#0F172A;margin:0 0 12px">
+        Meet the Innovators &amp; Founders
+      </p>
+      <p style="font-family:var(--font-sans);font-size:1.125rem;font-weight:400;color:#64748B;line-height:1.6;margin:0">
+        Browse profiles of {total.toLocaleString()} startup founders, tech leaders, and entrepreneurs.
+      </p>
+    </div>
+
+    {/* ── Search ── */}
+    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:20px;margin-bottom:40px;box-shadow:0px 1px 2px rgba(0,0,0,0.04)">
+      <form method="GET" action="/founders" style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="position:relative;flex:1;min-width:240px">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </span>
+          <input
+            type="text"
+            name="q"
+            id="founder-search"
+            value={search}
+            placeholder="Search founders by name, role, city, or country..."
+            style="width:100%;padding:0 16px 0 42px;height:44px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;box-sizing:border-box"
+          />
+        </div>
+        <button
+          type="submit"
+          id="founder-search-submit"
+          class="btn-search"
+          style="padding:0 24px;height:44px;border-radius:9999px;background:#0F172A;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;border:none;cursor:pointer;white-space:nowrap"
+        >
+          Search Founders
+        </button>
+      </form>
+    </div>
+
+    {/* ── Results Stats ── */}
+    <div style="margin-bottom:20px">
+      <p style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;margin:0">
+        Showing <strong style="color:#0F172A;font-weight:600">{founders.length}</strong> of <strong style="color:#0F172A;font-weight:600">{total.toLocaleString()}</strong> founders
+        {search && <span> matching "<span style="color:#0284C7">{search}</span>"</span>}
+      </p>
+    </div>
+
+    {/* ── Founder Grid ── */}
+    {founders.length > 0 ? (
+      <div class="reveal-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
+        {founders.map((founder) => (
+          <a href={`/founders/${founder.slug}`} class="founder-card" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px;text-decoration:none;transition:border-color 200ms,box-shadow 200ms;color:inherit">
+            <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+              <div style="width:48px;height:48px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                {founder.avatar_url ? (
+                  <img src={founder.avatar_url} alt={founder.name} style="width:100%;height:100%;object-fit:cover" />
+                ) : (
+                  <span style="font-family:var(--font-sans);font-size:1rem;font-weight:700;color:#64748B">{founder.name.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+              <div>
+                <p class="founder-name" style="font-family:var(--font-sans);font-size:1.0625rem;font-weight:700;color:#0F172A;margin:0 0 2px;line-height:1.3">
+                  {founder.name}
+                </p>
+                <p style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;margin:0;font-weight:500">
+                  {founder.job_title || 'Founder'}
+                </p>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:4px;font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;margin-bottom:auto">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{[founder.city, founder.country].filter(Boolean).join(', ') || 'Global'}</span>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #F1F5F9">
+              <div style="display:flex;align-items:center;gap:6px">
+                {founder.linkedin_url && (
+                  <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.75rem;font-weight:600;color:#64748B">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.72a1.49 1.49 0 1 0 0 2.98 1.49 1.49 0 0 0 0-2.98Z"/></svg>
+                    in
+                  </span>
+                )}
+                {founder.twitter_url && (
+                  <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:9999px;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.75rem;font-weight:600;color:#64748B">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    /X
+                  </span>
+                )}
+              </div>
+              <span style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">
+                View Profile →
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div style="text-align:center;padding:80px 24px;background:#F8FAFC;border-radius:16px;border:1px solid #E2E8F0">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <p style="font-family:var(--font-sans);font-size:1.25rem;font-weight:700;color:#0F172A;margin:0 0 8px">No Founders Found</p>
+        <p style="font-family:var(--font-sans);font-size:0.875rem;color:#64748B;margin:0 0 24px">We couldn't find any founders matching your search query.</p>
+        <a href="/founders" style="display:inline-flex;align-items:center;padding:10px 24px;border-radius:9999px;background:#0F172A;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none">
+          Reset Search
+        </a>
+      </div>
+    )}
+
+    {/* ── Pagination ── */}
+    {totalPages > 1 && (
+      <div style="margin-top:56px;display:flex;justify-content:center;align-items:center;gap:8px">
+        {page > 1 && (
+          <a href={getPageUrl(page - 1)} class="btn-page" style="padding:8px 20px;border:1px solid #E2E8F0;border-radius:9999px;font-family:var(--font-sans);font-size:0.875rem;font-weight:500;color:#0F172A;text-decoration:none">
+            ← Previous
+          </a>
+        )}
+        <span style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;padding:0 12px">
+          Page {page} of {totalPages}
+        </span>
+        {page < totalPages && (
+          <a href={getPageUrl(page + 1)} class="btn-page" style="padding:8px 20px;border:1px solid #E2E8F0;border-radius:9999px;font-family:var(--font-sans);font-size:0.875rem;font-weight:500;color:#0F172A;text-decoration:none">
+            Next →
+          </a>
+        )}
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .founder-card:hover { border-color: #CBD5E1 !important; box-shadow: 0px 4px 12px rgba(0,0,0,0.08) !important; }
+  .founder-card:hover .founder-name { color: #0284C7 !important; }
+  .btn-search:hover { background: #334155 !important; }
+  .btn-page:hover { background: #F8FAFC; }
+</style>

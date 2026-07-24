@@ -252,7 +252,14 @@ export async function updateSanityArticle(
  * Delete an article document by ID.
  */
 export async function deleteSanityArticle(id: string) {
-  return sanityWriteClient.delete(id);
+  const publishedId = id.replace(/^drafts\./, '');
+  const draftId = `drafts.${publishedId}`;
+
+  return sanityWriteClient
+    .transaction()
+    .delete(publishedId)
+    .delete(draftId)
+    .commit();
 }
 
 /* Author helpers */

@@ -1,0 +1,159 @@
+---
+import Layout from '@/components/layout/Layout.astro';
+import { getFounderBySlug } from '@/lib/supabase';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/founders');
+
+const founder = await getFounderBySlug(slug);
+if (!founder) return Astro.redirect('/founders');
+---
+
+<Layout title={`${founder.name} - Founder Profile`} description={founder.bio || `Read about ${founder.name} on Carcblog.`}>
+  <div style="max-width:860px;margin:0 auto;padding:40px 24px 80px">
+
+    {/* ── Back link ── */}
+    <a href="/founders" class="back-link" style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);font-size:0.8125rem;font-weight:500;color:#64748B;text-decoration:none;margin-bottom:32px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      Back to Founder Directory
+    </a>
+
+    {/* ── Hero Card ── */}
+    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:24px;padding:36px;margin-bottom:48px;box-shadow:0px 1px 2px rgba(0,0,0,0.04)">
+      <div style="display:flex;align-items:flex-start;gap:24px;flex-wrap:wrap;margin-bottom:24px">
+
+        {/* Avatar */}
+        <div style="width:88px;height:88px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+          {founder.avatar_url ? (
+            <img src={founder.avatar_url} alt={founder.name} style="width:100%;height:100%;object-fit:cover" />
+          ) : (
+            <span style="font-family:var(--font-sans);font-size:2rem;font-weight:700;color:#94A3B8">{founder.name.charAt(0).toUpperCase()}</span>
+          )}
+        </div>
+
+        <div style="flex:1;min-width:0">
+          <h1 style="font-family:var(--font-serif);font-size:clamp(1.75rem,4vw,2.75rem);font-weight:400;line-height:1.15;letter-spacing:-0.02em;color:#0F172A;margin:0 0 6px">
+            {founder.name}
+          </h1>
+          <p style="font-family:var(--font-sans);font-size:1.0625rem;font-weight:500;color:#64748B;margin:0 0 14px">
+            {founder.job_title || 'Founder'}
+          </p>
+
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:5px;font-family:var(--font-sans);font-size:0.8125rem;color:#64748B">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span>{[founder.city, founder.country].filter(Boolean).join(', ') || 'Global'}</span>
+            </div>
+
+            {founder.linkedin_url && (
+              <a
+                href={founder.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pill-link"
+                style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:9999px;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.8125rem;font-weight:500;color:#0F172A;text-decoration:none"
+                aria-label={`${founder.name} on LinkedIn`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0" aria-hidden="true"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.25V10.9H6.46M7.86 6.72a1.49 1.49 0 1 0 0 2.98 1.49 1.49 0 0 0 0-2.98Z"/></svg>
+                LinkedIn
+              </a>
+            )}
+
+            {founder.twitter_url && (
+              <a
+                href={founder.twitter_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="pill-link"
+                style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:9999px;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.8125rem;font-weight:500;color:#0F172A;text-decoration:none"
+                aria-label={`${founder.name} on Twitter`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Twitter / X
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {founder.bio && (
+        <div style="padding-top:24px;border-top:1px solid #E2E8F0">
+          <p style="font-family:var(--font-sans);font-size:0.75rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#94A3B8;margin:0 0 10px">
+            Biography
+          </p>
+          <p style="font-family:var(--font-sans);font-size:1rem;color:#334155;line-height:1.75;margin:0;white-space:pre-line">
+            {founder.bio}
+          </p>
+        </div>
+      )}
+    </div>
+
+    {/* ── Associated Startups ── */}
+    <section>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        <p style="font-family:var(--font-sans);font-size:1.125rem;font-weight:700;color:#0F172A;margin:0">
+          Associated Startups
+        </p>
+      </div>
+
+      {founder.startups.length > 0 ? (
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+          {founder.startups.map((startup) => (
+            <a href={`/startups/${startup.slug}`} class="startup-crosslink" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;padding:20px;text-decoration:none;transition:border-color 200ms,box-shadow 200ms;color:inherit">
+              <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px">
+                <div style="width:40px;height:40px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                  {startup.logo_url ? (
+                    <img src={startup.logo_url} alt={startup.name} style="width:100%;height:100%;object-fit:cover" />
+                  ) : (
+                    <span style="font-family:var(--font-sans);font-size:0.875rem;font-weight:700;color:#64748B">{startup.name.charAt(0).toUpperCase()}</span>
+                  )}
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                    <p class="startup-crosslink-name" style="font-family:var(--font-sans);font-size:1rem;font-weight:700;color:#0F172A;margin:0">
+                      {startup.name}
+                    </p>
+                    {startup.industry && (
+                      <span style="padding:2px 8px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.7rem;font-weight:600;color:#64748B;white-space:nowrap;flex-shrink:0">
+                        {startup.industry}
+                      </span>
+                    )}
+                  </div>
+                  <p style="font-family:var(--font-sans);font-size:0.8125rem;color:#64748B;margin:3px 0 0;font-weight:500">
+                    Role: {startup.job_title || founder.job_title || 'Founder'}
+                  </p>
+                </div>
+              </div>
+
+              <p style="font-family:var(--font-sans);font-size:0.875rem;color:#334155;line-height:1.6;margin:0 0 auto;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">
+                {startup.description || 'No company description available.'}
+              </p>
+
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid #F1F5F9">
+                <div style="display:flex;align-items:center;gap:4px;font-family:var(--font-sans);font-size:0.75rem;color:#64748B">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>{[startup.city, startup.country].filter(Boolean).join(', ') || 'Global'}</span>
+                </div>
+                <span style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">View Startup →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p style="font-family:var(--font-sans);font-size:0.875rem;color:#64748B;font-style:italic;background:#F8FAFC;padding:20px 24px;border-radius:12px;border:1px solid #E2E8F0;margin:0">
+          No startup profiles associated with this founder.
+        </p>
+      )}
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .back-link:hover { color: #0F172A !important; }
+  .pill-link:hover { background: #F8FAFC !important; border-color: #CBD5E1 !important; }
+  .startup-crosslink:hover { border-color: #CBD5E1 !important; box-shadow: 0px 4px 12px rgba(0,0,0,0.08) !important; }
+  .startup-crosslink:hover .startup-crosslink-name { color: #0284C7 !important; }
+</style>

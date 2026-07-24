@@ -13,11 +13,12 @@
 export async function requireAuth(locals: App.Locals): Promise<string | null> {
   try {
     const auth = await (locals as any).auth();
-    const userId: string | undefined | null = auth?.userId;
+    const userId: string | undefined | null = auth?.userId || (locals as any)?.user?.userId;
     if (!userId) return null;
     return userId;
   } catch {
-    // Clerk threw (invalid token, network issue, etc.) — fail securely.
+    const userId = (locals as any)?.user?.userId;
+    if (userId) return userId;
     return null;
   }
 }

@@ -12,6 +12,8 @@ export const AISettingsForm: React.FC = () => {
 
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  const [showGuide, setShowGuide] = useState<boolean>(true);
+
   // Fetch current AI settings on load
   const fetchSettings = async () => {
     setLoading(true);
@@ -153,10 +155,10 @@ export const AISettingsForm: React.FC = () => {
         <div>
           <h3
             style={{
-              fontFamily: 'var(--font-serif)',
-              fontSize: 'var(--fs-display-sm)',
-              fontWeight: 'var(--fw-light)',
-              color: 'var(--color-ink)',
+              fontFamily: 'var(--font-sans)',
+              fontSize: 'var(--fs-card-title)',
+              fontWeight: 'var(--fw-semibold)',
+              color: 'var(--color-ink-strong)',
               margin: 0
             }}
           >
@@ -266,6 +268,130 @@ export const AISettingsForm: React.FC = () => {
               </div>
             </label>
           </div>
+        </div>
+
+        {/* Interactive "How to get an API Key" Guide Box */}
+        <div
+          style={{
+            background: 'var(--color-surface-soft, #f8fafc)',
+            border: '1px solid var(--color-hairline, #e2e8f0)',
+            borderRadius: 'var(--radius-lg, 12px)',
+            padding: 'var(--space-md, 16px)',
+            margin: '4px 0'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <strong style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body-sm, 14px)', color: 'var(--color-ink-strong, #0f172a)' }}>
+                How to get your {provider === 'gemini' ? 'Google Gemini (Free)' : 'OpenRouter'} API Key
+              </strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowGuide(!showGuide)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-muted, #64748b)',
+                fontSize: '12px',
+                fontFamily: 'var(--font-sans)',
+                cursor: 'pointer',
+                textDecoration: 'underline'
+              }}
+            >
+              {showGuide ? 'Hide guide' : 'Show guide'}
+            </button>
+          </div>
+
+          {showGuide && (
+            <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-hairline-soft, #f1f5f9)' }}>
+              {provider === 'gemini' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', margin: 0, lineHeight: 1.5 }}>
+                    Google provides free API keys for <strong>Gemini 3.6 Flash</strong> with generous daily quotas for creators.
+                  </p>
+                  
+                  <ol style={{ margin: 0, paddingLeft: '18px', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>Open <strong>Google AI Studio</strong> using the button below.</li>
+                    <li>Sign in with your Google account.</li>
+                    <li>Click the blue <strong>"Create API key"</strong> button (no credit card required).</li>
+                    <li>Copy the key string (starts with <code style={{ background: 'var(--color-surface-strong, #f1f5f9)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>AIzaSy...</code>).</li>
+                    <li>Paste it into the field below and click <strong>"Save AI Key"</strong>.</li>
+                  </ol>
+
+                  <div style={{ marginTop: '4px' }}>
+                    <a
+                      href="https://aistudio.google.com/app/apikey"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-pill, 9999px)',
+                        background: 'var(--color-primary, #0f172a)',
+                        color: 'var(--color-on-primary, #ffffff)',
+                        fontSize: '12px',
+                        fontWeight: 'var(--fw-medium, 500)',
+                        textDecoration: 'none',
+                        fontFamily: 'var(--font-sans)'
+                      }}
+                    >
+                      <span>Get Free Gemini Key on Google AI Studio</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', margin: 0, lineHeight: 1.5 }}>
+                    OpenRouter provides access to models from OpenAI, Anthropic, Meta, and more via a unified API key.
+                  </p>
+
+                  <ol style={{ margin: 0, paddingLeft: '18px', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <li>Open the <strong>OpenRouter Keys page</strong> using the button below.</li>
+                    <li>Sign in or create a free OpenRouter account.</li>
+                    <li>Click <strong>"Create Key"</strong> and name it (e.g. <em>CarcBlog AI</em>).</li>
+                    <li>Copy your API key (starts with <code style={{ background: 'var(--color-surface-strong, #f1f5f9)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>sk-or-v1-...</code>).</li>
+                    <li>Paste it into the field below and click <strong>"Save AI Key"</strong>.</li>
+                  </ol>
+
+                  <div style={{ marginTop: '4px' }}>
+                    <a
+                      href="https://openrouter.ai/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 14px',
+                        borderRadius: 'var(--radius-pill, 9999px)',
+                        background: 'var(--color-primary, #0f172a)',
+                        color: 'var(--color-on-primary, #ffffff)',
+                        fontSize: '12px',
+                        fontWeight: 'var(--fw-medium, 500)',
+                        textDecoration: 'none',
+                        fontFamily: 'var(--font-sans)'
+                      }}
+                    >
+                      <span>Get Key on OpenRouter</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* API Key Input */}

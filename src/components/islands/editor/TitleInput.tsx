@@ -83,13 +83,13 @@ export function TitleInput() {
         autoCorrect="on"
         autoCapitalize="sentences"
         style={{
-          // display-xl token: EB Garamond 300, 48px, lh 1.08, ls -0.01em
-          fontFamily: 'var(--font-serif)',
-          fontWeight: 'var(--fw-light)',      /* 300 — never bold per design.md */
-          fontSize: 'var(--fs-display-xl)',   /* 48px */
-          lineHeight: 'var(--lh-display-xl)', /* 1.08 */
-          letterSpacing: 'var(--ls-display-xl)', /* -0.01em */
-          color: 'var(--color-ink)',
+          // DM Sans 600, 44px, ls -0.02em per MiniMax design.md
+          fontFamily: 'var(--font-sans)',
+          fontWeight: 'var(--fw-semibold)',
+          fontSize: 'clamp(32px, 5vw, 44px)',
+          lineHeight: '1.15',
+          letterSpacing: '-0.02em',
+          color: 'var(--color-ink-strong)',
           caretColor: 'var(--color-ink)',
           // Invisible input — pure writing surface
           border: 'none',

@@ -54,8 +54,11 @@ async function getRecentActivity(userId) {
   }
 }
 const user = await getCurrentUser(Astro.locals);
-const stats = user ? await getUserStats(user.id) : { articleCount: 0, viewCount: 0, readTime: 0 };
-const recentActivity = user ? await getRecentActivity(user.id) : [];
+if (!user) {
+  return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
+}
+const stats = await getUserStats(user.id);
+const recentActivity = await getRecentActivity(user.id);
 ---
 <Layout title="Dashboard - Carcblog" description="Your writer dashboard">
   <WriterDashboard
