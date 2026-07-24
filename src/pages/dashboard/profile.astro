@@ -3,7 +3,6 @@
 import Layout from '@/layouts/Layout.astro';
 import { supabase } from '@/lib/supabase';
 import { getCurrentUser } from '@/lib/auth';
-import { AISettingsForm } from '@/components/islands/AISettingsForm';
 
 export const prerender = false;
 
@@ -168,9 +167,6 @@ if (user) {
         </div>
 
         <button id="saveButton" class="btn-primary">Save Changes</button>
-
-        <!-- AI Writer Settings Section (BYO Key) -->
-        <AISettingsForm client:load />
       </div>
     </div>
 
