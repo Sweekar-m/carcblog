@@ -786,22 +786,42 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
             </div>
           </SignedIn>
 
-          {/* Primary CTA: + Submit Startup */}
-          <a
-            href="/startups/new"
-            style={S.submitBtn}
-            className="nav-submit-btn"
-            aria-label="Submit your startup"
-            onMouseOver={(e) => {
-              (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover, #1E293B)';
-            }}
-            onMouseOut={(e) => {
-              (e.currentTarget as HTMLElement).style.background = 'var(--color-primary, #0F172A)';
-            }}
-          >
-            <Plus style={{ width: '15px', height: '15px', flexShrink: 0 }} />
-            <span>Submit Startup</span>
-          </a>
+          {/* Primary CTA: + Submit Startup (Requires authentication) */}
+          <SignedIn>
+            <a
+              href="/startups/new"
+              style={S.submitBtn}
+              className="nav-submit-btn"
+              aria-label="Submit your startup"
+              onMouseOver={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover, #1E293B)';
+              }}
+              onMouseOut={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary, #0F172A)';
+              }}
+            >
+              <Plus style={{ width: '15px', height: '15px', flexShrink: 0 }} />
+              <span>Submit Startup</span>
+            </a>
+          </SignedIn>
+
+          <SignedOut>
+            <a
+              href="/auth/sign-in?redirect_url=%2Fstartups%2Fnew"
+              style={S.submitBtn}
+              className="nav-submit-btn"
+              aria-label="Submit your startup (Requires login)"
+              onMouseOver={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover, #1E293B)';
+              }}
+              onMouseOut={(e) => {
+                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary, #0F172A)';
+              }}
+            >
+              <Plus style={{ width: '15px', height: '15px', flexShrink: 0 }} />
+              <span>Submit Startup</span>
+            </a>
+          </SignedOut>
 
           {/* User Auth: Login Button when Logged Out; Avatar & Dropdown when Logged In (FAR RIGHT) */}
           {UserButton ? (
