@@ -128,11 +128,12 @@ export async function getSanityArticleBySlugForUser(
   clerkUserId?: string | null,
   isAdmin = false
 ): Promise<SanityArticle | null> {
+  const client = sanityApiToken ? sanityWriteClient : sanityClient;
   const now = new Date().toISOString();
 
   // Admin role: can view any article by slug regardless of status
   if (isAdmin) {
-    return sanityClient.fetch<SanityArticle | null>(
+    return client.fetch<SanityArticle | null>(
       `*[_type == "article" && slug.current == $slug][0]
        { _id, title, slug, publishedAt, excerpt, status, body,
          "coverImage": coalesce(coverImage.asset->url, coverImage),
@@ -143,7 +144,7 @@ export async function getSanityArticleBySlugForUser(
 
   // Authenticated user: can view own drafts/scheduled/archived OR published content
   if (clerkUserId) {
-    return sanityClient.fetch<SanityArticle | null>(
+    return client.fetch<SanityArticle | null>(
       `*[_type == "article" && slug.current == $slug && (
         (defined(publishedAt) && publishedAt <= $now && status != "archived") ||
         author->clerkUserId == $clerkUserId
@@ -167,7 +168,8 @@ export async function getSanityArticlesByAuthor(
   clerkUserId: string,
   limit = 100
 ): Promise<SanityArticle[]> {
-  return sanityClient.fetch<SanityArticle[]>(
+  const client = sanityApiToken ? sanityWriteClient : sanityClient;
+  return client.fetch<SanityArticle[]>(
     `*[_type == "article" && author->clerkUserId == $clerkUserId]
      | order(_createdAt desc)[0...$limit]
      { _id, title, slug, publishedAt, excerpt, status, body,
@@ -195,19 +197,24 @@ export async function getRecentSanityArticles(opts: { limit?: number; now?: stri
 /**
  * Fetch a single article by ID (regardless of published status).
  * Includes dereferenced author information for ownership checks.
+ * Uses authenticated client when token is available to resolve draft.123 and published 123 documents.
  */
 export async function getSanityArticleById(id: string): Promise<SanityArticle | null> {
-  return sanityClient.fetch<SanityArticle | null>(
-    `*[_type == "article" && _id == $id][0]
+  const client = sanityApiToken ? sanityWriteClient : sanityClient;
+  const publishedId = id.replace(/^drafts\./, '');
+  const draftId = `drafts.${publishedId}`;
+
+  return client.fetch<SanityArticle | null>(
+    `*[_type == "article" && (_id == $id || _id == $draftId || _id == $publishedId)][0]
      { _id, title, slug, publishedAt, excerpt, status, body,
        "coverImage": coalesce(coverImage.asset->url, coverImage),
        author->{ _id, clerkUserId, name, "image": coalesce(image.asset->url, image) } }`,
-    { id }
+    { id, draftId, publishedId }
   );
 }
 
 /**
- * Update an existing article's fields.
+ * Update an existing article's fields across draft and published copies.
  */
 export async function updateSanityArticle(
   id: string,
@@ -224,31 +231,49 @@ export async function updateSanityArticle(
     publishedAt?: string | null;
   }
 ) {
-  const patch = sanityWriteClient.patch(id);
+  const publishedId = id.replace(/^drafts\./, '');
+  const draftId = `drafts.${publishedId}`;
 
-  if (data.title !== undefined) patch.set({ title: data.title });
-  if (data.slug !== undefined) patch.set({ slug: { current: data.slug } });
-  if (data.excerpt !== undefined) patch.set({ excerpt: data.excerpt });
-  if (data.body !== undefined) patch.set({ body: data.body });
-  if (data.status !== undefined) patch.set({ status: data.status });
-  if (data.publishedAt !== undefined) patch.set({ publishedAt: data.publishedAt });
-  if (data.scheduledAt !== undefined) patch.set({ scheduledAt: data.scheduledAt });
-  if (data.tags !== undefined) patch.set({ tags: data.tags });
+  const patchPub = sanityWriteClient.patch(publishedId);
+  const patchDraft = sanityWriteClient.patch(draftId);
+
+  const applySet = (key: string, val: any) => {
+    patchPub.set({ [key]: val });
+    patchDraft.set({ [key]: val });
+  };
+
+  if (data.title !== undefined) applySet('title', data.title);
+  if (data.slug !== undefined) applySet('slug', { current: data.slug });
+  if (data.excerpt !== undefined) applySet('excerpt', data.excerpt);
+  if (data.body !== undefined) applySet('body', data.body);
+  if (data.status !== undefined) applySet('status', data.status);
+  if (data.publishedAt !== undefined) applySet('publishedAt', data.publishedAt);
+  if (data.scheduledAt !== undefined) applySet('scheduledAt', data.scheduledAt);
+  if (data.tags !== undefined) applySet('tags', data.tags);
 
   if (data.categoryId !== undefined) {
-    patch.set({ categories: [{ _type: 'reference', _ref: data.categoryId }] });
+    applySet('categories', [{ _type: 'reference', _ref: data.categoryId }]);
   }
 
   if (data.coverImageUrl !== undefined) {
     if (data.coverImageUrl) {
       const assetId = await uploadAsset(data.coverImageUrl);
-      patch.set({ coverImage: { _type: 'image', asset: { _ref: assetId } } });
+      const imgObj = { _type: 'image', asset: { _ref: assetId } };
+      patchPub.set({ coverImage: imgObj });
+      patchDraft.set({ coverImage: imgObj });
     } else {
-      patch.unset(['coverImage']);
+      patchPub.unset(['coverImage']);
+      patchDraft.unset(['coverImage']);
     }
   }
 
-  return patch.commit();
+  try {
+    await patchDraft.commit();
+  } catch {
+    // Ignore draft commit error if draft document doesn't exist separately
+  }
+
+  return patchPub.commit();
 }
 
 /**
@@ -268,9 +293,9 @@ export async function deleteSanityArticle(id: string) {
 /* Author helpers */
 
 export async function ensureAuthorDocument(clerkUserId: string, name: string, email?: string, imageUrl?: string): Promise<string> {
-  // Use read-only sanityClient (no token needed) for author lookup
+  const client = sanityApiToken ? sanityWriteClient : sanityClient;
   try {
-    const existing = await sanityClient.fetch<{ _id: string } | null>(`*[_type == "author" && clerkUserId == $id][0] { _id }`, { id: clerkUserId });
+    const existing = await client.fetch<{ _id: string } | null>(`*[_type == "author" && clerkUserId == $id][0] { _id }`, { id: clerkUserId });
     if (existing?._id) return existing._id;
   } catch (err: any) {
     console.error('[ensureAuthorDocument] Lookup failed:', err?.message);

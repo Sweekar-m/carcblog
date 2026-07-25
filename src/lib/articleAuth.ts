@@ -46,23 +46,31 @@ export async function authorizeArticleAction(
     console.warn('[authorizeArticleAction] Profile fetch warning:', err);
   }
 
-  // Fallback profile for authenticated Clerk user if row is missing in Supabase
-  const effectiveProfile: Profile = profile ?? ({
-    id: userId,
-    role: 'writer',
-    onboarding_completed: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  } as Profile);
+  // No profile means user never completed onboarding — deny publishing
+  if (!profile) {
+    return {
+      userId,
+      profile: null as any,
+      errorResponse: errorResponse(
+        'You must complete onboarding before publishing. Please visit /onboarding to set up your profile.',
+        403
+      ),
+    };
+  }
 
+  const effectiveProfile = profile;
   const requiredRole = options.requiredRole ?? 'writer';
-  const userRole = effectiveProfile.role || 'writer';
+  const userRole = effectiveProfile.role;
 
+  // ── Role gate: only 'writer' or 'admin' can publish ───────────────────────
   if (requiredRole === 'admin' && userRole !== 'admin') {
     return {
       userId,
       profile: effectiveProfile,
-      errorResponse: errorResponse(`Forbidden: Admin access required. Your current role is '${userRole}'.`, 403),
+      errorResponse: errorResponse(
+        `Forbidden: Admin access required. Your current role is '${userRole}'.`,
+        403
+      ),
     };
   }
 
@@ -70,7 +78,10 @@ export async function authorizeArticleAction(
     return {
       userId,
       profile: effectiveProfile,
-      errorResponse: errorResponse(`Forbidden: Writer or Admin access required. Your current role is '${userRole}'. Only approved writers may publish articles.`, 403),
+      errorResponse: errorResponse(
+        `Forbidden: Only writers can publish articles. Your current role is '${userRole}'. Please re-onboard and select "Writer & Creator" to get publishing access.`,
+        403
+      ),
     };
   }
 
@@ -82,7 +93,7 @@ export async function authorizeArticleAction(
     } catch (err) {
       return {
         userId,
-        profile,
+        profile: effectiveProfile,
         errorResponse: errorResponse('Failed to fetch article', 500, err),
       };
     }
@@ -90,29 +101,42 @@ export async function authorizeArticleAction(
     if (!article) {
       return {
         userId,
-        profile,
+        profile: effectiveProfile,
         errorResponse: errorResponse('Article not found', 404),
       };
     }
 
     const checkOwnership = options.requireOwnership ?? true;
     if (checkOwnership) {
-      const isOwner = Boolean(article.author?.clerkUserId && article.author.clerkUserId === userId);
+      let isOwner = Boolean(article.author?.clerkUserId && article.author.clerkUserId === userId);
       const isAdmin = effectiveProfile.role === 'admin';
+
+      // If author document has no clerkUserId yet, auto-bind to this writer and grant ownership
+      if (!isOwner && !article.author?.clerkUserId && article.author?._id) {
+        try {
+          const { sanityWriteClient } = await import('@/lib/sanity');
+          await sanityWriteClient.patch(article.author._id).set({ clerkUserId: userId }).commit();
+          isOwner = true;
+        } catch (bindErr) {
+          console.warn('[authorizeArticleAction] Auto-binding author clerkUserId failed:', bindErr);
+        }
+      }
 
       if (!isOwner && !isAdmin) {
         return {
           userId,
           profile: effectiveProfile,
           article,
-          errorResponse: errorResponse(`Forbidden: You do not have permission to manage this article. Only the author or an admin can manage this article.`, 403),
+          errorResponse: errorResponse(
+            'Forbidden: You can only manage articles that you authored.',
+            403
+          ),
         };
       }
     }
 
-    return { userId, profile, article };
+    return { userId, profile: effectiveProfile, article };
   }
 
-
-  return { userId, profile };
+  return { userId, profile: effectiveProfile };
 }

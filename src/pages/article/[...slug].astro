@@ -219,7 +219,14 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
         btnPublish.textContent = 'Publishing...';
         try {
           const res = await fetch(`/api/articles/${articleId}/publish`, { method: 'POST' });
-          const data = await res.json();
+          const contentType = res.headers.get('content-type');
+          let data: any = {};
+          if (contentType && contentType.includes('application/json')) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            throw new Error(text || `Server error (${res.status})`);
+          }
           if (res.ok && data.success) {
             alert('Article published globally successfully!');
             window.location.reload();
@@ -243,7 +250,14 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
         btnDelete.textContent = 'Deleting...';
         try {
           const res = await fetch(`/api/articles/${articleId}`, { method: 'DELETE' });
-          const data = await res.json();
+          const contentType = res.headers.get('content-type');
+          let data: any = {};
+          if (contentType && contentType.includes('application/json')) {
+            data = await res.json();
+          } else {
+            const text = await res.text();
+            throw new Error(text || `Server error (${res.status})`);
+          }
           if (res.ok && data.success) {
             alert('Article deleted successfully.');
             window.location.href = '/dashboard/articles';
