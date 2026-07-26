@@ -158,6 +158,28 @@ export async function updateProfileDetails(userId: string, updates: Partial<Exte
     error = retry.error;
   }
 
+  // Fallback: If Supabase schema cache does not have the new V2 columns (like 'city', 'tagline', etc.)
+  if (error && (error.message?.includes('Could not find the') || error.message?.includes('schema cache') || error.code === 'PGRST204')) {
+    console.warn('V2 profile columns missing in database schema. Falling back to V1 base profile payload:', error.message);
+    const v1Payload = {
+      id: userId,
+      username: payload.username,
+      full_name: payload.full_name || null,
+      avatar_url: payload.avatar_url || null,
+      bio: payload.bio || null,
+      role: payload.role || 'reader',
+      onboarding_completed: true,
+      updated_at: payload.updated_at
+    };
+    const v1Retry = await supabase
+      .from('profiles')
+      .upsert(v1Payload, { onConflict: 'id' })
+      .select()
+      .single();
+    data = v1Retry.data;
+    error = v1Retry.error;
+  }
+
   if (error) {
     console.error('Error upserting profile:', error);
     throw new Error(error.message || 'Failed to save profile record in database');
