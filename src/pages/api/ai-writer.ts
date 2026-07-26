@@ -98,7 +98,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Build prompt based on action
     const systemPrompt = SYSTEM_PROMPTS[action as keyof typeof SYSTEM_PROMPTS];
-    let userPrompt = userPromptText.trim() || 'Write a startup article about innovation and growth.';
+    let userPrompt = (prompt || '').trim() || 'Write a startup article about innovation and growth.';
 
     if (action === 'continue') {
       userPrompt = `Current Document Context:\n"""${context.trim()}"""\n\nContinue writing from here:`;
