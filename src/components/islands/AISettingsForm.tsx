@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
-export const AISettingsForm: React.FC = () => {
+interface AISettingsFormProps {
+  embedded?: boolean;
+}
+
+export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false }) => {
   const [provider, setProvider] = useState<'gemini' | 'openrouter'>('gemini');
   const [apiKey, setApiKey] = useState<string>('');
   const [hasKey, setHasKey] = useState<boolean>(false);
@@ -142,7 +146,7 @@ export const AISettingsForm: React.FC = () => {
 
   return (
     <div
-      style={{
+      style={embedded ? {} : {
         background: 'var(--color-surface-card)',
         borderRadius: 'var(--radius-xl)',
         border: '1px solid var(--color-hairline)',
