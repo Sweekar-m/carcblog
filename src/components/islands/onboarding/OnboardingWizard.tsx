@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  User, Briefcase, Globe, Bookmark, Users, Bell, CheckCircle2, ArrowRight, ArrowLeft, Plus, Trash2, Sparkles
+  User, Briefcase, Globe, Bookmark, Users, Bell, CheckCircle2, ArrowRight, ArrowLeft, Plus, Trash2, Sparkles, BookOpen, PenTool
 } from 'lucide-react';
 
 interface OnboardingWizardProps {
@@ -10,6 +10,7 @@ interface OnboardingWizardProps {
     username?: string;
     avatar_url?: string;
     email?: string;
+    role?: string;
   };
 }
 
@@ -29,6 +30,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
   const [loading, setLoading] = useState(false);
 
   // Form State
+  const [role, setRole] = useState<'reader' | 'writer'>(initialUser.role === 'writer' ? 'writer' : 'reader');
   const [fullName, setFullName] = useState(initialUser.full_name || '');
   const [username, setUsername] = useState(initialUser.username || '');
   const [avatarUrl, setAvatarUrl] = useState(initialUser.avatar_url || '');
@@ -110,6 +112,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
     setLoading(true);
     try {
       const payload = {
+        role,
         full_name: fullName,
         username,
         avatar_url: avatarUrl,
@@ -137,7 +140,9 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
       });
 
       if (res.ok) {
-        window.location.href = '/dashboard';
+        const searchParams = new URLSearchParams(window.location.search);
+        const redirectUrl = searchParams.get('redirect_url') || '/dashboard';
+        window.location.href = redirectUrl;
       } else {
         alert('Failed to save profile. Please try again.');
       }
@@ -186,11 +191,65 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <User style={{ width: '20px', height: '20px', color: 'var(--color-accent)' }} />
-              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Step 1: Basic Profile</h2>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Step 1: Account Role & Basic Profile</h2>
             </div>
-            <p style={{ color: 'var(--color-steel)', margin: '0 0 28px 0', fontSize: '0.9375rem' }}>
-              Set up your public identity on CarcBlog.
+            <p style={{ color: 'var(--color-steel)', margin: '0 0 24px 0', fontSize: '0.9375rem' }}>
+              Select your primary role and set up your public identity on CarcBlog.
             </p>
+
+            {/* Role Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '10px' }}>
+                Account Type (Role) *
+              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+                <div
+                  onClick={() => setRole('reader')}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: role === 'reader' ? '2px solid var(--color-primary, #0F172A)' : '1px solid var(--color-hairline, #E2E8F0)',
+                    background: role === 'reader' ? 'var(--color-surface, #F8FAFC)' : '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '15px', color: 'var(--color-ink)' }}>
+                      <BookOpen style={{ width: '18px', height: '18px', color: 'var(--color-accent)' }} />
+                      Reader / Explorer
+                    </div>
+                    <input type="radio" name="role" checked={role === 'reader'} onChange={() => setRole('reader')} />
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-steel)', lineHeight: 1.4 }}>
+                    Discover tech startups, read founder stories, bookmark articles & follow creators.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => setRole('writer')}
+                  style={{
+                    padding: '16px',
+                    borderRadius: '12px',
+                    border: role === 'writer' ? '2px solid var(--color-primary, #0F172A)' : '1px solid var(--color-hairline, #E2E8F0)',
+                    background: role === 'writer' ? 'var(--color-surface, #F8FAFC)' : '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 150ms ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '15px', color: 'var(--color-ink)' }}>
+                      <PenTool style={{ width: '18px', height: '18px', color: '#7C3AED' }} />
+                      Writer / Creator
+                    </div>
+                    <input type="radio" name="role" checked={role === 'writer'} onChange={() => setRole('writer')} />
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-steel)', lineHeight: 1.4 }}>
+                    Publish startup articles, manage drafts, access AI writing tools & build an audience.
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
               <div>
@@ -513,8 +572,9 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
             <div style={{ background: 'var(--color-surface)', borderRadius: '12px', padding: '20px', marginBottom: '28px', textAlign: 'left' }}>
               <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '8px' }}>Setup Summary:</div>
               <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--color-steel)', fontSize: '14px', lineHeight: 1.6 }}>
+                <li>Account Role: <strong>{role === 'writer' ? 'Writer / Creator' : 'Reader / Explorer'}</strong></li>
                 <li>Name & Username: <strong>{fullName}</strong> (@{username})</li>
-                <li>Role & Industry: <strong>{jobTitle || 'Creator'}</strong> in {industry}</li>
+                <li>Professional Title: <strong>{jobTitle || (role === 'writer' ? 'Writer' : 'Reader')}</strong> in {industry}</li>
                 <li>Selected Topics: <strong>{selectedTopics.join(', ')}</strong></li>
                 <li>Connected Social Profiles: <strong>{socialLinks.length} platforms</strong></li>
               </ul>

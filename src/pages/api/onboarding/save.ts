@@ -13,6 +13,7 @@ export const POST: APIRoute = async (context) => {
   try {
     const body = await context.request.json();
     const {
+      role,
       full_name,
       username,
       avatar_url,
@@ -37,6 +38,7 @@ export const POST: APIRoute = async (context) => {
 
     // Update profile
     const updatedProfile = await updateProfileDetails(user.id, {
+      role: role === 'writer' ? 'writer' : 'reader',
       full_name,
       username: username || user.username,
       avatar_url,

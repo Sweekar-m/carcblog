@@ -41,7 +41,7 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   }
 
   const isOnboardingRoute = pathname === '/onboarding';
-  const isOnboardingApi = pathname === '/api/onboarding';
+  const isOnboardingApi = pathname.startsWith('/api/onboarding');
   const isAuthRoute = ['/auth/sign-in', '/auth/sign-up', '/sign-in', '/sign-up'].includes(pathname);
 
   // 2. Dev-mode bypass for local automated testing

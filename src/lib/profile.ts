@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, clearProfileCache } from './supabase';
 
 export interface ExtendedProfile {
   id: string;
@@ -102,6 +102,7 @@ export async function saveUserSocialLinks(userId: string, links: { platform: str
  * Update full profile details
  */
 export async function updateProfileDetails(userId: string, updates: Partial<ExtendedProfile>): Promise<ExtendedProfile | null> {
+  clearProfileCache(userId);
   // Calculate completion percentage dynamically
   let score = 30; // base
   if (updates.full_name) score += 10;
