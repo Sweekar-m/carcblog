@@ -1,17 +1,25 @@
 ---
 // Dashboard layout
-import Layout from '@/components/layout/Layout.astro';
+import BaseLayout from '@/components/layout/Layout.astro';
 import SidebarNav from '@/components/dashboard/SidebarNav.astro';
+
 export const prerender = false;
 
-const pathname = new URL(Astro.request.url).pathname;
+interface Props {
+  title?: string;
+  description?: string;
+}
 
+const { title = "Dashboard - Carcblog", description = "Your writer dashboard" } = Astro.props;
+const pathname = new URL(Astro.request.url).pathname;
+const role = Astro.locals.user?.role || 'writer';
 ---
-<Layout title="Dashboard - Carcblog" description="Your writer dashboard">
+
+<BaseLayout title={title} description={description}>
   <div class="dashboard-layout min-h-[calc(100vh-var(--header-height))] bg-background-alt">
     {/* Sidebar */}
     <aside class="sidebar w-64 bg-background border-r border-border px-4 py-6">
-      <SidebarNav currentPath={pathname} />
+      <SidebarNav currentPath={pathname} role={role} />
     </aside>
 
     {/* Main content */}
@@ -19,7 +27,7 @@ const pathname = new URL(Astro.request.url).pathname;
       <slot />
     </main>
   </div>
-</Layout>
+</BaseLayout>
 
 <style>
   .dashboard-layout {

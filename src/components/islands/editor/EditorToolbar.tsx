@@ -227,12 +227,12 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
         gap: 'var(--space-sm)',
         paddingLeft: 'var(--space-base)',
         paddingRight: 'var(--space-base)',
-        borderBottom: `1px solid ${scrolled ? 'var(--color-hairline)' : 'transparent'}`,
-        // Frosted glass: uses utility class from tailwind.css
-        backgroundColor: 'var(--color-canvas)',
+        borderBottom: `1px solid var(--color-hairline)`,
+        backgroundColor: 'rgba(255, 255, 255, 0.96)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        transition: `border-color var(--duration-200) var(--ease-out)`,
+        transition: `box-shadow var(--duration-200) var(--ease-out)`,
+        boxShadow: scrolled ? '0 1px 8px rgba(0,0,0,0.06)' : 'none',
       }}
     >
       {/* Left: back + breadcrumb */}

@@ -6,6 +6,7 @@
 :root {
   /* ── Canvas / Surface ── */
   --color-canvas:               #ffffff;  /* primary page floor */
+  --color-canvas-soft:          #fafaf9;  /* warm off-white for loading states */
   --color-surface:              #f8fafc;  /* subtle section backgrounds */
   --color-surface-soft:         #f1f5f9;  /* section divisions */
   --color-surface-card:         #ffffff;  /* quiet white cards */
@@ -21,6 +22,11 @@
   --color-steel:                #64748b;  /* tertiary text / headers */
   --color-stone:                #94a3b8;  /* muted captions */
   --color-muted:                #64748b;
+
+  /* ── Body / Readability Text (editor components) ── */
+  --color-body:                 #334155;  /* primary body text light-mode */
+  --color-body-strong:          #0f172a;  /* strong body / active labels */
+  --color-muted-soft:           #94a3b8;  /* dimmed sub-labels */
 
   /* ── On-color text ── */
   --color-on-primary:           #ffffff;
@@ -52,6 +58,7 @@
   --shadow-card:                0px 4px 6px 0px rgba(0, 0, 0, 0.08);
   --shadow-atmospheric:         0px 0px 22px 0px rgba(0, 0, 0, 0.08);
   --shadow-modal:               0px 12px 16px -4px rgba(36, 36, 36, 0.08);
+  --shadow-card-hover:          0px 8px 16px 0px rgba(0, 0, 0, 0.10);  /* hover lift */
 
   /* ── Border Radius Scale ── */
   --radius-xs:   4px;
@@ -69,6 +76,7 @@
   --space-xxs:        4px;
   --space-xs:         8px;
   --space-sm:         12px;
+  --space-base:       16px;      /* primary 4-grid unit = 1rem */
   --space-md:         16px;
   --space-lg:         20px;
   --space-xl:         24px;
@@ -95,8 +103,10 @@
   --fs-body-md:      1rem;       /* 16px */
   --fs-body-sm:      0.875rem;   /* 14px */
   --fs-caption:      0.8125rem;  /* 13px */
+  --fs-caption-upper: 0.6875rem; /* 11px — uppercase tracking labels */
   --fs-micro:        0.75rem;    /* 12px */
   --fs-button-md:    0.875rem;   /* 14px */
+  --fs-btn:          0.875rem;   /* 14px — button text alias */
 
   /* ── Typography — Font Weights ── */
   --fw-regular:  400;
@@ -113,8 +123,17 @@
   --lh-card-title:   1.40;
   --lh-subtitle:     1.50;
   --lh-body-md:      1.50;
+  --lh-body:         1.50;  /* body alias */
   --lh-body-sm:      1.50;
   --lh-caption:      1.70;
+  --lh-btn:          1.40;  /* button line-height */
+
+  /* ── Editor Atmospheric Orb Gradient Colors ── */
+  --color-gradient-mint:     #a7e5d3;
+  --color-gradient-peach:    #f4c5a8;
+  --color-gradient-lavender: #c8b8e0;
+  --color-gradient-sky:      #a8c8e8;
+  --color-gradient-rose:     #e8b8c4;
 
   --ls-hero-display: -0.025em;
   --ls-display-lg:   -0.02em;
@@ -136,6 +155,28 @@
   --duration-300: 300ms;
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Font weight extended ── */
+  --fw-light: 300;
+
+  /* ── Legacy display font size / lh / ls aliases (used by globals.css h1–h6) ── */
+  --fs-display-xl:   3rem;        /* 48px — h1 */
+  --fs-display-lg:   2.25rem;     /* 36px — h2 */
+  --fs-display-md:   1.875rem;    /* 30px — h3 */
+  --fs-display-sm:   1.5rem;      /* 24px — h4 */
+  --fs-title-md:     1.25rem;     /* 20px — h5 */
+  --fs-title-sm:     1.125rem;    /* 18px — h6 */
+
+  --lh-display-xl:   1.15;
+  --lh-display-lg:   1.20;
+  --lh-display-md:   1.30;
+  --lh-display-sm:   1.35;
+  --lh-title-md:     1.40;
+  --lh-title-sm:     1.45;
+
+  --ls-display-xl:   -0.02em;
+  --ls-display-lg:   -0.015em;
+  --ls-display-md:   -0.01em;
 
   /* ── Legacy aliases ── */
   --color-background:         var(--color-canvas);

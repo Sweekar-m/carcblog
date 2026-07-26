@@ -12,15 +12,18 @@ import type { OutlineItem } from '@/types/editor';
 
 function StatItem({ label, value, style }: { label: string; value: string | number; style?: React.CSSProperties }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-xxs)', ...style }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', minWidth: 0, boxSizing: 'border-box', ...style }}>
       <span
         style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--fs-caption-upper)',
+          fontSize: '10px',
           fontWeight: 'var(--fw-semibold)',
-          letterSpacing: 'var(--ls-caption-upper)',
+          letterSpacing: '0.06em',
           color: 'var(--color-muted-soft)',
           textTransform: 'uppercase',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         }}
       >
         {label}
@@ -28,10 +31,13 @@ function StatItem({ label, value, style }: { label: string; value: string | numb
       <span
         style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--fs-body-md)',   /* 16px — was title-sm (18px), too large for sidebar */
+          fontSize: 'var(--fs-body-sm)',
           fontWeight: 'var(--fw-medium)',
           color: 'var(--color-body-strong)',
           lineHeight: 'var(--lh-body)',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word',
+          minWidth: 0,
         }}
       >
         {value}
@@ -147,20 +153,20 @@ function SidebarSection({
         gap: 'var(--space-xs)',
         ...(divider && {
           borderTop: '1px solid var(--color-hairline)',
-          paddingTop: 'var(--space-xl)',
+          paddingTop: 'var(--space-lg)',
         }),
       }}
     >
       <h2
         style={{
           fontFamily: 'var(--font-sans)',
-          fontSize: 'var(--fs-caption-upper)',       /* 12px */
-          fontWeight: 'var(--fw-semibold)',           /* 600 */
-          letterSpacing: 'var(--ls-caption-upper)',  /* +0.96px */
-          color: 'var(--color-muted)',               /* #777169 */
+          fontSize: '10px',               /* 10px micro uppercase */
+          fontWeight: 'var(--fw-semibold)',
+          letterSpacing: '0.08em',
+          color: 'var(--color-muted)',
           textTransform: 'uppercase',
           margin: 0,
-          marginBottom: 'var(--space-xs)',            /* 8px gap below label */
+          marginBottom: 'var(--space-xxs)',
         }}
       >
         {title}
@@ -289,10 +295,12 @@ export function LeftSidebar() {
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
-          gap: 0,               /* gaps handled by SidebarSection dividers */
-          padding: 'var(--space-xl) var(--space-lg)', /* 32px top/bottom, 24px sides */
+          gap: 'var(--space-lg)',  /* unified 20px gap between sections */
+          padding: 'var(--space-lg) var(--space-md)', /* 20px v, 16px h — tighter fit */
           overflowY: 'auto',
-          background: 'rgba(245, 245, 245, 0.82)', /* canvas at 82% — orbs bleed through */
+          overflowX: 'hidden',
+          boxSizing: 'border-box',
+          background: 'rgba(248, 250, 252, 0.90)', /* canvas at 90% — orbs bleed through */
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
         }}
@@ -300,11 +308,11 @@ export function LeftSidebar() {
         {/* Writing stats */}
         <SidebarSection title="Statistics">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-sm)' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-sm) var(--space-xs)' }}>
               <StatItem label="Words" value={stats.wordCount.toLocaleString()} />
               <StatItem label="Characters" value={stats.charCount.toLocaleString()} />
               <StatItem label="Paragraphs" value={stats.paragraphCount} />
-              <StatItem label="Read time" value={readingTime} />
+              <StatItem label="Read Time" value={readingTime} />
             </div>
 
             {stats.wordCount > 0 && (

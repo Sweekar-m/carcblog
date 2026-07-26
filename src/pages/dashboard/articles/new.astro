@@ -1,12 +1,14 @@
 ---
 /**
  * /dashboard/articles/new — Publishing Studio entry point.
+ * Supports creating a new article or editing an existing article via ?id=...
  * Uses EditorLayout (no nav/footer) and mounts ArticleEditorShell as client:only="react".
  * Auth is enforced by middleware.ts — this page is writer-only.
  */
 import EditorLayout from '@/layouts/EditorLayout.astro';
 import { ArticleEditorShell } from '@/components/islands/ArticleEditorShell';
 import { EditorLoadingSkeleton } from '@/components/islands/editor/LoadingSkeleton';
+import { getSanityArticleById } from '@/lib/sanity';
 
 export const prerender = false;
 
@@ -23,29 +25,28 @@ if (!clerkUserId && import.meta.env.DEV && Astro.url.searchParams.get('dev_test'
 if (!clerkUserId) {
   return Astro.redirect('/auth/sign-in');
 }
+
+const id = Astro.url.searchParams.get('id') || Astro.url.searchParams.get('articleId');
+let initialArticle = null;
+if (id) {
+  try {
+    initialArticle = await getSanityArticleById(id);
+  } catch (err) {
+    console.error('Failed to load article for editing:', err);
+  }
+}
 ---
 
-
-<EditorLayout title="New Article">
-  <!--
-    SSR placeholder: shown between Astro serving the HTML and React hydrating.
-    EditorLoadingSkeleton is a pure JSX component rendered server-side to prevent blank flash.
-  -->
+<EditorLayout title={initialArticle ? `Edit "${initialArticle.title}"` : "New Article"}>
   <div id="editor-ssr-skeleton" aria-hidden="true">
     <EditorLoadingSkeleton />
   </div>
 
-  <!--
-    React island: client:only="react" — nothing is server-rendered for the shell.
-    The skeleton above fills the gap. Once React mounts, it takes over the viewport.
-  -->
-  <ArticleEditorShell client:only="react" clerkUserId={clerkUserId} />
-
+  <ArticleEditorShell client:only="react" clerkUserId={clerkUserId} initialArticle={initialArticle} />
 
   <script is:inline>
     // Hide the SSR skeleton as soon as the React shell mounts
     document.addEventListener('DOMContentLoaded', () => {
-      // ArticleEditorShell mounts into a sibling div — hide skeleton once React runs
       const observer = new MutationObserver(() => {
         const shell = document.getElementById('publishing-studio');
         const skeleton = document.getElementById('editor-ssr-skeleton');

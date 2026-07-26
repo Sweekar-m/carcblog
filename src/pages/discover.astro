@@ -1,17 +1,35 @@
 ---
 // Discover page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
+import FollowButton from '@/components/islands/social/FollowButton';
+import { supabase } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/auth';
+
+export const prerender = false;
+
+const currentUser = await getCurrentUser(Astro.locals);
+
+const { data: dbWriters } = await supabase
+  .from('profiles')
+  .select('id, username, full_name, avatar_url, bio, role')
+  .limit(3);
+
+const defaultWriters = [
+  { id: 'w1', username: 'janedoe', full_name: 'Jane Doe', bio: 'Exploring the future of AI, interface aesthetics, and machine learning.' },
+  { id: 'w2', username: 'michaelsmith', full_name: 'Michael Smith', bio: 'Writing about society, modern art, and human-computer connection.' },
+  { id: 'w3', username: 'alexkumar', full_name: 'Alex Kumar', bio: 'Making complex scientific discoveries and astrophysics accessible.' },
+];
+
+const featuredWriters = (dbWriters && dbWriters.length > 0) ? dbWriters : defaultWriters;
 ---
 <Layout title="Discover — Carcblog" description="Explore trending topics, featured writers, and curated reading lists on Carcblog">
 
   <!-- ═══════════════════════════════════════════════
        SECTION 1: HERO — Trending Topics
-       canvas bg, display-mega headline, atmospheric orbs
   ═══════════════════════════════════════════════ -->
   <section class="discover-hero">
-    <!-- Atmospheric orbs — decoration only -->
-    <div class="atm-orb discover-orb-mint"     aria-hidden="true"></div>
-    <div class="atm-orb discover-orb-peach"    aria-hidden="true"></div>
+    <div class="atm-orb discover-orb-mint" aria-hidden="true"></div>
+    <div class="atm-orb discover-orb-peach" aria-hidden="true"></div>
     <div class="page-container">
       <div class="discover-hero-text">
         <h1 class="discover-title">Discover</h1>
@@ -24,7 +42,6 @@ import Layout from '@/components/layout/Layout.astro';
 
   <!-- ═══════════════════════════════════════════════
        SECTION 2: TRENDING TOPICS
-       feature-card grid with badge-pill labels
   ═══════════════════════════════════════════════ -->
   <section class="discover-section discover-section--soft">
     <div class="page-container">
@@ -35,12 +52,12 @@ import Layout from '@/components/layout/Layout.astro';
 
       <div class="topics-grid reveal-grid">
         {[
-          { href: '/topics#startups',   label: 'Startups',     count: '1.2M', orb: 'mint' },
-          { href: '/topics#funding',    label: 'Funding',      count: '850K', orb: 'peach' },
-          { href: '/topics#founders',   label: 'Founders',     count: '620K', orb: 'lavender' },
-          { href: '/topics#technology', label: 'Technology',   count: '410K', orb: 'sky' },
-          { href: '/topics#product',    label: 'Product',      count: '380K', orb: 'rose' },
-          { href: '/topics#growth',     label: 'Growth',       count: '295K', orb: 'mint' },
+          { href: '/topics#startups', label: 'Startups', count: '1.2M', orb: 'mint' },
+          { href: '/topics#funding', label: 'Funding', count: '850K', orb: 'peach' },
+          { href: '/topics#founders', label: 'Founders', count: '620K', orb: 'lavender' },
+          { href: '/topics#technology', label: 'Technology', count: '410K', orb: 'sky' },
+          { href: '/topics#product', label: 'Product', count: '380K', orb: 'rose' },
+          { href: '/topics#growth', label: 'Growth', count: '295K', orb: 'mint' },
         ].map(({ href, label, count, orb }) => (
           <a href={href} class={`topic-card topic-card--${orb}`} aria-label={`Browse ${label} — ${count} articles`}>
             <div class={`topic-orb topic-orb--${orb}`} aria-hidden="true"></div>
@@ -57,7 +74,6 @@ import Layout from '@/components/layout/Layout.astro';
 
   <!-- ═══════════════════════════════════════════════
        SECTION 3: FEATURED WRITERS
-       voice-row style: circular avatar, Inter body
   ═══════════════════════════════════════════════ -->
   <section class="discover-section">
     <div class="page-container">
@@ -70,27 +86,35 @@ import Layout from '@/components/layout/Layout.astro';
       </div>
 
       <div class="writers-grid reveal-grid">
-        {[
-          { initials: 'JD', name: 'Jane Doe',       beat: 'Technology',   followers: '12.4K', bio: 'Exploring the future of AI, interface aesthetics, and machine learning at the edge.' },
-          { initials: 'MS', name: 'Michael Smith',  beat: 'Culture',      followers: '8.9K',  bio: 'Writing about society, modern art, and the human-computer connection in daily life.' },
-          { initials: 'AK', name: 'Alex Kumar',     beat: 'Science',      followers: '15.2K', bio: 'Making complex scientific discoveries and astrophysics accessible to everyone.' },
-        ].map(({ initials, name, beat, followers, bio }) => (
-          <div class="writer-card feature-card">
-            <div class="writer-top">
-              <!-- voice-icon-circular spec: surface-strong, full radius -->
-              <div class="writer-avatar" aria-hidden="true">{initials}</div>
-              <div class="writer-info">
-                <h3 class="writer-name">{name}</h3>
-                <p class="writer-meta">
-                  <span class="badge-pill">{beat}</span>
-                  <span class="writer-followers">{followers} followers</span>
-                </p>
+        {featuredWriters.map((writer) => {
+          const name = writer.full_name || writer.username;
+          const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+          return (
+            <div class="writer-card feature-card">
+              <div class="writer-top">
+                <div class="writer-avatar" aria-hidden="true">
+                  {writer.avatar_url ? (
+                    <img src={writer.avatar_url} alt={name} style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                </div>
+                <div class="writer-info">
+                  <h3 class="writer-name">{name}</h3>
+                  <p class="writer-meta">
+                    <span class="badge-pill">@{writer.username}</span>
+                  </p>
+                </div>
+              </div>
+              <p class="writer-bio">{writer.bio || 'Writer on Carcblog.'}</p>
+              <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                {currentUser?.id !== writer.id && (
+                  <FollowButton client:load targetId={writer.id} />
+                )}
               </div>
             </div>
-            <p class="writer-bio">{bio}</p>
-            <a href="/writers" class="btn-outline writer-follow" id={`follow-${name.replace(/\s+/g, '-').toLowerCase()}`}>Follow</a>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>

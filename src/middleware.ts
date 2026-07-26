@@ -51,14 +51,25 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   );
 
   if (isDevTest && !userId) {
-    const customUserId = context.request.headers.get('x-test-user-id') || url.searchParams.get('test_as_user') || 'test_writer_1';
-    context.locals.user = {
-      id: customUserId,
-      userId: customUserId,
-      username: customUserId,
-      full_name: 'Test Writer (' + customUserId + ')',
-      role: 'writer'
-    };
+    const customUserId = context.request.headers.get('x-test-user-id') || url.searchParams.get('test_as_user') || 'user_3GxVczR4xrrhZPPFGQHOj2TILhY';
+    try {
+      const realProfile = await getUserProfile(customUserId);
+      context.locals.user = {
+        userId: customUserId,
+        id: customUserId,
+        onboarding_completed: true,
+        ...(realProfile || { role: customUserId.includes('reader') ? 'reader' : 'writer', full_name: customUserId })
+      };
+    } catch {
+      context.locals.user = {
+        id: customUserId,
+        userId: customUserId,
+        username: customUserId,
+        full_name: 'Test User (' + customUserId + ')',
+        role: customUserId.includes('reader') ? 'reader' : 'writer',
+        onboarding_completed: true
+      };
+    }
     return next();
   }
 
@@ -89,18 +100,26 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   // Scenario B: Authenticated and ONBOARDED
   if (isOnboardingRoute) {
     // Prevent onboarded users from filling the onboarding form again
-    return context.redirect(profile.role === 'writer' ? '/dashboard' : '/');
+    return context.redirect('/dashboard');
   }
 
   if (isAuthRoute) {
     // Prevent logged-in users from hitting sign-in/sign-up pages
-    return context.redirect(profile.role === 'writer' ? '/dashboard' : '/');
+    return context.redirect('/dashboard');
   }
 
   if (isDashboardRoute(context.request)) {
-    // Role enforcement for /dashboard/* (Only writers allowed)
-    if (profile.role !== 'writer') {
-      return context.redirect('/');
+    /**
+     * Dashboard Route Access Policy:
+     * - Root '/dashboard' is accessible to both Readers and Writers.
+     *   Page-level routing in `src/pages/dashboard/index.astro` redirects Readers to `/dashboard/bookmarks`.
+     * - Personal reader tabs ('/dashboard/bookmarks', '/dashboard/likes', '/dashboard/following', '/dashboard/history', '/dashboard/notifications', '/dashboard/settings') are accessible to ALL roles.
+     * - Writer-only management sub-routes ('/dashboard/articles', '/dashboard/analytics', '/dashboard/drafts', '/dashboard/published') are strictly gated to role === 'writer' | 'admin'.
+     */
+    const writerOnlyRoutes = ['/dashboard/articles', '/dashboard/analytics', '/dashboard/drafts', '/dashboard/published'];
+    const isWriterOnly = writerOnlyRoutes.some(route => pathname === route || pathname.startsWith(route + '/'));
+    if (isWriterOnly && profile?.role !== 'writer' && profile?.role !== 'admin') {
+      return context.redirect('/dashboard/bookmarks');
     }
   }
 

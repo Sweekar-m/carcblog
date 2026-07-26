@@ -69,15 +69,41 @@ interface ArticleEditorShellProps {
    * Used to namespace localStorage draft keys and detect account switches.
    */
   clerkUserId: string;
+  /**
+   * Optional initial article data when editing an existing article by ID.
+   */
+  initialArticle?: any;
 }
 
-export function ArticleEditorShell({ clerkUserId }: ArticleEditorShellProps) {
+export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEditorShellProps) {
   const ui = useStore($ui);
   const draftStatus = useStore($draftStatus);
   const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [recoverySnapshot, setRecoverySnapshot] = useState<DraftSnapshot | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [pexelsOpen, setPexelsOpen] = useState(false);
+
+  // ── Populate initial article if editing an existing article ────────────
+  useEffect(() => {
+    if (initialArticle) {
+      if (initialArticle.title) $title.set(initialArticle.title);
+      if (initialArticle.excerpt) $subtitle.set(initialArticle.excerpt);
+      $metadata.setKey('slug', initialArticle.slug?.current || generateSlug(initialArticle.title || ''));
+      if (initialArticle.coverImage) {
+        const coverUrl = typeof initialArticle.coverImage === 'string'
+          ? initialArticle.coverImage
+          : initialArticle.coverImage?.url || initialArticle.coverImage?.asset?.url || initialArticle.coverImage?.src || '';
+        $metadata.setKey('coverImageUrl', coverUrl);
+      }
+      if (initialArticle.body) {
+        $content.set(initialArticle.body);
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('editor:load-article-body', { detail: { body: initialArticle.body } }));
+        }, 150);
+      }
+      document.title = `Edit "${initialArticle.title || 'Article'}" — Carcblog`;
+    }
+  }, [initialArticle]);
 
   // ── Set $clerkUserId and purge orphan drafts on mount ───────────────────
   useEffect(() => {
@@ -471,6 +497,23 @@ export function ArticleEditorShell({ clerkUserId }: ArticleEditorShellProps) {
               minHeight: '100%',
             }}
           >
+            {/* Cover Image Banner */}
+            {useStore($metadata).coverImageUrl ? (
+              <div style={{ position: 'relative', width: '100%', height: '240px', borderRadius: '14px', overflow: 'hidden', marginBottom: '24px', boxShadow: 'var(--shadow-subtle)' }}>
+                <img src={useStore($metadata).coverImageUrl} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ position: 'absolute', top: '12px', right: '12px', display: 'flex', gap: '8px' }}>
+                  <button onClick={() => setPexelsOpen(true)} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(0,0,0,0.75)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Change Cover</button>
+                  <button onClick={() => $metadata.setKey('coverImageUrl', '')} style={{ padding: '6px 12px', borderRadius: '8px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>Remove Cover</button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '16px' }}>
+                <button onClick={() => setPexelsOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '8px', border: '1px dashed var(--color-hairline-strong)', background: 'transparent', color: 'var(--color-steel)', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                  + Add Cover Image (Unsplash / Pexels)
+                </button>
+              </div>
+            )}
+
             {/* Title */}
             <EditorErrorBoundary label="title">
               <TitleInput />

@@ -2,7 +2,9 @@
 // Nav.astro — Wraps the modern React Navbar island component & Search Palette Modal
 import Navbar from '../navigation/navbar.tsx';
 import SearchModal from '../search/search-modal.tsx';
+
+const user = Astro.locals.user || null;
 ---
 
-<Navbar client:load />
+<Navbar client:load user={user} />
 <SearchModal client:idle />

@@ -19,37 +19,11 @@ import {
   LayoutDashboard,
   FileText,
   Bookmark,
+  Heart,
+  Clock,
   Settings,
   LogOut,
 } from 'lucide-react';
-
-/* ── Clerk shims (graceful fallback when not in Clerk context) ── */
-let UserButton: any = null;
-let SignedIn: any = ({ children }: { children: React.ReactNode }) => null;
-let SignedOut: any = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-let SignInButton: any = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-
-try {
-  const clerkAstro = require('@clerk/astro/client');
-  if (clerkAstro) {
-    UserButton = clerkAstro.UserButton ?? null;
-    SignedIn = clerkAstro.SignedIn ?? SignedIn;
-    SignedOut = clerkAstro.SignedOut ?? SignedOut;
-    SignInButton = clerkAstro.SignInButton ?? SignInButton;
-  }
-} catch {
-  try {
-    const clerkNext = require('@clerk/nextjs');
-    if (clerkNext) {
-      UserButton = clerkNext.UserButton ?? null;
-      SignedIn = clerkNext.SignedIn ?? SignedIn;
-      SignedOut = clerkNext.SignedOut ?? SignedOut;
-      SignInButton = clerkNext.SignInButton ?? SignInButton;
-    }
-  } catch {
-    /* no Clerk — UI falls back to standard state */
-  }
-}
 
 /* ── Types ── */
 export interface NavItem {
@@ -60,12 +34,18 @@ export interface NavItem {
   badge?: string;
 }
 
-export interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  unread: boolean;
+export interface NavbarUser {
+  id?: string;
+  userId?: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+  role?: 'reader' | 'writer' | 'admin' | string;
+}
+
+export interface NavbarProps {
+  onOpenSearch?: () => void;
+  user?: NavbarUser | null;
 }
 
 /* ── Data ── */
@@ -118,36 +98,29 @@ const EDITORIAL_ITEMS: NavItem[] = [
   },
 ];
 
-const AVATAR_MENU_ITEMS = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'My Profile', href: '/dashboard/profile', icon: User },
-  { label: 'My Startups', href: '/dashboard/startups', icon: Building2 },
-  { label: 'My Articles', href: '/dashboard/articles', icon: FileText },
+const READER_MENU_ITEMS = [
+  { label: 'Following', href: '/dashboard/following', icon: Users },
   { label: 'Bookmarks', href: '/dashboard/bookmarks', icon: Bookmark },
+  { label: 'Liked Articles', href: '/dashboard/likes', icon: Heart },
+  { label: 'Reading History', href: '/dashboard/history', icon: Clock },
   { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
   { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
-const NOTIFICATIONS_INIT: NotificationItem[] = [
-  {
-    id: 'n1',
-    title: 'New Funding Round Announced',
-    description: 'Aura Health raised $12M Series A led by Accel.',
-    time: '10m ago',
-    unread: true,
-  },
-  {
-    id: 'n2',
-    title: 'New Spotlight Story',
-    description: 'The Future of AI Hardware Agents in 2026 is published.',
-    time: '1h ago',
-    unread: true,
-  },
+const WRITER_MENU_ITEMS = [
+  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Articles', href: '/dashboard/articles', icon: FileText },
+  { label: 'Analytics', href: '/dashboard/analytics', icon: TrendingUp },
+  { label: 'Following', href: '/dashboard/following', icon: Users },
+  { label: 'Bookmarks', href: '/dashboard/bookmarks', icon: Bookmark },
+  { label: 'Liked Articles', href: '/dashboard/likes', icon: Heart },
+  { label: 'Reading History', href: '/dashboard/history', icon: Clock },
+  { label: 'Notifications', href: '/dashboard/notifications', icon: Bell },
+  { label: 'Settings', href: '/dashboard/settings', icon: Settings },
 ];
 
 /* ── Inline style constants derived from design.md tokens ── */
 const S = {
-  // Nav shell: 72px height, sticky, 12px blur, hairline border
   header: {
     position: 'sticky' as const,
     top: 0,
@@ -165,10 +138,9 @@ const S = {
     justifyContent: 'space-between',
     height: '100%',
     width: '100%',
-    padding: '0 32px', // Exact 32px horizontal padding
+    padding: '0 32px',
     boxSizing: 'border-box' as const,
   },
-  // Left cluster: Logo
   left: {
     display: 'flex',
     alignItems: 'center',
@@ -185,7 +157,6 @@ const S = {
     color: 'var(--color-ink)',
     flexShrink: 0,
   },
-  // Center nav: 28px item spacing
   centerNav: {
     display: 'flex',
     alignItems: 'center',
@@ -212,7 +183,6 @@ const S = {
     color: 'var(--color-ink)',
     fontWeight: 600,
   },
-  // Dropdown wrapper (no gap)
   dropdownWrapper: {
     position: 'absolute' as const,
     left: 0,
@@ -229,35 +199,38 @@ const S = {
     boxShadow: 'var(--shadow-atmospheric)',
   },
   dropdownLabel: {
-    padding: '4px 8px 8px',
     fontFamily: 'var(--font-sans)',
     fontSize: '11px',
     fontWeight: 600,
-    letterSpacing: '0.08em',
     textTransform: 'uppercase' as const,
+    letterSpacing: '0.05em',
     color: 'var(--color-stone)',
+    padding: '4px 8px 8px 8px',
   },
   dropdownItem: {
     display: 'flex',
     alignItems: 'flex-start',
     gap: '12px',
-    padding: '10px',
-    borderRadius: 'var(--radius-lg)',
+    padding: '10px 12px',
+    borderRadius: 'var(--radius-md)',
     textDecoration: 'none',
-    transition: 'background 120ms ease',
+    transition: 'background 150ms ease',
+  },
+  dropdownItemActive: {
+    background: 'var(--color-surface)',
   },
   iconBox: {
-    width: '32px',
-    height: '32px',
-    flexShrink: 0,
+    width: '28px',
+    height: '28px',
+    borderRadius: 'var(--radius-sm)',
+    background: 'var(--color-surface)',
+    border: '1px solid var(--color-hairline)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 'var(--radius-md)',
-    border: '1px solid var(--color-hairline)',
-    background: 'var(--color-surface)',
-    color: 'var(--color-steel)',
-    marginTop: '1px',
+    flexShrink: 0,
+    color: 'var(--color-ink)',
+    marginTop: '2px',
   },
   dropdownItemTitle: {
     fontFamily: 'var(--font-sans)',
@@ -269,102 +242,97 @@ const S = {
   dropdownItemDesc: {
     fontFamily: 'var(--font-sans)',
     fontSize: '12px',
-    color: 'var(--color-stone)',
+    fontWeight: 400,
+    color: 'var(--color-steel)',
+    margin: '2px 0 0 0',
     lineHeight: 1.4,
-    marginTop: '2px',
   },
   badge: {
-    padding: '2px 7px',
-    borderRadius: 'var(--radius-pill)',
-    background: 'var(--color-ink)',
-    color: '#ffffff',
     fontSize: '10px',
     fontWeight: 700,
-    fontFamily: 'var(--font-sans)',
-    flexShrink: 0,
+    padding: '2px 6px',
+    borderRadius: 'var(--radius-pill)',
+    background: 'var(--color-surface-soft)',
+    color: 'var(--color-slate)',
+    letterSpacing: '0.04em',
   },
   badgeLive: {
-    background: 'var(--color-brand-coral)',
+    background: 'rgba(220, 38, 38, 0.1)',
+    color: '#dc2626',
   },
-  // Right cluster: Search (320px), Bell, Avatar, Submit Startup CTA
   right: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '12px',
     flexShrink: 0,
   },
   searchPill: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    width: '320px', // Exact 320px search width
-    height: '40px',
-    padding: '0 14px',
+    padding: '6px 14px',
     borderRadius: 'var(--radius-pill)',
-    border: '1px solid var(--color-hairline)',
     background: 'var(--color-surface)',
+    border: '1px solid var(--color-hairline)',
     fontFamily: 'var(--font-sans)',
     fontSize: '13px',
-    fontWeight: 400,
-    color: 'var(--color-stone)',
+    color: 'var(--color-steel)',
     cursor: 'pointer',
-    whiteSpace: 'nowrap' as const,
-    boxSizing: 'border-box' as const,
+    outline: 'none',
+    transition: 'border-color 150ms ease',
   },
   kbd: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '1px 5px',
-    borderRadius: '4px',
-    border: '1px solid var(--color-hairline)',
-    background: '#ffffff',
     fontFamily: 'var(--font-mono)',
     fontSize: '10px',
     fontWeight: 600,
-    color: 'var(--color-slate)',
-    boxShadow: '0 1px 0 var(--color-hairline)',
-    marginLeft: 'auto',
+    padding: '1px 5px',
+    borderRadius: 'var(--radius-xs)',
+    background: 'var(--color-canvas)',
+    border: '1px solid var(--color-hairline-strong)',
+    color: 'var(--color-stone)',
   },
-  iconBtn: {
+  submitBtn: {
     display: 'inline-flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
+    gap: '6px',
+    padding: '8px 16px',
     borderRadius: 'var(--radius-pill)',
-    border: '1px solid var(--color-hairline)',
-    background: '#ffffff',
-    color: 'var(--color-steel)',
+    background: 'var(--color-primary)',
+    color: 'var(--color-on-primary)',
+    fontFamily: 'var(--font-sans)',
+    fontSize: '13px',
+    fontWeight: 600,
+    textDecoration: 'none',
+    border: 'none',
     cursor: 'pointer',
-    flexShrink: 0,
-    position: 'relative' as const,
-    transition: 'border-color 150ms ease, background 150ms ease',
+    transition: 'background 150ms ease',
+    whiteSpace: 'nowrap' as const,
   },
   avatarBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '38px',
-    height: '38px',
-    borderRadius: 'var(--radius-pill)',
-    border: '1px solid var(--color-hairline)',
+    width: '36px',
+    height: '36px',
+    borderRadius: 'var(--radius-full)',
+    border: '1px solid var(--color-hairline-strong)',
     background: 'var(--color-surface)',
     color: 'var(--color-ink)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer',
-    flexShrink: 0,
-    transition: 'border-color 150ms ease',
+    overflow: 'hidden',
+    padding: 0,
   },
   avatarDropdown: {
     position: 'absolute' as const,
     right: 0,
-    top: 'calc(100% + 6px)',
+    top: 'calc(100% + 8px)',
     width: '220px',
     borderRadius: 'var(--radius-xl)',
     border: '1px solid var(--color-hairline)',
     background: '#ffffff',
     padding: '6px',
-    boxShadow: 'var(--shadow-atmospheric)',
-    zIndex: 60,
+    boxShadow: 'var(--shadow-modal)',
+    zIndex: 70,
   },
   avatarMenuItem: {
     display: 'flex',
@@ -377,59 +345,19 @@ const S = {
     fontWeight: 500,
     color: 'var(--color-steel)',
     textDecoration: 'none',
-    transition: 'background 120ms ease, color 120ms ease',
-    width: '100%',
+    transition: 'all 150ms ease',
+    cursor: 'pointer',
     border: 'none',
     background: 'transparent',
-    cursor: 'pointer',
-    textAlign: 'left' as const,
+    width: '100%',
     boxSizing: 'border-box' as const,
   },
-  submitBtn: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '6px',
-    height: '40px',
-    padding: '0 20px',
-    borderRadius: 'var(--radius-pill)',
-    background: 'var(--color-primary)', // Black pill primary CTA (#0F172A)
-    color: 'var(--color-on-primary)',
-    fontFamily: 'var(--font-sans)',
-    fontSize: '14px',
-    fontWeight: 600,
-    textDecoration: 'none',
-    whiteSpace: 'nowrap' as const,
-    cursor: 'pointer',
-    flexShrink: 0,
-    border: 'none',
-    transition: 'background 150ms ease, opacity 150ms ease',
-  },
-  notifPanel: {
-    position: 'absolute' as const,
-    right: 0,
-    top: 'calc(100% + 6px)',
-    width: '320px',
-    borderRadius: 'var(--radius-xl)',
-    border: '1px solid var(--color-hairline)',
-    background: '#ffffff',
-    boxShadow: 'var(--shadow-atmospheric)',
-    zIndex: 60,
-    overflow: 'hidden',
-  },
-  notifHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--color-hairline-soft)',
-  },
-  // Mobile drawer
   mobileToggle: {
-    display: 'inline-flex',
+    display: 'none',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '38px',
-    height: '38px',
+    width: '36px',
+    height: '36px',
     borderRadius: 'var(--radius-md)',
     border: '1px solid var(--color-hairline)',
     background: 'transparent',
@@ -437,50 +365,45 @@ const S = {
     cursor: 'pointer',
   },
   mobileDrawer: {
-    borderTop: '1px solid var(--color-hairline)',
-    background: '#ffffff',
-    padding: '16px 24px',
+    position: 'fixed' as const,
+    top: '72px',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(255, 255, 255, 0.98)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    zIndex: 49,
+    padding: '24px 32px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '12px',
+    overflowY: 'auto' as const,
   },
   mobileLink: {
-    display: 'block',
-    padding: '10px 0',
     fontFamily: 'var(--font-sans)',
-    fontSize: '14px',
-    fontWeight: 500,
-    color: 'var(--color-steel)',
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'var(--color-ink)',
     textDecoration: 'none',
+    padding: '8px 0',
     borderBottom: '1px solid var(--color-hairline-soft)',
   },
 };
 
-/* ── Chevron icon ── */
-function Caret({ open }: { open: boolean }) {
-  return (
-    <ChevronDown
-      style={{
-        width: '14px',
-        height: '14px',
-        color: 'var(--color-stone)',
-        transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-        transition: 'transform 200ms ease',
-        flexShrink: 0,
-      }}
-    />
-  );
-}
-
-/* ── Dropdown menu item ── */
+/* ── Dropdown Item Sub-component ── */
 function DropItem({ item, pathname }: { item: NavItem; pathname: string }) {
-  const Icon = item.icon!;
+  const Icon = item.icon || Building2;
   const active = pathname.startsWith(item.href);
   const isLive = item.badge === 'LIVE';
+
   return (
     <a
       href={item.href}
       role="menuitem"
       style={{
         ...S.dropdownItem,
-        background: active ? 'var(--color-surface)' : 'transparent',
+        ...(active ? S.dropdownItemActive : {}),
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)';
@@ -508,28 +431,19 @@ function DropItem({ item, pathname }: { item: NavItem; pathname: string }) {
 }
 
 /* ── Main Navbar component ── */
-export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
+export function Navbar({ onOpenSearch, user }: NavbarProps) {
   const [pathname, setPathname] = useState('/');
   const [activeMenu, setActiveMenu] = useState<'ecosystem' | 'editorial' | null>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifications] = useState<NotificationItem[]>(NOTIFICATIONS_INIT);
 
   const headerRef = useRef<HTMLElement>(null);
-  const notifRef = useRef<HTMLDivElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const unread = notifications.filter((n) => n.unread).length;
-
   useEffect(() => {
-    setPathname(window.location.pathname);
-    // Determine login state from Clerk or cookie/session fallback
     if (typeof window !== 'undefined') {
-      const hasSession = document.cookie.includes('clerk') || document.cookie.includes('sb-') || localStorage.getItem('isLoggedIn') === 'true';
-      setIsLoggedIn(hasSession);
+      setPathname(window.location.pathname);
     }
   }, []);
 
@@ -544,7 +458,6 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
       if (e.key === 'Escape') {
         setActiveMenu(null);
         setAvatarOpen(false);
-        setNotifOpen(false);
       }
     };
     window.addEventListener('keydown', handleKey);
@@ -555,9 +468,6 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
     const handleOut = (e: MouseEvent) => {
       if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
         setActiveMenu(null);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setNotifOpen(false);
       }
       if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
         setAvatarOpen(false);
@@ -584,6 +494,22 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
     ...(active ? S.navBtnActive : {}),
   });
 
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof window !== 'undefined') {
+      const clerk = (window as any).Clerk;
+      if (clerk && typeof clerk.signOut === 'function') {
+        await clerk.signOut({ redirectUrl: '/' });
+      } else {
+        window.location.href = '/api/auth/signout';
+      }
+    }
+  };
+
+  const isAuthenticated = !!(user && (user.userId || user.id));
+  const userRole = user?.role || 'reader';
+  const menuItems = (userRole === 'writer' || userRole === 'admin') ? WRITER_MENU_ITEMS : READER_MENU_ITEMS;
+
   return (
     <header ref={headerRef} style={S.header} role="banner">
       <div style={S.inner}>
@@ -595,7 +521,7 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
           </a>
         </div>
 
-        {/* ── CENTER: Primary Navigation Links (28px gap, single horizontal line) ── */}
+        {/* ── CENTER: Primary Navigation Links ── */}
         <nav
           style={S.centerNav}
           className="nav-center-desktop"
@@ -612,14 +538,9 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                 ECOSYSTEM_ITEMS.some((i) => isActive(i.href)) || activeMenu === 'ecosystem'
               )}
               aria-expanded={activeMenu === 'ecosystem'}
-              aria-haspopup="menu"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveMenu(activeMenu === 'ecosystem' ? null : 'ecosystem');
-              }}
             >
-              Ecosystem
-              <Caret open={activeMenu === 'ecosystem'} />
+              <span>Ecosystem</span>
+              <ChevronDown style={{ width: '13px', height: '13px' }} />
             </button>
 
             {activeMenu === 'ecosystem' && (
@@ -652,14 +573,9 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                 EDITORIAL_ITEMS.some((i) => isActive(i.href)) || activeMenu === 'editorial'
               )}
               aria-expanded={activeMenu === 'editorial'}
-              aria-haspopup="menu"
-              onClick={(e) => {
-                e.stopPropagation();
-                setActiveMenu(activeMenu === 'editorial' ? null : 'editorial');
-              }}
             >
-              Editorial
-              <Caret open={activeMenu === 'editorial'} />
+              <span>Editorial</span>
+              <ChevronDown style={{ width: '13px', height: '13px' }} />
             </button>
 
             {activeMenu === 'editorial' && (
@@ -672,7 +588,7 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                   onMouseEnter={() => openMenu('editorial')}
                   onMouseLeave={scheduleClose}
                 >
-                  <div style={S.dropdownLabel}>Journalism &amp; Publications</div>
+                  <div style={S.dropdownLabel}>Journalism &amp; Taxonomy</div>
                   {EDITORIAL_ITEMS.map((item) => (
                     <DropItem key={item.href} item={item} pathname={pathname} />
                   ))}
@@ -682,25 +598,21 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
           </div>
 
           {/* Standalone links */}
-          {[
-            { label: 'Discover', href: '/discover' },
-            { label: 'Writers', href: '/writers' },
-            { label: 'About', href: '/about' },
-          ].map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              style={navBtnStyle(isActive(link.href))}
-            >
-              {link.label}
-            </a>
-          ))}
+          <a href="/discover" style={navBtnStyle(isActive('/discover'))}>
+            Discover
+          </a>
+          <a href="/writers" style={navBtnStyle(isActive('/writers'))}>
+            Writers
+          </a>
+          <a href="/about" style={navBtnStyle(isActive('/about'))}>
+            About
+          </a>
         </nav>
 
-        {/* ── RIGHT: Search (320px), Bell (logged in), Avatar/Login, Submit Startup ── */}
+        {/* ── RIGHT: Search, Submit, Auth Controls ── */}
         <div style={S.right}>
 
-          {/* Search Pill (320px width) */}
+          {/* Search Trigger Pill */}
           <button
             style={S.searchPill}
             className="nav-search-pill"
@@ -709,200 +621,16 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                 ? onOpenSearch()
                 : window.dispatchEvent(new CustomEvent('toggle-search-palette'))
             }
-            aria-label="Search articles, startups, and founders"
+            aria-label="Search ecosystem (⌘K)"
           >
-            <Search style={{ width: '14px', height: '14px', color: 'var(--color-stone)', flexShrink: 0 }} />
+            <Search style={{ width: '14px', height: '14px' }} />
             <span>Search ecosystem...</span>
-            <kbd style={S.kbd}>⌘K</kbd>
+            <span style={S.kbd}>⌘K</span>
           </button>
 
-          {/* Notification Bell (Hidden before login, visible after login) */}
-          <SignedIn>
-            <div ref={notifRef} style={{ position: 'relative' }}>
-              <button
-                style={S.iconBtn}
-                onClick={() => setNotifOpen(!notifOpen)}
-                aria-label={`Notifications (${unread} unread)`}
-                aria-expanded={notifOpen}
-              >
-                <Bell style={{ width: '16px', height: '16px' }} />
-                {unread > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: '-2px',
-                      right: '-2px',
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      background: 'var(--color-brand-coral, #ef4444)',
-                      color: '#ffffff',
-                      fontSize: '9px',
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-sans)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px solid #ffffff',
-                    }}
-                  >
-                    {unread}
-                  </span>
-                )}
-              </button>
 
-              {notifOpen && (
-                <div style={S.notifPanel}>
-                  <div style={S.notifHeader}>
-                    <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                      Notifications
-                    </span>
-                  </div>
-                  <div style={{ maxHeight: '280px', overflowY: 'auto' }}>
-                    {notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        style={{
-                          padding: '12px 16px',
-                          borderBottom: '1px solid var(--color-hairline-soft)',
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>
-                            {n.title}
-                          </span>
-                          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-stone)', flexShrink: 0 }}>
-                            {n.time}
-                          </span>
-                        </div>
-                        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '12px', color: 'var(--color-slate)', marginTop: '3px', marginBottom: 0 }}>
-                          {n.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </SignedIn>
-
-          {/* Primary CTA: + Submit Startup (Requires authentication) */}
-          <SignedIn>
-            <a
-              href="/startups/new"
-              style={S.submitBtn}
-              className="nav-submit-btn"
-              aria-label="Submit your startup"
-              onMouseOver={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover, #1E293B)';
-              }}
-              onMouseOut={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary, #0F172A)';
-              }}
-            >
-              <Plus style={{ width: '15px', height: '15px', flexShrink: 0 }} />
-              <span>Submit Startup</span>
-            </a>
-          </SignedIn>
-
-          <SignedOut>
-            <a
-              href="/auth/sign-in?redirect_url=%2Fstartups%2Fnew"
-              style={S.submitBtn}
-              className="nav-submit-btn"
-              aria-label="Submit your startup (Requires login)"
-              onMouseOver={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary-hover, #1E293B)';
-              }}
-              onMouseOut={(e) => {
-                (e.currentTarget as HTMLElement).style.background = 'var(--color-primary, #0F172A)';
-              }}
-            >
-              <Plus style={{ width: '15px', height: '15px', flexShrink: 0 }} />
-              <span>Submit Startup</span>
-            </a>
-          </SignedOut>
-
-          {/* User Auth: Login Button when Logged Out; Avatar & Dropdown when Logged In (FAR RIGHT) */}
-          {UserButton ? (
-            <>
-              <SignedIn>
-                <div ref={avatarRef} style={{ position: 'relative' }}>
-                  <button
-                    style={S.avatarBtn}
-                    onClick={() => setAvatarOpen(!avatarOpen)}
-                    aria-label="User menu"
-                    aria-expanded={avatarOpen}
-                  >
-                    <User style={{ width: '18px', height: '18px' }} />
-                  </button>
-
-                  {avatarOpen && (
-                    <div style={S.avatarDropdown} role="menu">
-                      {AVATAR_MENU_ITEMS.map((item) => {
-                        const ItemIcon = item.icon;
-                        return (
-                          <a
-                            key={item.href}
-                            href={item.href}
-                            role="menuitem"
-                            style={S.avatarMenuItem}
-                            onMouseEnter={(e) => {
-                              (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)';
-                              (e.currentTarget as HTMLElement).style.color = 'var(--color-ink)';
-                            }}
-                            onMouseLeave={(e) => {
-                              (e.currentTarget as HTMLElement).style.background = 'transparent';
-                              (e.currentTarget as HTMLElement).style.color = 'var(--color-steel)';
-                            }}
-                          >
-                            <ItemIcon style={{ width: '15px', height: '15px', color: 'var(--color-steel)' }} />
-                            <span>{item.label}</span>
-                          </a>
-                        );
-                      })}
-                      <div style={{ borderTop: '1px solid var(--color-hairline)', margin: '4px 0' }} />
-                      <a
-                        href="/api/auth/signout"
-                        role="menuitem"
-                        style={{
-                          ...S.avatarMenuItem,
-                          color: 'var(--color-error, #dc2626)',
-                        }}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = 'rgba(220, 38, 38, 0.05)';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = 'transparent';
-                        }}
-                      >
-                        <LogOut style={{ width: '15px', height: '15px' }} />
-                        <span>Logout</span>
-                      </a>
-                    </div>
-                  )}
-                </div>
-              </SignedIn>
-
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button
-                    style={{
-                      ...S.navBtn,
-                      padding: '8px 16px',
-                      borderRadius: 'var(--radius-pill)',
-                      border: '1px solid var(--color-hairline)',
-                      background: 'transparent',
-                      color: 'var(--color-ink)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Login
-                  </button>
-                </SignInButton>
-              </SignedOut>
-            </>
-          ) : (
+          {/* User Auth Section */}
+          {isAuthenticated ? (
             <div ref={avatarRef} style={{ position: 'relative' }}>
               <button
                 style={S.avatarBtn}
@@ -910,12 +638,27 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                 aria-label="User menu"
                 aria-expanded={avatarOpen}
               >
-                <User style={{ width: '18px', height: '18px' }} />
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt={user.full_name || 'User'} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-ink)' }}>
+                    {(user?.full_name || user?.username || 'U').charAt(0).toUpperCase()}
+                  </span>
+                )}
               </button>
 
               {avatarOpen && (
                 <div style={S.avatarDropdown} role="menu">
-                  {AVATAR_MENU_ITEMS.map((item) => {
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-hairline)', marginBottom: '4px' }}>
+                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--color-ink-strong)' }}>
+                      {user?.full_name || user?.username || 'Account'}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--color-steel)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginTop: '2px' }}>
+                      {userRole.toUpperCase()} ROLE
+                    </div>
+                  </div>
+
+                  {menuItems.map((item) => {
                     const ItemIcon = item.icon;
                     return (
                       <a
@@ -937,10 +680,12 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                       </a>
                     );
                   })}
+
                   <div style={{ borderTop: '1px solid var(--color-hairline)', margin: '4px 0' }} />
                   <a
-                    href="/auth/sign-in"
+                    href="/api/auth/signout"
                     role="menuitem"
+                    onClick={handleLogout}
                     style={{
                       ...S.avatarMenuItem,
                       color: 'var(--color-error, #dc2626)',
@@ -953,10 +698,51 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
                     }}
                   >
                     <LogOut style={{ width: '15px', height: '15px' }} />
-                    <span>Logout</span>
+                    <span>Sign Out</span>
                   </a>
                 </div>
               )}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <a
+                href="/auth/sign-in"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  height: '34px',
+                  padding: '0 14px',
+                  borderRadius: 'var(--radius-pill)',
+                  border: '1px solid var(--color-hairline-strong)',
+                  background: 'transparent',
+                  color: 'var(--color-ink)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Sign in
+              </a>
+              <a
+                href="/auth/sign-up"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  height: '34px',
+                  padding: '0 16px',
+                  borderRadius: 'var(--radius-pill)',
+                  border: 'none',
+                  background: 'var(--color-primary)',
+                  color: 'var(--color-on-primary)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Get started
+              </a>
             </div>
           )}
 
@@ -996,19 +782,7 @@ export function Navbar({ onOpenSearch }: { onOpenSearch?: () => void }) {
               {link.label}
             </a>
           ))}
-          <div style={{ paddingTop: '16px' }}>
-            <a
-              href="/startups/new"
-              style={{
-                ...S.submitBtn,
-                width: '100%',
-                justifyContent: 'center',
-              }}
-            >
-              <Plus style={{ width: '15px', height: '15px' }} />
-              <span>Submit Startup</span>
-            </a>
-          </div>
+
         </div>
       )}
 

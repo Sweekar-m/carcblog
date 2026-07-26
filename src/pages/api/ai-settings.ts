@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCurrentUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { encryptApiKey, decryptApiKey, maskApiKey } from '@/lib/encryption';
+import { aiSettingsSchema } from '@/schemas/ai';
 
 export const prerender = false;
 
@@ -143,16 +144,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const body = await request.json();
-    const { provider, apiKey, testOnly } = body;
+    const rawBody = await request.json().catch(() => ({}));
 
-    if (!provider || !['gemini', 'openrouter'].includes(provider)) {
-      return new Response(JSON.stringify({ error: 'Please choose a valid AI provider (Gemini or OpenRouter).' }), { status: 400 });
+    const parsed = aiSettingsSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed: ' + parsed.error.issues.map(i => i.message).join('; ') }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    if (!apiKey || typeof apiKey !== 'string' || apiKey.trim() === '') {
-      return new Response(JSON.stringify({ error: 'Please enter a valid API key.' }), { status: 400 });
-    }
+    const { provider, apiKey, testOnly } = parsed.data;
 
     let cleanKey = apiKey.trim();
 

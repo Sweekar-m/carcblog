@@ -1,16 +1,37 @@
 ---
 // Writers page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
+import { supabase } from '@/lib/supabase';
+import FollowButton from '@/components/islands/social/FollowButton';
+import { getCurrentUser } from '@/lib/auth';
+
+export const prerender = false;
+
+const currentUser = await getCurrentUser(Astro.locals);
+
+const { data: dbWriters } = await supabase
+  .from('profiles')
+  .select('id, username, full_name, avatar_url, bio, role')
+  .limit(12);
+
+const defaultWriters = [
+  { id: 'w1', username: 'janedoe', full_name: 'Jane Doe', bio: 'Exploring technology and human experience.', role: 'writer' },
+  { id: 'w2', username: 'michaelsmith', full_name: 'Michael Smith', bio: 'Examining culture trends and contemporary art.', role: 'writer' },
+  { id: 'w3', username: 'alexkumar', full_name: 'Alex Kumar', bio: 'Science journalism and space discoveries.', role: 'writer' },
+  { id: 'w4', username: 'ninagupta', full_name: 'Nina Gupta', bio: 'Bridging climate science and environmental policy.', role: 'writer' },
+  { id: 'w5', username: 'diegocastillo', full_name: 'Diego Castillo', bio: 'Exploring digital spaces and cultural identity.', role: 'writer' },
+  { id: 'w6', username: 'taylorsmith', full_name: 'Taylor Smith', bio: 'Decoding algorithms, machine learning, and AI.', role: 'writer' },
+];
+
+const writersList = (dbWriters && dbWriters.length > 0) ? dbWriters : defaultWriters;
 ---
 <Layout title="Writers — Carcblog" description="Discover talented writers crafting ideas on Carcblog">
 
   <!-- ═══════════════════════════════════════════════
        SECTION 1: HERO
-       canvas bg, display-mega headline, atmospheric orbs
   ═══════════════════════════════════════════════ -->
   <section class="writers-hero">
-    <!-- Atmospheric orbs — decoration only -->
-    <div class="atm-orb writers-orb-peach"    aria-hidden="true"></div>
+    <div class="atm-orb writers-orb-peach" aria-hidden="true"></div>
     <div class="atm-orb writers-orb-lavender" aria-hidden="true"></div>
 
     <div class="page-container writers-hero-inner">
@@ -26,7 +47,6 @@ import Layout from '@/components/layout/Layout.astro';
 
   <!-- ═══════════════════════════════════════════════
        SECTION 2: FEATURED WRITERS GRID
-       white feature-card grid, voice-icon-circular avatars, badge tags
   ═══════════════════════════════════════════════ -->
   <section class="writers-section writers-section--soft">
     <div class="page-container">
@@ -36,37 +56,36 @@ import Layout from '@/components/layout/Layout.astro';
       </div>
 
       <div class="writers-grid">
-        {[
-          { initials: 'JD', name: 'Jane Doe',       beat: 'Technology',   followers: '12.4K', bio: 'Exploring the intersection of technology and human experience through thoughtful analysis and storytelling.', tags: ['AI', 'UX', 'Future'] },
-          { initials: 'MS', name: 'Michael Smith',  beat: 'Culture critic', followers: '8.9K',  bio: 'Examining societal trends, modern arts, and the evolving landscape of contemporary human culture.', tags: ['Culture', 'Art', 'Society'] },
-          { initials: 'AK', name: 'Alex Kumar',     beat: 'Science journalist', followers: '15.2K', bio: 'Making complex scientific concepts and space discoveries accessible and engaging for curious readers.', tags: ['Space', 'Physics', 'Science'] },
-          { initials: 'NG', name: 'Nina Gupta',     beat: 'Environmental scientist', followers: '6.1K', bio: 'Bridging climate science and policy to create actionable narratives about the future of our planet.', tags: ['Climate', 'Nature'] },
-          { initials: 'DC', name: 'Diego Castillo',  beat: 'Digital culture', followers: '4.3K',  bio: 'Exploring how digital spaces reshape identity, community, and the way we form lasting connections.', tags: ['Digital', 'Identity'] },
-          { initials: 'TS', name: 'Taylor Smith',    beat: 'AI & Machine Learning', followers: '18.5K', bio: 'Decoding the algorithms shaping our world — from recommendation engines to large language models.', tags: ['ML', 'AI', 'Data'] },
-        ].map(({ initials, name, beat, followers, bio, tags }) => (
-          <div class="writer-card feature-card">
-            <div class="writer-card-top">
-              <!-- voice-icon-circular: surface-strong, full radius -->
-              <div class="writer-avatar" aria-hidden="true">{initials}</div>
-              <div class="writer-stats">
-                <span class="badge-pill">{followers} followers</span>
+        {writersList.map((writer) => {
+          const name = writer.full_name || writer.username;
+          const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+          return (
+            <div class="writer-card feature-card">
+              <div class="writer-card-top">
+                <div class="writer-avatar" aria-hidden="true">
+                  {writer.avatar_url ? (
+                    <img src={writer.avatar_url} alt={name} style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
+                </div>
+                <div class="writer-stats">
+                  <span class="badge-pill">@{writer.username}</span>
+                </div>
+              </div>
+              <div class="writer-info">
+                <h3 class="writer-name">{name}</h3>
+                <p class="writer-spec">{writer.role ? writer.role.toUpperCase() : 'CONTRIBUTOR'}</p>
+                <p class="writer-bio">{writer.bio || 'Writer on Carcblog.'}</p>
+              </div>
+              <div class="writer-footer" style="display: flex; justify-content: flex-end; margin-top: 12px;">
+                {currentUser?.id !== writer.id && (
+                  <FollowButton client:load targetId={writer.id} />
+                )}
               </div>
             </div>
-            <div class="writer-info">
-              <h3 class="writer-name">{name}</h3>
-              <p class="writer-spec">{beat}</p>
-              <p class="writer-bio">{bio}</p>
-            </div>
-            <div class="writer-footer">
-              <div class="writer-tags">
-                {tags.map(tag => (
-                  <span class="badge-pill tag-badge">#{tag}</span>
-                ))}
-              </div>
-              <a href="#" class="btn-outline follow-btn-small" id={`follow-${name.replace(/\s+/g, '-').toLowerCase()}`}>Follow</a>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>

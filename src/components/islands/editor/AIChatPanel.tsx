@@ -12,7 +12,9 @@ import {
   User,
   Loader2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { $title, $subtitle, $content } from './editorStore';
 
@@ -56,6 +58,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
   const [inputText, setInputText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -137,6 +140,29 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
       if (!res.ok || data.error) {
         if (data.error === 'NO_KEY_CONFIGURED') {
           setHasKey(false);
+          // In development mode, generate a mock story package so layout & workflow can be tested
+          if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
+            const devStructured = {
+              replyText: 'Generated story package for your article idea:',
+              headline: promptToSubmit.includes('pivot') ? 'The $10M Pivot: How One Founder Rebuilt Their Tech Stack for AI' : 'Building in Public: Lessons From Scaling a Modern Tech Startup',
+              subtitle: 'A deep-dive into product strategy, engineering decisions, and founder resilience in the era of artificial intelligence.',
+              articleBody: `## Introduction\nIn today's fast-moving software ecosystem, adaptability is everything. When the market shifted toward intelligent agents, our engineering team faced a critical decision: double down on legacy infrastructure or rebuild from the ground up.\n\n## The Engineering Reality\nTransitioning to AI-first architecture required rethinking data pipelines, prompt engineering, and real-time state management.\n\n- **Key Takeaway 1:** Prioritize developer velocity over premature optimization.\n- **Key Takeaway 2:** Leverage strict type validation across API boundaries.\n- **Key Takeaway 3:** Build modular UI components for maximum flexibility.\n\n## Conclusion\nThe pivot proved transformational. By staying focused on core user problems, we scaled user acquisition by 300% in under six months.`,
+              imageSuggestion: 'Minimalist tech startup team collaborating night'
+            };
+
+            const devMsg: ChatMessage = {
+              id: `assistant-dev-${Date.now()}`,
+              sender: 'assistant',
+              text: devStructured.replyText,
+              structured: devStructured,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            setMessages((prev) => [...prev, devMsg]);
+            setStatusMessage({ type: 'success', text: 'Dev Mode: Generated sample AI story package!' });
+            return;
+          }
+
           setStatusMessage({ type: 'error', text: 'No AI key configured. Add one in Profile Settings.' });
         } else {
           setStatusMessage({ type: 'error', text: data.message || data.error || 'Failed to generate content.' });
@@ -191,88 +217,146 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        height: '100vh',
-        width: '420px',
-        maxWidth: '100vw',
-        background: 'var(--color-canvas)',
-        borderLeft: '1px solid var(--color-hairline-strong)',
-        boxShadow: '-8px 0 32px rgba(0,0,0,0.12)',
-        zIndex: 99999,
-        display: 'flex',
-        flexDirection: 'column',
-        fontFamily: 'var(--font-sans)',
-        boxSizing: 'border-box',
-        overflow: 'hidden'
-      }}
-    >
-      {/* Header */}
+    <>
+      {/* Mobile/Tablet Backdrop */}
+      <div
+        className="editor-ai-panel-backdrop"
+        onClick={onClose}
+        style={{
+          position: 'fixed',
+          top: '52px',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.20)',
+          backdropFilter: 'blur(2px)',
+          WebkitBackdropFilter: 'blur(2px)',
+          zIndex: 44,
+        }}
+      />
+
+      {/* Sliding AI Panel */}
       <div
         style={{
-          padding: 'var(--space-md) var(--space-base)',
-          borderBottom: '1px solid var(--color-hairline)',
-          background: 'var(--color-surface-card)',
+          position: 'fixed',
+          top: '52px',
+          right: 0,
+          bottom: 0,
+          height: 'calc(100vh - 52px)',
+          width: isExpanded ? '460px' : '360px',
+          maxWidth: '100vw',
+          background: 'rgba(255, 255, 255, 0.97)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderLeft: '1px solid var(--color-hairline)',
+          boxShadow: '-12px 0 40px rgba(0, 0, 0, 0.10)',
+          zIndex: 45,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
+          flexDirection: 'column',
+          fontFamily: 'var(--font-sans)',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+          transition: 'width 200ms ease-out',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
-          <div
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(124, 58, 237, 0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#7C3AED'
-            }}
-          >
-            <Sparkles size={16} />
-          </div>
-          <div>
-            <h3
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: 'var(--fs-card-title)',
-                fontWeight: 'var(--fw-semibold)',
-                color: 'var(--color-ink-strong)',
-                margin: 0
-              }}
-            >
-              AI Story Assistant
-            </h3>
-            <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-              {hasKey ? `Powered by ${provider === 'gemini' ? 'Gemini 3.6 Flash' : 'OpenRouter'}` : 'No AI Key Configured'}
-            </span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onClose}
+        {/* Header */}
+        <div
           style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--color-muted)',
-            cursor: 'pointer',
-            padding: '6px',
-            borderRadius: '50%',
+            padding: '12px var(--space-base)',
+            borderBottom: '1px solid var(--color-hairline)',
+            background: 'rgba(255, 255, 255, 0.95)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'space-between',
+            flexShrink: 0,
           }}
         >
-          <X size={18} />
-        </button>
-      </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xs)' }}>
+            <div
+              style={{
+                width: '30px',
+                height: '30px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(124, 58, 237, 0.06) 100%)',
+                border: '1px solid rgba(124, 58, 237, 0.18)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#7C3AED',
+                flexShrink: 0,
+              }}
+            >
+              <Sparkles size={14} strokeWidth={1.75} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <h3
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: 'var(--fs-body-sm)',
+                  fontWeight: 'var(--fw-semibold)',
+                  color: 'var(--color-ink-strong)',
+                  margin: 0,
+                  lineHeight: 1.2,
+                }}
+              >
+                AI Story Assistant
+              </h3>
+              <span style={{
+                fontSize: '11px',
+                color: 'var(--color-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                marginTop: '1px',
+              }}>
+                <Bot size={10} style={{ color: '#7C3AED', flexShrink: 0 }} />
+                {hasKey ? `Powered by ${provider === 'gemini' ? 'Gemini 3.6 Flash' : 'OpenRouter'}` : 'No AI Key Configured'}
+              </span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
+            {/* Expand / Collapse Width Toggle */}
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              title={isExpanded ? 'Narrow panel' : 'Expand panel'}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-muted)',
+                cursor: 'pointer',
+                padding: '5px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isExpanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            </button>
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              title="Close AI Assistant"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-muted)',
+                cursor: 'pointer',
+                padding: '5px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </div>
 
       {/* Alert banner if no key */}
       {!hasKey && !loadingConfig && (
@@ -518,7 +602,15 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
       </div>
 
       {/* Quick Prompt Chips */}
-      <div style={{ padding: 'var(--space-xs) var(--space-base)', borderTop: '1px solid var(--color-hairline)', overflowX: 'auto', display: 'flex', gap: '6px' }}>
+      <div style={{
+        padding: '8px var(--space-base)',
+        borderTop: '1px solid var(--color-hairline)',
+        overflowX: 'auto',
+        display: 'flex',
+        gap: '5px',
+        flexShrink: 0,
+        scrollbarWidth: 'none',
+      }}>
         {QUICK_PROMPTS.map((promptText, idx) => (
           <button
             key={idx}
@@ -530,20 +622,28 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
               padding: '4px 10px',
               borderRadius: 'var(--radius-pill)',
               border: '1px solid var(--color-hairline)',
-              background: 'var(--color-surface-card)',
-              color: 'var(--color-muted)',
+              background: 'var(--color-surface)',
+              color: 'var(--color-steel)',
               fontSize: '11px',
+              fontFamily: 'var(--font-sans)',
               cursor: loading || !hasKey ? 'not-allowed' : 'pointer',
-              flexShrink: 0
+              flexShrink: 0,
+              opacity: loading || !hasKey ? 0.5 : 1,
+              transition: 'border-color 150ms ease, background 150ms ease',
             }}
           >
-            {promptText.slice(0, 32)}...
+            {promptText.slice(0, 30)}…
           </button>
         ))}
       </div>
 
       {/* Input Form */}
-      <div style={{ padding: 'var(--space-sm) var(--space-base)', borderTop: '1px solid var(--color-hairline)', background: 'var(--color-surface-card)' }}>
+      <div style={{
+        padding: 'var(--space-sm) var(--space-base)',
+        borderTop: '1px solid var(--color-hairline)',
+        background: 'var(--color-surface)',
+        flexShrink: 0,
+      }}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -568,12 +668,14 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
               flex: 1,
               padding: '8px 12px',
               borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-hairline)',
+              border: '1px solid var(--color-hairline-strong)',
               background: 'var(--color-canvas)',
               color: 'var(--color-ink)',
               fontFamily: 'var(--font-sans)',
               fontSize: 'var(--fs-body-sm)',
-              resize: 'none'
+              resize: 'none',
+              outline: 'none',
+              lineHeight: 1.5,
             }}
           />
           <button
@@ -590,16 +692,19 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
               alignItems: 'center',
               justifyContent: 'center',
               cursor: !hasKey || loading || !inputText.trim() ? 'not-allowed' : 'pointer',
-              opacity: !hasKey || loading || !inputText.trim() ? 0.5 : 1
+              opacity: !hasKey || loading || !inputText.trim() ? 0.4 : 1,
+              flexShrink: 0,
+              transition: 'opacity 150ms ease',
             }}
           >
             <Send size={16} />
           </button>
         </form>
       </div>
-    </div>,
-    document.body
-  );
+    </div>
+  </>,
+  document.body
+);
 };
 
 export default AIChatPanel;

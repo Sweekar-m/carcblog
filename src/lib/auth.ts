@@ -19,11 +19,11 @@ export async function getCurrentUser(locals?: any): Promise<{
 } | null> {
   // Fast path: middleware already populated locals.user with a verified profile.
   // Only trust this path when the middleware-set userId is present.
-  if (locals?.user?.userId && locals.user.username) {
+  if (locals?.user?.userId) {
     return {
       id: locals.user.userId,
       full_name: locals.user.full_name ?? null,
-      username: locals.user.username,
+      username: locals.user.username || locals.user.userId,
       role: locals.user.role ?? 'reader',
       bio: locals.user.bio ?? null,
       avatar_url: locals.user.avatar_url ?? null,

@@ -2,6 +2,11 @@
 // Article detail page — ElevenLabs editorial design system
 import Layout from '@/components/layout/Layout.astro';
 import { getSanityArticleBySlugForUser, safeImageUrl, portableTextToHtml } from '@/lib/sanity';
+import LikeButton from '@/components/islands/social/LikeButton';
+import BookmarkButton from '@/components/islands/social/BookmarkButton';
+import ShareButton from '@/components/islands/social/ShareButton';
+import CommentThread from '@/components/islands/social/CommentThread';
+import FollowButton from '@/components/islands/social/FollowButton';
 
 import { requireAuth } from '@/lib/requireAuth';
 import { getUserProfile } from '@/lib/supabase';
@@ -10,14 +15,10 @@ export const prerender = false;
 
 let userId: string | null = null;
 let isAdmin = false;
-try {
-  userId = await requireAuth(Astro.locals);
-  if (userId) {
-    const profile = await getUserProfile(userId);
-    isAdmin = profile?.role === 'admin';
-  }
-} catch {
-  // Unauthenticated guest request
+
+if (Astro.locals.user) {
+  userId = Astro.locals.user.userId || Astro.locals.user.id || null;
+  isAdmin = Astro.locals.user.role === 'admin';
 }
 
 const { slug } = Astro.params;
@@ -125,20 +126,29 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
               <span class="author-name">{article.author.name}</span>
               <span class="author-title">Carcblog Contributor</span>
             </div>
+            {articleRaw.author?.clerkUserId && articleRaw.author.clerkUserId !== userId && (
+              <FollowButton client:load targetId={articleRaw.author.clerkUserId} />
+            )}
           </div>
-          <time class="publish-date" datetime={article.publishedAt ?? undefined}>
-            {article.publishedAt ? (
-              new Date(article.publishedAt).toLocaleDateString(undefined, {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })
-            ) : (
-              'Draft (Unpublished)'
-            )} · 5 min read
-          </time>
+          <div class="article-meta-right" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <time class="publish-date" datetime={article.publishedAt ?? undefined}>
+              {article.publishedAt ? (
+                new Date(article.publishedAt).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })
+              ) : (
+                'Draft (Unpublished)'
+              )} · 5 min read
+            </time>
+            <div class="article-social-controls" style="display: flex; align-items: center; gap: 8px;">
+              <LikeButton client:load articleId={article.id} authorId={articleRaw.author?.clerkUserId} />
+              <BookmarkButton client:load articleId={article.id} showLabel={true} />
+              <ShareButton client:load title={article.title} />
+            </div>
+          </div>
         </div>
-
 
         <!-- Headline: display-xl, EB Garamond 300, 48px, -0.96px tracking, ink -->
         <h1 class="article-title">{article.title}</h1>
@@ -166,27 +176,42 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
         )}
       </article>
 
-      <!-- ── Author card at bottom ── -->
+      <!-- ── Author card & Social Action Footer ── -->
       <footer class="article-footer reading-col">
-        <div class="author-card">
-          {article.author.image ? (
-            <img
-              src={article.author.image}
-              alt={article.author.name}
-              class="author-card-avatar"
-              referrerpolicy="no-referrer"
-            />
-          ) : (
-            <div class="author-card-avatar-fallback">
-              {authorInitial}
+        <div class="author-card" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            {article.author.image ? (
+              <img
+                src={article.author.image}
+                alt={article.author.name}
+                class="author-card-avatar"
+                referrerpolicy="no-referrer"
+              />
+            ) : (
+              <div class="author-card-avatar-fallback">
+                {authorInitial}
+              </div>
+            )}
+            <div class="author-card-info">
+              <span class="author-card-name">{article.author.name}</span>
+              <span class="author-card-role">Carcblog Contributor</span>
             </div>
-          )}
-          <div class="author-card-info">
-            <span class="author-card-name">{article.author.name}</span>
-            <span class="author-card-role">Carcblog Contributor</span>
           </div>
+          {articleRaw.author?.clerkUserId && articleRaw.author.clerkUserId !== userId && (
+            <FollowButton client:load targetId={articleRaw.author.clerkUserId} />
+          )}
         </div>
       </footer>
+
+      <!-- ── Threaded Responses Section ── -->
+      <div class="reading-col">
+        <CommentThread
+          client:load
+          articleId={article.id}
+          articleAuthorId={articleRaw.author?.clerkUserId}
+          currentUserId={userId}
+        />
+      </div>
 
       </div><!-- /.article-glass-column -->
     </div>
@@ -194,7 +219,16 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
 
 </Layout>
 
-<script>
+<script data-article-id={article.id}>
+  const currentArticleId = document.currentScript?.getAttribute('data-article-id');
+  if (currentArticleId) {
+    fetch('/api/social/history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ articleId: currentArticleId })
+    }).catch(() => {});
+  }
+
   const progressBar = document.getElementById('progressBar');
   if (progressBar) {
     window.addEventListener('scroll', () => {

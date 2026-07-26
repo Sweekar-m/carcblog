@@ -1,9 +1,11 @@
 ---
 import Layout from '@/components/layout/Layout.astro';
 import { getStartups, getStartupIndustries } from '@/lib/supabase';
+import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
+const user = await getCurrentUser(Astro.locals);
 const url = new URL(Astro.request.url);
 const search = url.searchParams.get('q') || '';
 const industry = url.searchParams.get('industry') || 'All';
@@ -42,9 +44,9 @@ function getPageUrl(p: number) {
       </p>
     </div>
 
-    {/* ── Search & Filter Bar ── */}
+    {/* ── Search, Filter & Action Bar ── */}
     <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:20px;margin-bottom:40px;box-shadow:0px 1px 2px rgba(0,0,0,0.04)">
-      <form method="GET" action="/startups" style="display:flex;gap:12px;flex-wrap:wrap">
+      <form method="GET" action="/startups" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         <div style="position:relative;flex:1;min-width:240px">
           <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
@@ -86,6 +88,18 @@ function getPageUrl(p: number) {
         >
           Search
         </button>
+
+        {/* Page-level Submit Startup Action (Visible for Writers or Guests; Hidden for Readers) */}
+        {(!user || user.role === 'writer' || user.role === 'admin') && (
+          <a
+            href={user ? "/startups/new" : "/auth/sign-in?redirect_url=%2Fstartups%2Fnew"}
+            class="btn-submit-startup"
+            style="display:inline-flex;align-items:center;gap:6px;padding:0 20px;height:44px;border-radius:9999px;background:#0EA5E9;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none;white-space:nowrap;transition:background 150ms ease"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Submit Startup</span>
+          </a>
+        )}
       </form>
     </div>
 
@@ -181,5 +195,6 @@ function getPageUrl(p: number) {
   }
   .startup-card:hover .startup-name { color: #0284C7 !important; }
   .btn-search:hover { background: #334155 !important; }
+  .btn-submit-startup:hover { background: #0284C7 !important; }
   .btn-page:hover { background: #F8FAFC; }
 </style>

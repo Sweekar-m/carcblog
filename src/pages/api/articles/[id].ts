@@ -3,6 +3,7 @@ import { getSanityArticleById, updateSanityArticle, deleteSanityArticle } from '
 import { authorizeArticleAction } from '@/lib/articleAuth';
 import { requireAuth } from '@/lib/requireAuth';
 import { getUserProfile } from '@/lib/supabase';
+import { updateArticleSchema } from '@/schemas/articles';
 import { jsonResponse, errorResponse, CACHE_CONTROL_PRIVATE, CACHE_CONTROL_PUBLIC_FEED } from '@/lib/apiResponse';
 
 export const prerender = false;
@@ -75,32 +76,40 @@ async function handleUpdate({ locals, params, request }: { locals: any; params: 
 
   if (authResult.errorResponse) return authResult.errorResponse;
 
-  let body: any;
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch (err) {
     return errorResponse('Invalid JSON body', 400, err);
   }
 
-  const { title, slug, excerpt, body: content, coverImage, status, categoryId, tags, scheduledAt, publishedAt } = body;
+  const parsed = updateArticleSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    return errorResponse(
+      'Validation failed: ' + parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '),
+      400
+    );
+  }
+
+  const { title, slug, excerpt, body: content, coverImage, status, categoryId, tags, scheduledAt, publishedAt } = parsed.data;
 
   try {
     await updateSanityArticle(articleId, {
-      title: typeof title === 'string' ? title.trim() : undefined,
-      slug: typeof slug === 'string' ? slug.trim() : undefined,
-      excerpt: typeof excerpt === 'string' ? excerpt.trim() : undefined,
+      title: title?.trim(),
+      slug: slug?.trim(),
+      excerpt: excerpt?.trim(),
       body: content,
       coverImageUrl: typeof coverImage === 'string' ? coverImage.trim() : undefined,
       status,
       categoryId: typeof categoryId === 'string' ? categoryId : undefined,
       tags: Array.isArray(tags) ? tags.filter((t) => typeof t === 'string') : undefined,
-      scheduledAt: typeof scheduledAt === 'string' ? scheduledAt : undefined,
-      publishedAt: typeof publishedAt === 'string' ? publishedAt : undefined,
+      scheduledAt: typeof scheduledAt === 'string' ? scheduledAt : scheduledAt ?? undefined,
+      publishedAt: typeof publishedAt === 'string' ? publishedAt : publishedAt ?? undefined,
     });
 
     const updated = await getSanityArticleById(articleId);
     return jsonResponse({ success: true, article: updated }, 200, CACHE_CONTROL_PRIVATE);
-  } catch (err: any) {
+  } catch (err: unknown) {
     return errorResponse('Failed to update article', 500, err);
   }
 }

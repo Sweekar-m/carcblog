@@ -1,0 +1,16 @@
+---
+export const prerender = false;
+
+const url = Astro.url;
+const searchParams = new URLSearchParams(url.searchParams);
+const id = searchParams.get('id') || searchParams.get('articleId');
+if (id) {
+  searchParams.set('id', id);
+  searchParams.delete('articleId');
+}
+
+const queryString = searchParams.toString();
+const target = `/dashboard/articles/new${queryString ? `?${queryString}` : ''}`;
+
+return Astro.redirect(target);
+---

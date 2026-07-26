@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCurrentUser } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 import { decryptApiKey } from '@/lib/encryption';
+import { aiWriterSchema } from '@/schemas/ai';
 
 export const prerender = false;
 
@@ -42,21 +43,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const body = await request.json().catch(() => ({}));
-    const { action = 'chat', context = '', selection = '', prompt = '' } = body;
+    const rawBody = await request.json().catch(() => ({}));
 
-    const validActions = ['chat', 'outline', 'continue', 'improve'];
-    if (!validActions.includes(action)) {
-      return new Response(JSON.stringify({ error: `Invalid AI action. Expected one of: ${validActions.join(', ')}` }), { status: 400 });
+    const parsed = aiWriterSchema.safeParse(rawBody);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({ error: 'Validation failed: ' + parsed.error.issues.map(i => i.message).join('; ') }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Guardrail 1: Input Length Check
-    const userPromptText = prompt || selection || context;
-    const combinedInputLength = userPromptText.length;
+    const { action, context, selection, prompt } = parsed.data;
+
+    // Guardrail: Total combined input length
+    const combinedInputLength = (prompt + selection + context).length;
     if (combinedInputLength > MAX_INPUT_CHARS) {
       return new Response(
         JSON.stringify({
-          error: `Input content exceeds the maximum limit of ${MAX_INPUT_CHARS} characters (${combinedInputLength} characters provided). Please shorten your request.`
+          error: `Input content exceeds the maximum limit of ${MAX_INPUT_CHARS} characters. Please shorten your request.`
         }),
         { status: 400 }
       );

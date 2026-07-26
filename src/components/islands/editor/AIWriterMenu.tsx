@@ -28,6 +28,7 @@ export const AIWriterMenu: React.FC = () => {
         type="button"
         onClick={() => setChatOpen(!chatOpen)}
         disabled={loadingConfig}
+        aria-pressed={chatOpen}
         title={hasKey ? `AI Assistant (${provider === 'gemini' ? 'Gemini 3.6' : 'OpenRouter'})` : 'No AI key configured — Add key in Profile Settings'}
         style={{
           display: 'inline-flex',
@@ -36,18 +37,18 @@ export const AIWriterMenu: React.FC = () => {
           height: '32px',
           padding: '0 var(--space-sm)',
           borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--color-hairline)',
-          background: chatOpen ? 'var(--color-surface-strong)' : 'transparent',
-          color: hasKey ? 'var(--color-ink)' : 'var(--color-muted)',
-          opacity: hasKey ? 1 : 0.7,
+          border: chatOpen ? '1px solid rgba(124, 58, 237, 0.3)' : '1px solid var(--color-hairline)',
+          background: chatOpen ? 'rgba(124, 58, 237, 0.08)' : 'transparent',
+          color: chatOpen ? '#7C3AED' : (hasKey ? 'var(--color-ink)' : 'var(--color-muted)'),
+          opacity: hasKey ? 1 : 0.65,
           fontFamily: 'var(--font-sans)',
           fontSize: 'var(--fs-caption)',
-          fontWeight: 'var(--fw-medium)',
+          fontWeight: chatOpen ? 'var(--fw-medium)' : 'var(--fw-regular)',
           cursor: loadingConfig ? 'wait' : 'pointer',
-          transition: 'all 150ms ease'
+          transition: 'all 150ms ease',
         }}
       >
-        <Sparkles size={14} strokeWidth={1.75} style={{ color: hasKey ? '#7C3AED' : 'var(--color-muted)' }} />
+        <Sparkles size={14} strokeWidth={1.75} style={{ color: hasKey || chatOpen ? '#7C3AED' : 'var(--color-muted)' }} />
         <span>AI Assistant</span>
         {!hasKey && !loadingConfig && (
           <span style={{ fontSize: '10px', background: 'var(--color-surface-strong)', padding: '1px 5px', borderRadius: '4px', color: 'var(--color-muted)' }}>

@@ -1,66 +1,58 @@
 ---
-// Dashboard index
+// Dashboard index — Role-aware routing for Writers and Readers
 import Layout from '@/layouts/Layout.astro';
 import WriterDashboard from '@/components/dashboard/WriterDashboard.astro';
-import { supabase } from '@/lib/supabase';
-import { getSanityArticlesByAuthor, getRecentSanityArticles } from '@/lib/sanity';
-import { getUserProfile } from '@/lib/supabase';
+import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
-// Get user's article stats
-// Get user's article stats
-async function getUserStats(userId) {
-  try {
-    // Get articles for this user
-    const articles = await getSanityArticlesByAuthor(userId, 1000); // reasonable limit
-
-    const articleCount = articles.length;
-    // Placeholder metrics - replace with real analytics if available
-    const viewCount = 0; // TODO: implement view tracking
-    const readTime = 0; // TODO: implement reading time aggregation
-
-    return {
-      articleCount,
-      viewCount,
-      readTime
-    };
-  } catch (error) {
-    console.error('Failed to fetch user stats:', error);
-    return { articleCount: 0, viewCount: 0, readTime: 0 };
-  }
+interface UserStats {
+  articleCount: number;
+  viewCount: number;
+  readTime: number;
 }
 
-// Get recent activity for user
-async function getRecentActivity(userId) {
-  try {
-    // Get recent articles for this user
-    const articles = await getSanityArticlesByAuthor(userId, 5);
-
-    const articleActivity = articles
-      .map(article => ({
-        type: 'article',
-        title: article.title,
-        timestamp: article.publishedAt || new Date().toISOString(),
-      }))
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-    // For now, we just return article activity (likes/follows could be added later)
-    return articleActivity.slice(0, 3); // Return top 3 activities
-  } catch (error) {
-    console.error('Failed to fetch recent activity:', error);
-    return [];
-  }
+interface ActivityItem {
+  type: 'article';
+  title: string;
+  timestamp: string;
 }
+
 const user = await getCurrentUser(Astro.locals);
 if (!user) {
   return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
 }
-const stats = await getUserStats(user.id);
-const recentActivity = await getRecentActivity(user.id);
+
+// Reader role gating: Redirect readers to their personal bookmarks tab
+if (user.role === 'reader') {
+  return Astro.redirect('/dashboard/bookmarks');
+}
+
+// Writer / Admin: Fetch user articles for overview
+let userArticles = [];
+try {
+  userArticles = await getSanityArticlesByAuthor(user.id, 100);
+} catch (error) {
+  console.error('Failed to fetch user articles for dashboard:', error);
+}
+
+const stats: UserStats = {
+  articleCount: userArticles.length,
+  viewCount: 0,
+  readTime: 0,
+};
+
+const recentActivity: ActivityItem[] = userArticles
+  .map(article => ({
+    type: 'article' as const,
+    title: article.title,
+    timestamp: article.publishedAt || (article as any)._createdAt || new Date().toISOString(),
+  }))
+  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  .slice(0, 3);
 ---
-<Layout title="Dashboard - Carcblog" description="Your writer dashboard">
+<Layout title="Writer Dashboard - Carcblog" description="Your writer dashboard">
   <WriterDashboard
     stats={stats}
     recentActivity={recentActivity}

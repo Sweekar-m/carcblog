@@ -9,9 +9,6 @@ export default defineConfig({
   site: 'https://carcblog-kappa.vercel.app/',
   output: 'server',
   adapter: vercel(),
-  security: {
-    checkOrigin: false,
-  },
   devToolbar: {
     enabled: false
   },

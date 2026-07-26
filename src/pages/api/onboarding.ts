@@ -2,19 +2,9 @@ import type { APIRoute } from 'astro';
 import { upsertUserProfile } from '@/lib/supabase';
 import { requireAuth } from '@/lib/requireAuth';
 import { jsonResponse, errorResponse } from '@/lib/apiResponse';
-import { z } from 'zod';
+import { onboardingSchema } from '@/schemas/onboarding';
 
 export const prerender = false;
-
-/**
- * Onboarding schema — accepts user-selected role ('reader' | 'writer').
- */
-const onboardingSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required').max(100, 'Full name too long'),
-  role: z.enum(['reader', 'writer']).default('reader'),
-  occupation: z.string().min(1, 'Occupation is required').max(100, 'Occupation too long'),
-  bio: z.string().max(500, 'Bio too long').optional(),
-});
 
 export const POST: APIRoute = async ({ locals, request }) => {
   try {

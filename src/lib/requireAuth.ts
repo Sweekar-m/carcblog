@@ -11,14 +11,16 @@
  * This function NEVER falls back to a mock user or a default identity.
  */
 export async function requireAuth(locals: App.Locals): Promise<string | null> {
+  // Fast path: middleware already verified and set context.locals.user
+  const localUserId = (locals as any)?.user?.userId || (locals as any)?.user?.id;
+  if (localUserId) return localUserId;
+
   try {
     const auth = await (locals as any).auth();
-    const userId: string | undefined | null = auth?.userId || (locals as any)?.user?.userId;
+    const userId: string | undefined | null = auth?.userId;
     if (!userId) return null;
     return userId;
   } catch {
-    const userId = (locals as any)?.user?.userId;
-    if (userId) return userId;
     return null;
   }
 }

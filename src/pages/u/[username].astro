@@ -1,0 +1,43 @@
+---
+import Layout from '@/components/layout/Layout.astro';
+import PublicProfileView from '@/components/islands/profile/PublicProfileView';
+import { getProfileByUsername, getUserSocialLinks, getProfileStats, getUserActivityFeed } from '@/lib/profile';
+import { getSanityArticlesByAuthor } from '@/lib/sanity';
+import { getCurrentUser } from '@/lib/auth';
+import { getFollowStatus } from '@/lib/social';
+
+export const prerender = false;
+
+const { username } = Astro.params;
+if (!username) {
+  return Astro.redirect('/404');
+}
+
+const profile = await getProfileByUsername(username);
+if (!profile) {
+  return Astro.redirect('/404');
+}
+
+const currentUser = await getCurrentUser(Astro.locals);
+
+const [socialLinks, stats, userArticles, activityFeed, followStatus] = await Promise.all([
+  getUserSocialLinks(profile.id),
+  getProfileStats(profile.id),
+  getSanityArticlesByAuthor(profile.id, 50),
+  getUserActivityFeed(profile.id, 20),
+  getFollowStatus(currentUser?.id || null, profile.id)
+]);
+---
+
+<Layout title={`${profile.full_name || profile.username} (@${profile.username}) - CarcBlog`} description={profile.bio || profile.tagline || `${profile.full_name}'s creator profile on CarcBlog.`}>
+  <PublicProfileView
+    client:load
+    profile={profile}
+    socialLinks={socialLinks}
+    stats={stats}
+    userArticles={userArticles}
+    activityFeed={activityFeed}
+    currentUserId={currentUser?.id || null}
+    initialIsFollowing={followStatus.isFollowing}
+  />
+</Layout>

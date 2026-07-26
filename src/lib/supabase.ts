@@ -10,8 +10,22 @@ const supabaseKey =
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
+// In-memory short-lived profile cache to accelerate SSR page requests
+const profileCache = new Map<string, { data: any; expiresAt: number }>();
+
+export function clearProfileCache(userId?: string) {
+  if (userId) profileCache.delete(userId);
+  else profileCache.clear();
+}
+
 // Helper functions for user data
 export async function getUserProfile(userId: string) {
+  const now = Date.now();
+  const cached = profileCache.get(userId);
+  if (cached && cached.expiresAt > now) {
+    return cached.data;
+  }
+
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
@@ -22,10 +36,13 @@ export async function getUserProfile(userId: string) {
     if (error.code === 'PGRST116') return null; // 0 rows / Not found
     throw error;
   }
+
+  profileCache.set(userId, { data, expiresAt: now + 15000 });
   return data;
 }
 
 export async function updateUserProfile(userId: string, updates: Partial<Profile>) {
+  clearProfileCache(userId);
   const { data, error } = await supabase
     .from('profiles')
     .update(updates)
@@ -45,6 +62,7 @@ export async function upsertUserProfile(
   userId: string,
   profile: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>
 ) {
+  clearProfileCache(userId);
   // Format occupation into bio to avoid database migrations
   let finalBio = profile.bio || '';
   if (profile.occupation) {
@@ -104,163 +122,15 @@ export interface Profile {
   updated_at: string;
 }
 
-export interface Article {
-  id: string;
-  slug: string;
-  title: string;
-  content: string;
-  excerpt: string | null;
-  cover_image_url: string | null;
-  author_id: string;
-  published_at: string | null;
-  created_at: string;
-  updated_at: string;
-  author?: {
-    id: string;
-    username: string;
-    full_name: string | null;
-    avatar_url: string | null;
-    bio: string | null;
-  };
-}
+// -------------------------------------------------------------
+// Follow type — for future social-layer features (not yet implemented)
+// -------------------------------------------------------------
 
 export interface Follow {
   id: string;
   follower_id: string;
   following_id: string;
   created_at: string;
-}
-
-// Article helper functions
-export async function createArticle(
-  article: Omit<Article, 'id' | 'created_at' | 'updated_at' | 'author'> & { author_id: string }
-) {
-  const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('articles')
-    .insert([
-      {
-        ...article,
-        excerpt: article.excerpt ?? null,
-        cover_image_url: article.cover_image_url ?? null,
-        created_at: now,
-        updated_at: now,
-      }
-    ])
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-export async function getArticlesByAuthor(authorId: string) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      author:profiles!author_id (
-        id,
-        username,
-        full_name,
-        avatar_url,
-        bio
-      )
-    `)
-    .eq('author_id', authorId)
-    .order('created_at', { ascending: false });
-
-  if (error) throw error;
-  return data;
-}
-
-export async function getPublishedArticles(limit = 10) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      author:profiles!author_id (
-        id,
-        username,
-        full_name,
-        avatar_url,
-        bio
-      )
-    `)
-    .not('published_at', 'is', null)
-    .order('published_at', { ascending: false })
-    .limit(limit);
-
-  if (error) throw error;
-  return data;
-}
-
-export async function getArticleBySlug(slug: string) {
-  const { data, error } = await supabase
-    .from('articles')
-    .select(`
-      *,
-      author:profiles!author_id (
-        id,
-        username,
-        full_name,
-        avatar_url,
-        bio
-      )
-    `)
-    .eq('slug', slug)
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') return null; // 0 rows / Not found
-    throw error;
-  }
-  return data;
-}
-
-// Mock data for development fallback
-const mockArticles: Article[] = [];
-
-export async function getArticlesByAuthorWithFallback(authorId: string) {
-  try {
-    const articles = await getArticlesByAuthor(authorId);
-    if (!articles || articles.length === 0) {
-      return mockArticles.filter(a => a.author_id === authorId);
-    }
-    return articles;
-  } catch (error) {
-    console.warn('Failed to fetch articles by author, using mock data:', error);
-    return mockArticles.filter(a => a.author_id === authorId);
-  }
-}
-
-export async function getPublishedArticlesWithFallback(limit = 10) {
-  try {
-    const articles = await getPublishedArticles(limit);
-    if (!articles || articles.length === 0) {
-      return mockArticles.slice(0, limit);
-    }
-    return articles;
-  } catch (error) {
-    console.warn('Failed to fetch published articles, using mock data:', error);
-    return mockArticles.slice(0, limit);
-  }
-}
-
-export async function getArticleBySlugWithFallback(slug: string) {
-  try {
-    const article = await getArticleBySlug(slug);
-    if (!article) {
-      const match = mockArticles.find(a => a.slug === slug);
-      if (match) return match;
-    }
-    return article;
-  } catch (error) {
-    console.warn('Failed to fetch article by slug, using mock data:', error);
-    const match = mockArticles.find(a => a.slug === slug);
-    if (match) return match;
-    throw error;
-  }
 }
 
 // -------------------------------------------------------------

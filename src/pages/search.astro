@@ -6,7 +6,7 @@ import Layout from '@/components/layout/Layout.astro';
 
   <div class="search-tiles">
 
-    <!-- Tile 1: Search Query Box — canvas-soft bg, EB Garamond 300 title, search-input pill -->
+    <!-- Tile 1: Search Query Box -->
     <section class="tile-parchment">
       <div class="page-container search-container-narrow">
         <h1 class="search-hero-title">Search Carcblog</h1>
@@ -18,24 +18,40 @@ import Layout from '@/components/layout/Layout.astro';
             id="search-input-field"
             placeholder="Search articles, topics, or authors..."
             class="search-bar"
+            autocomplete="off"
+            aria-label="Search articles, topics, or authors"
+            aria-controls="search-results-region"
+            aria-describedby="search-helper"
           />
           <div class="search-icon-box" aria-hidden="true">
             <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+          <!-- Loading spinner -->
+          <div class="search-spinner" id="search-spinner" aria-hidden="true" hidden>
+            <svg class="spinner-icon" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="31.4 31.4" />
+            </svg>
+          </div>
         </div>
-        <p class="search-helper-text">
-          Try searching for "technology", "astronomy", "productivity", or a specific author.
+        <p class="search-helper-text" id="search-helper">
+          Try searching for a startup name, founder, or topic.
         </p>
       </div>
     </section>
 
-    <!-- Tile 2: Results & Popular Directory — white bg, badge-pills -->
+    <!-- Tile 2: Results & Popular Directory -->
     <section class="tile-white">
       <div class="page-container search-container-narrow">
-        <!-- Empty State Container -->
-        <div class="empty-state" role="status">
+
+        <!-- Live results region (hidden until query typed) -->
+        <div id="search-results-region" role="region" aria-live="polite" aria-label="Search results" hidden>
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Empty State (shown when no query) -->
+        <div class="empty-state" id="search-empty-state" role="status">
           <svg class="empty-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
@@ -46,11 +62,11 @@ import Layout from '@/components/layout/Layout.astro';
         </div>
 
         <!-- Popular Tags List -->
-        <div class="popular-tags-box">
+        <div class="popular-tags-box" id="popular-tags-box">
           <h2 class="popular-tags-title">Popular searches</h2>
           <div class="popular-tags-row">
             {['Technology', 'Science', 'Culture', 'Interface Design', 'Productivity', 'Startup'].map(term => (
-              <span class="badge-pill search-tag-pill">{term}</span>
+              <button class="badge-pill search-tag-pill" data-term={term} type="button" aria-label={`Search for ${term}`}>{term}</button>
             ))}
           </div>
         </div>
@@ -59,6 +75,166 @@ import Layout from '@/components/layout/Layout.astro';
   </div>
 
 </Layout>
+
+<script>
+  // ── Search wiring ─────────────────────────────────────────────────────────
+  // Debounced fetch to GET /api/search?q=...
+  // Renders results inline in #search-results-region.
+
+  const input = document.getElementById('search-input-field') as HTMLInputElement | null;
+  const resultsRegion = document.getElementById('search-results-region') as HTMLDivElement | null;
+  const emptyState = document.getElementById('search-empty-state') as HTMLDivElement | null;
+  const popularTagsBox = document.getElementById('popular-tags-box') as HTMLDivElement | null;
+  const spinner = document.getElementById('search-spinner') as HTMLDivElement | null;
+
+  if (!input || !resultsRegion || !emptyState || !popularTagsBox) {
+    console.warn('[search] Missing required DOM elements — search wiring skipped.');
+  } else {
+    let debounceTimer: ReturnType<typeof setTimeout> | undefined;
+    let currentQuery = '';
+
+    function showEmpty() {
+      resultsRegion!.hidden = true;
+      resultsRegion!.innerHTML = '';
+      emptyState!.hidden = false;
+      popularTagsBox!.hidden = false;
+    }
+
+    function showResults(html: string) {
+      emptyState!.hidden = true;
+      popularTagsBox!.hidden = true;
+      resultsRegion!.hidden = false;
+      resultsRegion!.innerHTML = html;
+    }
+
+    function renderResults(data: SearchResponse, query: string): string {
+      const total = (data.startups?.length ?? 0) + (data.founders?.length ?? 0);
+
+      if (total === 0) {
+        return `
+          <div class="no-results">
+            <p class="no-results-text">No results for <strong>"${escapeHtml(query)}"</strong>.</p>
+            <p class="no-results-hint">Try a different keyword or check for typos.</p>
+          </div>`;
+      }
+
+      let html = `<p class="results-count">${total} result${total !== 1 ? 's' : ''} for <strong>"${escapeHtml(query)}"</strong></p>`;
+
+      if (data.startups?.length) {
+        html += `<h3 class="results-group-title">Startups</h3><ul class="results-list">`;
+        for (const s of data.startups) {
+          html += `
+            <li class="result-card">
+              <a href="/startups/${escapeHtml(s.slug || s.id)}" class="result-card-link">
+                <span class="result-name">${escapeHtml(s.name)}</span>
+                ${s.industry ? `<span class="result-meta">${escapeHtml(s.industry)}</span>` : ''}
+                ${s.description ? `<span class="result-desc">${escapeHtml(s.description.slice(0, 100))}${s.description.length > 100 ? '…' : ''}</span>` : ''}
+              </a>
+            </li>`;
+        }
+        html += `</ul>`;
+      }
+
+      if (data.founders?.length) {
+        html += `<h3 class="results-group-title">Founders</h3><ul class="results-list">`;
+        for (const f of data.founders) {
+          html += `
+            <li class="result-card">
+              <a href="/founders/${escapeHtml(f.slug || f.id)}" class="result-card-link">
+                <span class="result-name">${escapeHtml(f.name)}</span>
+                ${f.job_title ? `<span class="result-meta">${escapeHtml(f.job_title)}</span>` : ''}
+              </a>
+            </li>`;
+        }
+        html += `</ul>`;
+      }
+
+      return html;
+    }
+
+    function escapeHtml(str: string): string {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function doSearch(q: string) {
+      if (spinner) spinner.hidden = false;
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error(`Search API error: ${res.status}`);
+        const data: SearchResponse = await res.json();
+        // Only render if the query hasn't changed while we were awaiting
+        if (q === currentQuery) {
+          showResults(renderResults(data, q));
+        }
+      } catch (err) {
+        if (q === currentQuery) {
+          showResults(`<p class="search-error">Search temporarily unavailable. Please try again.</p>`);
+        }
+        console.error('[search]', err);
+      } finally {
+        if (spinner) spinner.hidden = true;
+      }
+    }
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim();
+      currentQuery = q;
+      clearTimeout(debounceTimer);
+
+      if (!q) {
+        showEmpty();
+        return;
+      }
+
+      debounceTimer = setTimeout(() => doSearch(q), 300);
+    });
+
+    // Popular tag pills fill the search input and trigger a search
+    popularTagsBox.querySelectorAll<HTMLButtonElement>('.search-tag-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const term = btn.dataset.term ?? btn.textContent ?? '';
+        input.value = term;
+        currentQuery = term;
+        input.focus();
+        doSearch(term);
+      });
+    });
+
+    // Pre-fill from URL query param: /search?q=term
+    const urlQ = new URLSearchParams(window.location.search).get('q');
+    if (urlQ) {
+      input.value = urlQ;
+      currentQuery = urlQ;
+      doSearch(urlQ);
+    }
+  }
+
+  // ── Type definitions ──────────────────────────────────────────────────────
+  interface Startup {
+    id: string;
+    name: string;
+    slug?: string;
+    industry?: string;
+    description?: string;
+  }
+  interface Founder {
+    id: string;
+    name: string;
+    slug?: string;
+    job_title?: string;
+  }
+  interface SearchResponse {
+    startups?: Startup[];
+    founders?: Founder[];
+  }
+</script>
 
 <style>
   .search-tiles {
@@ -116,7 +292,7 @@ import Layout from '@/components/layout/Layout.astro';
     border: 1px solid var(--color-hairline-strong);
     border-radius: var(--radius-pill);     /* 9999px */
     padding-left: 48px;
-    padding-right: 20px;
+    padding-right: 48px;
     font-family: var(--font-sans);
     font-size: var(--fs-body-md);
     color: var(--color-ink);
@@ -142,6 +318,26 @@ import Layout from '@/components/layout/Layout.astro';
   .search-icon {
     width: 18px; height: 18px;
     color: var(--color-muted);
+  }
+
+  /* Loading spinner (right side of input) */
+  .search-spinner {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+  }
+  .spinner-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-muted);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 
   .search-helper-text {
@@ -210,11 +406,120 @@ import Layout from '@/components/layout/Layout.astro';
     padding: 8px 16px;
     border: 1px solid var(--color-hairline);
     cursor: pointer;
+    background: none;
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-ink);
     transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
   }
   .search-tag-pill:hover {
     background-color: var(--color-hairline-soft);
     border-color: var(--color-hairline-strong);
     color: var(--color-ink);
+  }
+
+  /* ── Live results ── */
+  #search-results-region {
+    text-align: left;
+    padding: var(--space-lg) 0;
+  }
+
+  .results-count {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+    margin: 0 0 var(--space-lg);
+  }
+
+  .results-group-title {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption-upper, 11px);
+    font-weight: var(--fw-semibold);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin: 0 0 var(--space-sm);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-hairline-soft);
+  }
+  .results-group-title:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .results-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .result-card {
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-lg, 8px);
+    overflow: hidden;
+    transition: border-color var(--duration-150) var(--ease-out), box-shadow var(--duration-150) var(--ease-out);
+  }
+  .result-card:hover {
+    border-color: var(--color-hairline-strong);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+
+  .result-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--space-md) var(--space-lg);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .result-name {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    font-weight: var(--fw-medium);
+    color: var(--color-ink);
+  }
+
+  .result-meta {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+  }
+
+  .result-desc {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-charcoal);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  .no-results {
+    padding: var(--space-xl) 0;
+    text-align: center;
+  }
+  .no-results-text {
+    font-family: var(--font-sans);
+    font-size: var(--fs-body-sm);
+    color: var(--color-ink);
+    margin: 0 0 var(--space-xs);
+  }
+  .no-results-hint {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-muted);
+    margin: 0;
+  }
+
+  .search-error {
+    font-family: var(--font-sans);
+    font-size: var(--fs-caption);
+    color: var(--color-error, #DC2626);
+    text-align: center;
+    padding: var(--space-lg) 0;
+    margin: 0;
   }
 </style>

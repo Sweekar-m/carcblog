@@ -1,0 +1,57 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { getCurrentUser } from '@/lib/auth';
+import { getUserReadingHistory } from '@/lib/social';
+import ArticleCard from '@/components/ui/ArticleCard.astro';
+
+export const prerender = false;
+
+const user = await getCurrentUser(Astro.locals);
+if (!user) {
+  return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
+}
+
+const historyArticles = await getUserReadingHistory(user.id);
+---
+
+<Layout title="Reading History - Dashboard" description="Your article reading history on Carcblog">
+  <div class="dashboard-page">
+    <div class="page-header">
+      <h1 class="page-title">Reading History</h1>
+      <p class="page-sub">Articles you've recently viewed.</p>
+    </div>
+
+    {historyArticles.length > 0 ? (
+      <div class="articles-grid">
+        {historyArticles.map((article) => (
+          <ArticleCard
+            title={article.title}
+            excerpt={article.excerpt}
+            publishedAt={article.publishedAt || new Date().toISOString()}
+            authorName={article.author?.name || 'Writer'}
+            authorImage={typeof article.author?.image === 'string' ? article.author.image : null}
+            slug={typeof article.slug === 'string' ? article.slug : (article.slug as any)?.current || ''}
+            coverImage={typeof article.coverImage === 'string' ? article.coverImage : null}
+          />
+        ))}
+      </div>
+    ) : (
+      <div class="empty-box">
+        <p class="empty-title">No reading history yet</p>
+        <p class="empty-sub">As you read articles across Carcblog, your recent reading history will appear here.</p>
+        <a href="/" class="btn-primary" style="margin-top: 12px; display: inline-flex;">Start Reading</a>
+      </div>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .dashboard-page { display: flex; flex-direction: column; gap: var(--space-xl); }
+  .page-header { border-bottom: 1px solid var(--color-hairline); padding-bottom: var(--space-md); }
+  .page-title { font-family: var(--font-sans); font-size: var(--fs-heading-md); font-weight: var(--fw-semibold); color: var(--color-ink-strong); margin: 0 0 4px 0; }
+  .page-sub { font-family: var(--font-sans); font-size: var(--fs-body-sm); color: var(--color-steel); margin: 0; }
+  .articles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-lg); }
+  .empty-box { background: var(--color-surface); border: 1px dashed var(--color-hairline-strong); border-radius: var(--radius-xl); padding: var(--space-xxl); text-align: center; }
+  .empty-title { font-family: var(--font-sans); font-size: var(--fs-card-title); font-weight: var(--fw-semibold); color: var(--color-ink); margin: 0 0 8px 0; }
+  .empty-sub { font-family: var(--font-sans); font-size: var(--fs-body-sm); color: var(--color-steel); margin: 0; }
+</style>

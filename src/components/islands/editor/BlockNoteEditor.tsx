@@ -3,7 +3,7 @@
  * Lazy-loaded via React.lazy(). Converts BlockNote document → Portable Text on change.
  * Manages: slash commands, markdown shortcuts, keyboard shortcuts, outline extraction.
  */
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useCreateBlockNote } from '@blocknote/react';
 import { BlockNoteView } from '@blocknote/mantine';
 import '@blocknote/mantine/style.css';
@@ -193,6 +193,54 @@ async function uploadFile(file: File): Promise<string> {
   return data.url;
 }
 
+// ─── Portable Text to Markdown conversion ──────────────────────────────────
+
+export function portableTextToMarkdown(body: any): string {
+  if (!body) return '';
+  if (typeof body === 'string') return body;
+
+  if (Array.isArray(body)) {
+    const lines: string[] = [];
+    for (const rawBlock of body) {
+      if (!rawBlock) continue;
+
+      if (rawBlock._type === 'imageBlock' || rawBlock._type === 'image') {
+        const url =
+          rawBlock.url ||
+          rawBlock.src ||
+          rawBlock.props?.url ||
+          (typeof rawBlock.asset === 'string' ? rawBlock.asset : rawBlock.asset?.url);
+        if (url) {
+          const alt = rawBlock.alt || rawBlock.caption || 'Image';
+          lines.push(`![${alt}](${url})`);
+        }
+        continue;
+      }
+
+      if (rawBlock._type === 'block' || !rawBlock._type) {
+        let text = '';
+        if (Array.isArray(rawBlock.children)) {
+          text = rawBlock.children.map((c: any) => c.text || '').join('');
+        } else if (typeof rawBlock.children === 'string') {
+          text = rawBlock.children;
+        }
+
+        const style = rawBlock.style || 'normal';
+        if (style === 'h1') lines.push(`# ${text}`);
+        else if (style === 'h2') lines.push(`## ${text}`);
+        else if (style === 'h3') lines.push(`### ${text}`);
+        else if (style === 'blockquote') lines.push(`> ${text}`);
+        else if (style === 'bullet') lines.push(`- ${text}`);
+        else if (style === 'number') lines.push(`1. ${text}`);
+        else if (text.trim()) lines.push(text);
+      }
+    }
+    return lines.join('\n\n');
+  }
+
+  return '';
+}
+
 export function BlockNoteEditor({ onContentChange }: BlockNoteEditorProps) {
   // Memoize options including uploadFile so the editor never re-initializes
   const editorOptions = useMemo(() => ({
@@ -200,6 +248,43 @@ export function BlockNoteEditor({ onContentChange }: BlockNoteEditorProps) {
   }), []);
 
   const editor = useCreateBlockNote(editorOptions);
+
+  // Load initial article body into BlockNote editor when ready or when editor:load-article-body triggers
+  const initialLoadedRef = useRef<boolean>(false);
+
+  const loadBodyBlocks = useCallback(async (bodyData: any) => {
+    if (!editor || !bodyData) return;
+    try {
+      const markdown = portableTextToMarkdown(bodyData);
+      if (markdown && markdown.trim()) {
+        const blocks = await editor.tryParseMarkdownToBlocks(markdown);
+        if (blocks && blocks.length > 0) {
+          editor.replaceBlocks(editor.document, blocks);
+          initialLoadedRef.current = true;
+        }
+      }
+    } catch (err) {
+      console.error('Failed to replace blocks in BlockNote:', err);
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    if (initialLoadedRef.current || !editor) return;
+    const storeContent = $content.get();
+    if (storeContent && ((Array.isArray(storeContent) && storeContent.length > 0) || typeof storeContent === 'string')) {
+      loadBodyBlocks(storeContent);
+    }
+  }, [editor, loadBodyBlocks]);
+
+  useEffect(() => {
+    const handleLoadEvent = (e: CustomEvent<{ body: any }>) => {
+      if (e.detail?.body) {
+        loadBodyBlocks(e.detail.body);
+      }
+    };
+    window.addEventListener('editor:load-article-body', handleLoadEvent as EventListener);
+    return () => window.removeEventListener('editor:load-article-body', handleLoadEvent as EventListener);
+  }, [loadBodyBlocks]);
 
   const handleChange = useCallback(() => {
     const doc = editor.document as unknown[];

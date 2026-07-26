@@ -1,5 +1,11 @@
 import { createClient } from '@sanity/client';
 import imageUrlBuilder from '@sanity/image-url';
+import type {
+  SanityImageField,
+  PortableTextBody,
+  SanityArticle,
+  SanityAuthor,
+} from '@/types/sanity';
 
 const sanityProjectId = import.meta.env.PUBLIC_SANITY_PROJECT_ID || import.meta.env.SANITY_PROJECT_ID || 'jvm4i678';
 const sanityDataset = import.meta.env.PUBLIC_SANITY_DATASET || import.meta.env.SANITY_DATASET || 'production';
@@ -24,24 +30,29 @@ export const sanityWriteClient = createClient({
 });
 
 // Image URL builder
-export const urlFor = (source: any) => imageUrlBuilder(sanityClient).image(source);
+// urlFor accepts any Sanity image source shape — the builder handles the runtime coercion.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const urlFor = (source: SanityImageField) => imageUrlBuilder(sanityClient).image(source as any);
 
 /**
  * Safely resolves any Sanity image source (CDN string URL, external URL, or Sanity asset object)
  * into a valid image URL string.
  */
-export function safeImageUrl(source: any, body?: any): string | undefined {
+export function safeImageUrl(source: SanityImageField, body?: PortableTextBody): string | undefined {
   if (source) {
     if (typeof source === 'string' && source.trim()) return source.trim();
     if (typeof source === 'object') {
-      if (typeof source.url === 'string' && source.url.trim()) return source.url.trim();
-      if (source.asset || source._ref || source._type === 'image') {
-        try {
-          const built = urlFor(source).url();
-          if (built) return built;
-        } catch {
-          // Fall through
-        }
+      // Check for a `url` property (some asset objects expose this)
+      const sourceRecord = source as unknown as Record<string, unknown>;
+      if ('url' in sourceRecord && typeof sourceRecord.url === 'string' && (sourceRecord.url as string).trim()) {
+        return (sourceRecord.url as string).trim();
+      }
+      // Pass through to urlFor for standard Sanity asset refs
+      try {
+        const built = urlFor(source).url();
+        if (built) return built;
+      } catch {
+        // Fall through
       }
     }
   }
@@ -57,36 +68,23 @@ export function safeImageUrl(source: any, body?: any): string | undefined {
 /**
  * Extract the URL of the first image block inserted in article content body.
  */
-export function extractFirstBodyImage(body: any): string | undefined {
+export function extractFirstBodyImage(body: PortableTextBody): string | undefined {
   if (!body || !Array.isArray(body)) return undefined;
   for (const block of body) {
     if (!block) continue;
-    if (block._type === 'imageBlock' && block.url) return block.url;
-    if (block._type === 'image' || block.type === 'image') {
-      const url = block.url || block.props?.url || block.src || (block.asset ? safeImageUrl(block) : undefined);
+    if (block._type === 'imageBlock' && 'url' in block && block.url) return block.url;
+    if (block._type === 'image') {
+      const b = block as { url?: string; props?: { url?: string }; src?: string; asset?: unknown };
+      const url = b.url ?? b.props?.url ?? b.src ?? (b.asset ? safeImageUrl(block as SanityImageField) : undefined);
       if (url) return url;
     }
   }
   return undefined;
 }
 
-/* Types */
-export interface SanityArticle {
-  _id: string;
-  title: string;
-  slug: { current: string } | string;
-  publishedAt?: string;
-  excerpt?: string;
-  status?: string;
-  coverImage?: any;
-  author?: {
-    _id: string;
-    clerkUserId?: string;
-    name: string;
-    image?: any;
-  };
-  body?: any;
-}
+// Re-export the canonical types from src/types/sanity.ts so all consumers
+// that import from '@/lib/sanity' continue to work without changes.
+export type { SanityArticle, SanityAuthor, SanityCategory, SanityImageField, PortableTextBody, PortableTextBlock } from '@/types/sanity';
 
 /* Read-only fetch — public feed (published articles only) */
 export async function getSanityArticles(opts: { limit?: number } = {}): Promise<SanityArticle[]> {
@@ -168,11 +166,10 @@ export async function getSanityArticlesByAuthor(
   clerkUserId: string,
   limit = 100
 ): Promise<SanityArticle[]> {
-  const client = sanityApiToken ? sanityWriteClient : sanityClient;
-  return client.fetch<SanityArticle[]>(
+  return sanityClient.fetch<SanityArticle[]>(
     `*[_type == "article" && author->clerkUserId == $clerkUserId]
      | order(_createdAt desc)[0...$limit]
-     { _id, title, slug, publishedAt, excerpt, status, body,
+     { _id, title, slug, publishedAt, excerpt, status,
        "coverImage": coalesce(coverImage.asset->url, coverImage),
        author->{ _id, clerkUserId, name, "image": coalesce(image.asset->url, image) } }`,
     { clerkUserId, limit }
