@@ -36,23 +36,26 @@ export const POST: APIRoute = async (context) => {
       notification_prefs
     } = body;
 
-    // Update profile
+    const fallbackUsername = (username && username.trim()) || user.username || `user_${user.id.replace(/[^a-zA-Z0-9]/g, '').slice(-8)}`;
+    const fallbackName = (full_name && full_name.trim()) || user.full_name || 'Creator';
+
+    // Upsert profile
     const updatedProfile = await updateProfileDetails(user.id, {
       role: role === 'writer' ? 'writer' : 'reader',
-      full_name,
-      username: username || user.username,
-      avatar_url,
-      cover_url,
-      bio,
-      tagline,
-      country,
-      city,
+      full_name: fallbackName,
+      username: fallbackUsername,
+      avatar_url: avatar_url || user.avatar_url || null,
+      cover_url: cover_url || null,
+      bio: bio || null,
+      tagline: tagline || null,
+      country: country || null,
+      city: city || null,
       timezone: timezone || 'UTC',
       preferred_language: preferred_language || 'en',
-      company,
-      job_title,
+      company: company || null,
+      job_title: job_title || null,
       years_experience: Number(years_experience) || 0,
-      industry,
+      industry: industry || 'Technology',
       skills: Array.isArray(skills) ? skills : [],
       interests: Array.isArray(interests) ? interests : [],
       expertise: Array.isArray(expertise) ? expertise : [],

@@ -108,13 +108,24 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
     return Math.min(100, score);
   };
 
+  const handleNextStep = () => {
+    if (step === 1) {
+      if (!fullName.trim()) {
+        alert('Please enter your Full Name to continue.');
+        return;
+      }
+    }
+    setStep(prev => Math.min(7, prev + 1));
+  };
+
   const handleSubmitAll = async () => {
+    if (loading) return;
     setLoading(true);
     try {
       const payload = {
         role,
-        full_name: fullName,
-        username,
+        full_name: fullName.trim() || 'Creator',
+        username: username.trim(),
         avatar_url: avatarUrl,
         cover_url: coverUrl,
         bio,
@@ -139,16 +150,18 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
         body: JSON.stringify(payload)
       });
 
-      if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && (data.success || data.profile)) {
         const searchParams = new URLSearchParams(window.location.search);
         const redirectUrl = searchParams.get('redirect_url') || '/dashboard';
         window.location.href = redirectUrl;
       } else {
-        alert('Failed to save profile. Please try again.');
+        alert(data.error || 'Failed to save profile. Please try again.');
       }
-    } catch (e) {
-      console.error(e);
-      alert('An error occurred during onboarding.');
+    } catch (e: any) {
+      console.error('Onboarding save error:', e);
+      alert('An error occurred during onboarding: ' + (e?.message || 'Network error'));
     } finally {
       setLoading(false);
     }
@@ -598,7 +611,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
           {step < 7 ? (
             <button
               type="button"
-              onClick={() => setStep(step + 1)}
+              onClick={handleNextStep}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '9999px', border: 'none', background: 'var(--color-primary, #0F172A)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
             >
               Continue

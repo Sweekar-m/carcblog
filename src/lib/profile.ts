@@ -79,27 +79,40 @@ export async function getUserSocialLinks(userId: string): Promise<SocialLink[]> 
   return data as SocialLink[];
 }
 
-/**
- * Save user social links (upsert/replace list)
- */
 export async function saveUserSocialLinks(userId: string, links: { platform: string; url: string }[]): Promise<boolean> {
   // Delete existing links for user
   await supabase.from('social_links').delete().eq('user_id', userId);
 
   if (!links || links.length === 0) return true;
 
-  const rows = links.map(l => ({
-    user_id: userId,
-    platform: l.platform,
-    url: l.url
-  }));
+  // Deduplicate by platform to avoid unique_user_platform constraint failure
+  const seenPlatforms = new Set<string>();
+  const validRows = [];
 
-  const { error } = await supabase.from('social_links').insert(rows);
+  for (const l of links) {
+    const plat = (l.platform || '').trim().toLowerCase();
+    const url = (l.url || '').trim();
+    if (plat && url && !seenPlatforms.has(plat)) {
+      seenPlatforms.add(plat);
+      validRows.push({
+        user_id: userId,
+        platform: plat,
+        url: url
+      });
+    }
+  }
+
+  if (validRows.length === 0) return true;
+
+  const { error } = await supabase.from('social_links').insert(validRows);
+  if (error) {
+    console.warn('Error saving social links:', error);
+  }
   return !error;
 }
 
 /**
- * Update full profile details
+ * Update or insert full profile details (upsert)
  */
 export async function updateProfileDetails(userId: string, updates: Partial<ExtendedProfile>): Promise<ExtendedProfile | null> {
   clearProfileCache(userId);
@@ -112,23 +125,42 @@ export async function updateProfileDetails(userId: string, updates: Partial<Exte
   if (updates.skills && updates.skills.length > 0) score += 10;
   if (updates.writing_topics && updates.writing_topics.length > 0) score += 10;
   if (updates.country || updates.city) score += 10;
+
+  const rawUsername = updates.username || '';
+  const cleanUsername = rawUsername.trim()
+    ? rawUsername.trim().toLowerCase().replace(/[^a-z0-9_.-]/g, '')
+    : `user_${userId.replace(/[^a-zA-Z0-9]/g, '').slice(-8)}`;
   
   const payload = {
+    id: userId,
     ...updates,
+    username: cleanUsername,
     profile_completion_pct: Math.min(100, score),
     updated_at: new Date().toISOString()
   };
 
-  const { data, error } = await supabase
+  // Use upsert to handle both existing profile updates and new profile inserts
+  let { data, error } = await supabase
     .from('profiles')
-    .update(payload)
-    .eq('id', userId)
+    .upsert(payload, { onConflict: 'id' })
     .select()
     .single();
 
+  // Retry with unique suffix if username collision occurs
+  if (error && (error.code === '23505' || error.message?.includes('profiles_username_key'))) {
+    payload.username = `${cleanUsername}_${Math.floor(1000 + Math.random() * 9000)}`;
+    const retry = await supabase
+      .from('profiles')
+      .upsert(payload, { onConflict: 'id' })
+      .select()
+      .single();
+    data = retry.data;
+    error = retry.error;
+  }
+
   if (error) {
-    console.error('Error updating profile:', error);
-    return null;
+    console.error('Error upserting profile:', error);
+    throw new Error(error.message || 'Failed to save profile record in database');
   }
   return data as ExtendedProfile;
 }
