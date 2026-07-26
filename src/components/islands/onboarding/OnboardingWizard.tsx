@@ -612,7 +612,20 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
             <button
               type="button"
               onClick={handleNextStep}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '10px 24px', borderRadius: '9999px', border: 'none', background: 'var(--color-primary, #0F172A)', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '12px 24px',
+                borderRadius: '9999px',
+                border: 'none',
+                background: '#0F172A',
+                color: '#ffffff',
+                fontWeight: 600,
+                fontSize: '14px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(15,23,42,0.15)'
+              }}
             >
               Continue
               <ArrowRight style={{ width: '16px', height: '16px' }} />
@@ -622,7 +635,21 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
               type="button"
               disabled={loading}
               onClick={handleSubmitAll}
-              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '12px 28px', borderRadius: '9999px', border: 'none', background: 'var(--color-accent, #0EA5E9)', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer' }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '14px 30px',
+                borderRadius: '9999px',
+                border: 'none',
+                background: loading ? '#64748B' : '#0F172A',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '15px',
+                cursor: loading ? 'wait' : 'pointer',
+                boxShadow: '0 4px 12px rgba(15,23,42,0.25)',
+                transition: 'all 150ms ease'
+              }}
             >
               {loading ? 'Saving Profile...' : 'Complete & Launch Dashboard →'}
             </button>

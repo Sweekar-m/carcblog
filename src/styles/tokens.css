@@ -39,6 +39,8 @@
   --color-hairline-strong:      #cbd5e1;
 
   /* ── Category Brand Accent Colors (MiniMax Product Encoding) ── */
+  --color-accent:               #0ea5e9;  /* signature sky blue accent */
+  --color-accent-2:             #7c3aed;  /* purple secondary accent */
   --color-brand-coral:          #f97316;  /* Funding & Investments */
   --color-brand-magenta:        #d946ef;  /* Founder Stories */
   --color-brand-blue:           #0ea5e9;  /* Product Launches */
