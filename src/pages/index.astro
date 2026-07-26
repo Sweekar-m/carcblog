@@ -227,7 +227,7 @@ const isLoggedIn = !!Astro.locals.user;
             />
           ))}
         </div>
-      ) : (
+      ) : articleData.length === 0 ? (
         <div class="empty-state reveal-single" role="status">
           <!-- Atmospheric orb for empty state -->
           <div class="empty-orb-mint" aria-hidden="true"></div>
@@ -239,6 +239,19 @@ const isLoggedIn = !!Astro.locals.user;
           <a href="/dashboard/articles/new" class="btn-primary" id="empty-state-write-cta">
             Write your first story
           </a>
+        </div>
+      ) : (
+        <div class="empty-state reveal-single" role="status">
+          <div class="empty-orb-mint" aria-hidden="true"></div>
+          <p class="badge-pill empty-eyebrow">You're all caught up</p>
+          <h3 class="empty-title">More stories coming soon</h3>
+          <p class="empty-body">
+            You've read the latest featured story! Explore topics or write your own article to share with the community.
+          </p>
+          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 16px; position: relative; z-index: 1;">
+            <a href="/discover" class="btn-primary" id="grid-empty-discover">Explore topics</a>
+            <a href="/dashboard/articles/new" class="btn-outline" id="grid-empty-write">Write a story</a>
+          </div>
         </div>
       )}
     </div>
