@@ -601,9 +601,6 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
           <a href="/discover" style={navBtnStyle(isActive('/discover'))}>
             Discover
           </a>
-          <a href="/writers" style={navBtnStyle(isActive('/writers'))}>
-            Writers
-          </a>
           <a href="/about" style={navBtnStyle(isActive('/about'))}>
             About
           </a>
@@ -775,7 +772,6 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
             { label: 'Topics', href: '/topics' },
             { label: 'Spotlight Showcase', href: '/showcase' },
             { label: 'Discover', href: '/discover' },
-            { label: 'Writers', href: '/writers' },
             { label: 'About', href: '/about' },
           ].map((link) => (
             <a key={link.href} href={link.href} style={S.mobileLink}>
