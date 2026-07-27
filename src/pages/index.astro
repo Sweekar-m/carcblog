@@ -97,7 +97,7 @@ const isLoggedIn = !!Astro.locals.user;
           <h2 class="matrix-title">Ecosystem Matrix</h2>
           <p class="matrix-subtitle">Deep-dive startup journalism encoded by topic</p>
         </div>
-        <a href="/topics" class="matrix-link">View all topics →</a>
+        <a href="/topics" class="matrix-link" aria-label="View all topics in Carcblog">View all topics →</a>
       </div>
 
       <div class="matrix-grid">
@@ -228,7 +228,7 @@ const isLoggedIn = !!Astro.locals.user;
         <h2 class="grid-title">
           {heroArticle ? 'More Stories' : 'Featured Stories'}
         </h2>
-        <a href="/feed" class="grid-view-all btn-outline" id="homepage-view-all">View all</a>
+        <a href="/feed" class="grid-view-all btn-outline" id="homepage-view-all" aria-label="View all published stories in Carcblog feed">View all stories</a>
       </div>
 
       {(heroArticle ? gridArticles : articleData).length > 0 ? (
@@ -295,7 +295,7 @@ const isLoggedIn = !!Astro.locals.user;
       </p>
       <div class="cta-actions">
         <a href="/auth/sign-up" class="btn-primary" id="cta-band-signup">Start publishing free</a>
-        <a href="/about" class="btn-outline" id="cta-band-learn">Learn more</a>
+        <a href="/about" class="btn-outline" id="cta-band-learn" aria-label="Learn about Carcblog's publishing platform">Learn about Carcblog</a>
       </div>
     </div>
   </section>
@@ -642,7 +642,7 @@ const isLoggedIn = !!Astro.locals.user;
 }
 
 .spotlight-image-col {
-  aspect-ratio: 4/3;
+  aspect-ratio: 16 / 10;
   overflow: hidden;
   background: var(--color-surface-strong);
   position: relative;
