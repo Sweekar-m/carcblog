@@ -28,8 +28,12 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
         <img
           src={coverImage}
           alt={title}
+          width="400"
+          height="250"
+          decoding="async"
           class="card-img"
           loading="lazy"
+          style="aspect-ratio: 16/10; object-fit: cover;"
           referrerpolicy="no-referrer"
           onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='block';"
         />

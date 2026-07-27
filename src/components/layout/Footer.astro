@@ -17,7 +17,7 @@
 
       <!-- Explore column -->
       <div class="footer-links-col">
-        <h5 class="footer-col-head">Explore</h5>
+        <div class="footer-col-head" role="heading" aria-level="3">Explore</div>
         <nav aria-label="Explore links">
           <a href="/" class="footer-link">Home</a>
           <a href="/feed" class="footer-link">Feed</a>
@@ -31,7 +31,7 @@
 
       <!-- Create column -->
       <div class="footer-links-col">
-        <h5 class="footer-col-head">Create</h5>
+        <div class="footer-col-head" role="heading" aria-level="3">Create</div>
         <nav aria-label="Create links">
           <a href="/dashboard" class="footer-link">Write</a>
           <a href="/dashboard/articles" class="footer-link">Manage Articles</a>
@@ -42,7 +42,7 @@
 
       <!-- Company column -->
       <div class="footer-links-col">
-        <h5 class="footer-col-head">Company</h5>
+        <div class="footer-col-head" role="heading" aria-level="3">Company</div>
         <nav aria-label="Company links">
           <a href="#" class="footer-link">Careers</a>
           <a href="#" class="footer-link">Blog</a>
@@ -53,7 +53,7 @@
 
       <!-- Legal column -->
       <div class="footer-links-col">
-        <h5 class="footer-col-head">Legal</h5>
+        <div class="footer-col-head" role="heading" aria-level="3">Legal</div>
         <nav aria-label="Legal links">
           <a href="/terms" class="footer-link">Terms</a>
           <a href="/privacy" class="footer-link">Privacy</a>
@@ -189,7 +189,7 @@
 .footer-copy {
   font-family: var(--font-sans);
   font-size: var(--fs-caption);
-  color: #64748b;
+  color: #cbd5e1;
 }
 
 .footer-legal-row {
@@ -199,15 +199,16 @@
 }
 
 .footer-sep {
-  color: #334155;
+  color: #64748b;
   font-size: var(--fs-caption);
 }
 
 .footer-legal-link {
   font-family: var(--font-sans);
   font-size: var(--fs-caption);
-  color: #64748b;
-  text-decoration: none;
+  color: #cbd5e1;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   transition: color var(--duration-150) var(--ease-out);
 }
 .footer-legal-link:hover {

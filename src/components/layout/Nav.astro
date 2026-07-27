@@ -6,5 +6,5 @@ import SearchModal from '../search/search-modal.tsx';
 const user = Astro.locals.user || null;
 ---
 
-<Navbar client:load user={user} />
+<Navbar client:idle user={user} />
 <SearchModal client:idle />
