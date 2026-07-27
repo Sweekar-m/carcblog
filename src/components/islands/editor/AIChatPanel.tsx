@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Maximize2,
   Minimize2,
+  RotateCcw,
 } from 'lucide-react';
 import { $title, $subtitle, $content } from './editorStore';
 
@@ -101,6 +102,19 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
     }
   }, [messages, isOpen, loading]);
 
+  // Reset conversation handler
+  const handleClearConversation = () => {
+    setMessages([
+      {
+        id: `welcome-${Date.now()}`,
+        sender: 'assistant',
+        text: 'Hello! I am your CarcBlog AI Assistant. Tell me what story or article idea you want to write, and I will generate a complete blog post with headline, subtitle, full content, and image suggestions.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ]);
+    setStatusMessage({ type: 'success', text: 'Conversation history reset. Ready for a new article idea!' });
+  };
+
   // Handle Send Message
   const handleSendMessage = async (customPrompt?: string) => {
     const promptToSubmit = (customPrompt || inputText).trim();
@@ -124,6 +138,14 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
     setLoading(true);
     setStatusMessage(null);
 
+    // Build session conversation history payload for backend context
+    const messagesPayload = messages
+      .filter((m) => !m.id.startsWith('welcome-'))
+      .map((m) => ({
+        role: m.sender,
+        content: m.text
+      }));
+
     try {
       const res = await fetch('/api/ai-writer', {
         method: 'POST',
@@ -131,7 +153,8 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
         body: JSON.stringify({
           action: 'chat',
           prompt: promptToSubmit,
-          context: title ? `Current Title: ${title}\nSubtitle: ${subtitle}` : ''
+          context: title ? `Current Title: ${title}\nSubtitle: ${subtitle}` : '',
+          messages: messagesPayload
         })
       });
 
@@ -140,26 +163,47 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
       if (!res.ok || data.error) {
         if (data.error === 'NO_KEY_CONFIGURED') {
           setHasKey(false);
-          // In development mode, generate a mock story package so layout & workflow can be tested
+          // In development mode, check if prompt is vague vs specific
           if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
-            const devStructured = {
-              replyText: 'Generated story package for your article idea:',
-              headline: promptToSubmit.includes('pivot') ? 'The $10M Pivot: How One Founder Rebuilt Their Tech Stack for AI' : 'Building in Public: Lessons From Scaling a Modern Tech Startup',
-              subtitle: 'A deep-dive into product strategy, engineering decisions, and founder resilience in the era of artificial intelligence.',
-              articleBody: `## Introduction\nIn today's fast-moving software ecosystem, adaptability is everything. When the market shifted toward intelligent agents, our engineering team faced a critical decision: double down on legacy infrastructure or rebuild from the ground up.\n\n## The Engineering Reality\nTransitioning to AI-first architecture required rethinking data pipelines, prompt engineering, and real-time state management.\n\n- **Key Takeaway 1:** Prioritize developer velocity over premature optimization.\n- **Key Takeaway 2:** Leverage strict type validation across API boundaries.\n- **Key Takeaway 3:** Build modular UI components for maximum flexibility.\n\n## Conclusion\nThe pivot proved transformational. By staying focused on core user problems, we scaled user acquisition by 300% in under six months.`,
-              imageSuggestion: 'Minimalist tech startup team collaborating night'
-            };
+            const lower = promptToSubmit.toLowerCase();
+            const isVague = promptToSubmit.length < 25 && (
+              lower.includes('hi') || lower.includes('help') || lower.includes('can you') || lower.includes('hello')
+            );
+
+            let devStructured: any;
+            if (isVague) {
+              devStructured = {
+                replyText: "Hello! I'd love to help you write your article. To get started, could you share:\n1. What is the main topic or story you want to cover?\n2. Who is your target audience?\n3. Any specific angle, founder story, or key points you want included?",
+                headline: '',
+                subtitle: '',
+                articleBody: '',
+                imageSuggestion: ''
+              };
+            } else {
+              devStructured = {
+                replyText: 'Generated story package for your article idea:',
+                headline: promptToSubmit.includes('pivot') ? 'The $10M Pivot: How One Founder Rebuilt Their Tech Stack for AI' : 'Building in Public: Lessons From Scaling a Modern Tech Startup',
+                subtitle: 'A deep-dive into product strategy, engineering decisions, and founder resilience in the era of artificial intelligence.',
+                articleBody: `## Introduction\nIn today's fast-moving software ecosystem, adaptability is everything. When the market shifted toward intelligent agents, our engineering team faced a critical decision: double down on legacy infrastructure or rebuild from the ground up.\n\n## The Engineering Reality\nTransitioning to AI-first architecture required rethinking data pipelines, prompt engineering, and real-time state management.\n\n- **Key Takeaway 1:** Prioritize developer velocity over premature optimization.\n- **Key Takeaway 2:** Leverage strict type validation across API boundaries.\n- **Key Takeaway 3:** Build modular UI components for maximum flexibility.\n\n## Conclusion\nThe pivot proved transformational. By staying focused on core user problems, we scaled user acquisition by 300% in under six months.`,
+                imageSuggestion: 'Minimalist tech startup team collaborating night'
+              };
+            }
+
+            const hasCard = !!(
+              (devStructured.headline && devStructured.headline.trim().length > 0) ||
+              (devStructured.articleBody && devStructured.articleBody.trim().length > 0)
+            );
 
             const devMsg: ChatMessage = {
               id: `assistant-dev-${Date.now()}`,
               sender: 'assistant',
               text: devStructured.replyText,
-              structured: devStructured,
+              structured: hasCard ? devStructured : undefined,
               timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
 
             setMessages((prev) => [...prev, devMsg]);
-            setStatusMessage({ type: 'success', text: 'Dev Mode: Generated sample AI story package!' });
+            setStatusMessage({ type: 'success', text: isVague ? 'Dev Mode: Asking clarifying questions...' : 'Dev Mode: Generated sample AI story package!' });
             return;
           }
 
@@ -170,18 +214,17 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
         return;
       }
 
-      const structured = data.structured || {
-        replyText: 'Here is your story blog post:',
-        headline: 'Article Story',
-        articleBody: data.result,
-        imageSuggestion: 'Startup technology minimal'
-      };
+      const structured = data.structured;
+      const hasCard = !!(
+        (structured?.headline && structured.headline.trim().length > 0) ||
+        (structured?.articleBody && structured.articleBody.trim().length > 0)
+      );
 
       const assistantMsg: ChatMessage = {
         id: `assistant-${Date.now()}`,
         sender: 'assistant',
-        text: structured.replyText || 'I have created your article structure below:',
-        structured,
+        text: structured?.replyText || (hasCard ? 'I have created your article structure below:' : data.result),
+        structured: hasCard ? structured : undefined,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
@@ -214,7 +257,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
     setStatusMessage({ type: 'success', text: `Opened media search for "${query}"` });
   };
 
-  if (!isOpen || !mounted) return null;
+  if (!mounted) return null;
 
   return createPortal(
     <>
@@ -232,6 +275,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
           backdropFilter: 'blur(2px)',
           WebkitBackdropFilter: 'blur(2px)',
           zIndex: 44,
+          display: isOpen ? 'block' : 'none',
         }}
       />
 
@@ -251,7 +295,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
           borderLeft: '1px solid var(--color-hairline)',
           boxShadow: '-12px 0 40px rgba(0, 0, 0, 0.10)',
           zIndex: 45,
-          display: 'flex',
+          display: isOpen ? 'flex' : 'none',
           flexDirection: 'column',
           fontFamily: 'var(--font-sans)',
           boxSizing: 'border-box',
@@ -259,6 +303,7 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
           transition: 'width 200ms ease-out',
         }}
       >
+
         {/* Header */}
         <div
           style={{
@@ -334,6 +379,26 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
               }}
             >
               {isExpanded ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+            </button>
+
+            {/* Clear Conversation / Start Over Button */}
+            <button
+              type="button"
+              onClick={handleClearConversation}
+              title="Clear conversation / Start over"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--color-muted)',
+                cursor: 'pointer',
+                padding: '5px',
+                borderRadius: 'var(--radius-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <RotateCcw size={15} />
             </button>
 
             {/* Close Button */}

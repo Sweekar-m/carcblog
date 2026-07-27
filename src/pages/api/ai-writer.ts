@@ -14,15 +14,30 @@ const REQUEST_TIMEOUT_MS = 35000; // 35 second timeout guardrail
  */
 const SYSTEM_PROMPTS = {
   chat: `You are CarcBlog AI Assistant, an elite editorial co-writer for CarcBlog (a publication focused on tech, startup founders, and modern innovation).
-Your goal is to help authors transform any prompt, story idea, or text into a full, publishable blog article.
+Your goal is to help authors transform their prompts, story ideas, or notes into publishable blog articles.
 
-When given a prompt or request, respond with a valid JSON object matching this structure (DO NOT wrap in Markdown code blocks, output RAW JSON only):
+CRITICAL INSTRUCTIONS FOR CONVERSATIONAL FLOW:
+1. EVALUATE CONTEXT & USER INTENT:
+   - Carefully analyze the user's latest prompt AND the full conversation history so far.
+   - Determine if the user has provided enough concrete, specific information (e.g. specific article topic, story angle, target audience, startup details, or key takeaways) to write a real, customized article.
+
+2. CASE A — VAGUE / GREETING / LACKS TOPIC CONTEXT (e.g. "hi", "I need your help", "can you help me write something", "I want to write an article"):
+   - Do NOT generate a structured article card (no headline, no subtitle, no article body, no image suggestion).
+   - Respond conversationally in "replyText" by asking 1 to 3 targeted clarifying questions (e.g. What is the article about? Who is the target audience? Do you have a specific angle, story, or startup in mind? Any key points to include?).
+   - Set "headline", "subtitle", "articleBody", and "imageSuggestion" to empty strings ("").
+
+3. CASE B — SPECIFIC TOPIC / ADEQUATE CONTEXT (e.g. "write a story about a founder who pivoted to voice AI", or after the user has answered your clarifying questions in the conversation):
+   - Generate the full, publishable blog post package using all information provided across the conversation history.
+   - Provide a sharp headline, compelling subtitle, complete Markdown articleBody (with headings ##, ###, bullet points, engaging paragraphs), and a 3-5 word image search query.
+
+Output format requirement:
+Respond with a valid JSON object matching this structure (DO NOT wrap in Markdown code blocks, output RAW JSON only):
 {
-  "replyText": "A warm, helpful 1-2 sentence message summarizing what you created.",
-  "headline": "A sharp, catchy editorial headline (Title)",
-  "subtitle": "A compelling 1-2 sentence subtitle/deck",
-  "articleBody": "A complete, beautifully written blog post formatted in Markdown with section headers (##, ###), engaging paragraphs, and bullet points where helpful.",
-  "imageSuggestion": "A 3-5 word descriptive visual search query for cover media, e.g. 'Minimalist tech startup office night'"
+  "replyText": "Your conversational response to the user.",
+  "headline": "Proposed Headline (or empty string if asking clarifying questions)",
+  "subtitle": "Proposed Subtitle (or empty string if asking clarifying questions)",
+  "articleBody": "Full article markdown body (or empty string if asking clarifying questions)",
+  "imageSuggestion": "3-5 word cover image search query (or empty string if asking clarifying questions)"
 }`,
 
   outline: `You are an expert editorial editor for CarcBlog, a startup and tech publication. 
@@ -53,10 +68,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const { action, context, selection, prompt } = parsed.data;
+    const { action, context, selection, prompt, messages = [] } = parsed.data;
 
     // Guardrail: Total combined input length
-    const combinedInputLength = (prompt + selection + context).length;
+    const historyChars = messages.reduce((acc, m) => acc + m.content.length, 0);
+    const combinedInputLength = (prompt + selection + context).length + historyChars;
     if (combinedInputLength > MAX_INPUT_CHARS) {
       return new Response(
         JSON.stringify({
@@ -115,7 +131,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     try {
       if (profile.ai_provider === 'gemini') {
         const modelName = 'gemini-3.6-flash';
-        const fullPromptText = `${systemPrompt}\n\nUser Request: ${userPrompt}`;
+        
+        let fullPromptText = `${systemPrompt}\n\n`;
+        if (action === 'chat' && messages.length > 0) {
+          fullPromptText += `Conversation History:\n`;
+          for (const m of messages) {
+            fullPromptText += `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}\n`;
+          }
+          fullPromptText += `\n`;
+        }
+        fullPromptText += `User Request: ${userPrompt}`;
 
         // 1. Try modern Interactions API first
         try {
@@ -144,6 +169,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // 2. Fallback to generateContent REST endpoint
         if (!generatedText) {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
+          
+          const geminiContents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
+          if (action === 'chat' && messages.length > 0) {
+            for (const msg of messages) {
+              geminiContents.push({
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: msg.content }]
+              });
+            }
+          }
+          const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+          if (!lastMsg || lastMsg.role !== 'user' || lastMsg.content.trim() !== userPrompt.trim()) {
+            geminiContents.push({
+              role: 'user',
+              parts: [{ text: userPrompt }]
+            });
+          }
+
           const apiRes = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -153,7 +196,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             signal: controller.signal,
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: systemPrompt }] },
-              contents: [{ parts: [{ text: userPrompt }] }],
+              contents: geminiContents,
               generationConfig: {
                 temperature: 0.7,
                 maxOutputTokens: 2048
@@ -176,6 +219,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
           generatedText = resData.candidates?.[0]?.content?.parts?.[0]?.text || '';
         }
       } else if (profile.ai_provider === 'openrouter') {
+        const openRouterMessages: Array<{ role: string; content: string }> = [
+          { role: 'system', content: systemPrompt }
+        ];
+
+        if (action === 'chat' && messages.length > 0) {
+          for (const msg of messages) {
+            openRouterMessages.push({
+              role: msg.role === 'assistant' ? 'assistant' : 'user',
+              content: msg.content
+            });
+          }
+        }
+        const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+        if (!lastMsg || lastMsg.role !== 'user' || lastMsg.content.trim() !== userPrompt.trim()) {
+          openRouterMessages.push({
+            role: 'user',
+            content: userPrompt
+          });
+        }
+
         const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -187,10 +250,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           signal: controller.signal,
           body: JSON.stringify({
             model: 'google/gemini-2.0-flash-001',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt }
-            ],
+            messages: openRouterMessages,
             temperature: 0.7,
             max_tokens: 2048
           })
@@ -235,11 +295,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       } catch (e) {
         // Fallback if model returned plain text instead of JSON
         structuredResponse = {
-          replyText: 'Here is your story generated for CarcBlog:',
-          headline: 'Article Story',
+          replyText: generatedText.trim(),
+          headline: '',
           subtitle: '',
-          articleBody: generatedText.trim(),
-          imageSuggestion: 'Startup team technology'
+          articleBody: '',
+          imageSuggestion: ''
         };
       }
     }

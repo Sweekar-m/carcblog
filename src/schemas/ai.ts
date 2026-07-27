@@ -37,6 +37,13 @@ export type AIWriterAction = (typeof AI_WRITER_ACTIONS)[number];
 
 const MAX_PROMPT_CHARS = 10_000;
 
+export const chatMessageSchema = z.object({
+  role: z.enum(['user', 'assistant', 'system']),
+  content: z.string().max(MAX_PROMPT_CHARS),
+});
+
+export type ChatMessagePayload = z.infer<typeof chatMessageSchema>;
+
 /**
  * Schema for POST /api/ai-writer.
  * Validates the action type and enforces input length limits.
@@ -53,6 +60,9 @@ export const aiWriterSchema = z.object({
   selection: z.string().max(MAX_PROMPT_CHARS, `Selection must be under ${MAX_PROMPT_CHARS} characters`).optional().default(''),
   /** The user's prompt / instruction to the AI. */
   prompt: z.string().max(MAX_PROMPT_CHARS, `Prompt must be under ${MAX_PROMPT_CHARS} characters`).optional().default(''),
+  /** Full conversation history so far from this session (used by chat action). */
+  messages: z.array(chatMessageSchema).optional().default([]),
 });
 
 export type AIWriterInput = z.infer<typeof aiWriterSchema>;
+
