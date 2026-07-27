@@ -88,10 +88,19 @@ export function extractFirstBodyImage(body: PortableTextBody): string | undefine
 // that import from '@/lib/sanity' continue to work without changes.
 export type { SanityArticle, SanityAuthor, SanityCategory, SanityImageField, PortableTextBody, PortableTextBlock } from '@/types/sanity';
 
+const articlesCache = new Map<number, { data: SanityArticle[]; timestamp: number }>();
+const SANITY_ARTICLES_TTL = 5 * 60 * 1000; // 5 minutes
+
 /* Read-only fetch — public feed (published articles only) */
 export async function getSanityArticles(opts: { limit?: number } = {}): Promise<SanityArticle[]> {
   const { limit = 10 } = opts;
-  return sanityClient.fetch<SanityArticle[]>(
+  const now = Date.now();
+  const cached = articlesCache.get(limit);
+  if (cached && now - cached.timestamp < SANITY_ARTICLES_TTL) {
+    return cached.data;
+  }
+
+  const data = await sanityClient.fetch<SanityArticle[]>(
     `*[_type == "article" && (status == "published" || defined(publishedAt)) && status != "archived"]
      | order(coalesce(publishedAt, _createdAt) desc)[0...$limit]
      { _id, title, slug, publishedAt, excerpt, status, body,
@@ -99,6 +108,9 @@ export async function getSanityArticles(opts: { limit?: number } = {}): Promise<
        author->{ _id, clerkUserId, name, "image": coalesce(image.asset->url, image) } }`,
     { limit }
   );
+
+  articlesCache.set(limit, { data, timestamp: now });
+  return data;
 }
 
 

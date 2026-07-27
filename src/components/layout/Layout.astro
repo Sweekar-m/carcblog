@@ -84,7 +84,7 @@ let particlesMask = "none";
                   items,
                   { opacity: [0, 1], y: [16, 0] },
                   {
-                    delay: (i) => i * 0.08, // stagger by 80ms
+                    delay: (i) => i * 0.08,
                     duration: 0.45,
                     ease: 'ease-out'
                   }
@@ -93,13 +93,6 @@ let particlesMask = "none";
                 console.warn('Reveal animation failed:', err);
               }
             }
-            // Return cleanup function to reset state when leaving viewport so it can replay
-            return () => {
-              items.forEach((item) => {
-                item.style.opacity = '0';
-                item.style.transform = 'translateY(16px)';
-              });
-            };
           });
         });
 
@@ -117,13 +110,6 @@ let particlesMask = "none";
                 console.warn('Single reveal animation failed:', err);
               }
             }
-            // Return cleanup function to reset state when leaving viewport so it can replay
-            return () => {
-              if (el instanceof HTMLElement) {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(16px)';
-              }
-            };
           });
         });
       };
