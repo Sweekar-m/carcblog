@@ -215,7 +215,13 @@ export async function getStartups(options: { search?: string; industry?: string;
 export async function getStartupBySlug(slug: string): Promise<StartupWithFounders | null> {
   const { data: startup, error: startupError } = await supabase
     .from('startups')
-    .select('*')
+    .select(`
+      *,
+      founder_startups (
+        job_title,
+        founder:founders (*)
+      )
+    `)
     .eq('slug', slug)
     .single();
 
@@ -224,19 +230,10 @@ export async function getStartupBySlug(slug: string): Promise<StartupWithFounder
     throw startupError;
   }
 
-  const { data: links, error: linksError } = await supabase
-    .from('founder_startups')
-    .select(`
-      job_title,
-      founder:founders (*)
-    `)
-    .eq('startup_id', startup.id);
-
-  if (linksError) throw linksError;
-
-  const founders = (links || [])
-    .filter(l => l.founder)
-    .map(l => ({
+  const links = (startup as any).founder_startups || [];
+  const founders = links
+    .filter((l: any) => l.founder)
+    .map((l: any) => ({
       ...(l.founder as unknown as Founder),
       job_title: l.job_title || (l.founder as unknown as Founder).job_title
     }));
@@ -277,7 +274,13 @@ export async function getFounders(options: { search?: string; region?: string; l
 export async function getFounderBySlug(slug: string): Promise<FounderWithStartups | null> {
   const { data: founder, error: founderError } = await supabase
     .from('founders')
-    .select('*')
+    .select(`
+      *,
+      founder_startups (
+        job_title,
+        startup:startups (*)
+      )
+    `)
     .eq('slug', slug)
     .single();
 
@@ -286,19 +289,10 @@ export async function getFounderBySlug(slug: string): Promise<FounderWithStartup
     throw founderError;
   }
 
-  const { data: links, error: linksError } = await supabase
-    .from('founder_startups')
-    .select(`
-      job_title,
-      startup:startups (*)
-    `)
-    .eq('founder_id', founder.id);
-
-  if (linksError) throw linksError;
-
-  const startups = (links || [])
-    .filter(l => l.startup)
-    .map(l => ({
+  const links = (founder as any).founder_startups || [];
+  const startups = links
+    .filter((l: any) => l.startup)
+    .map((l: any) => ({
       ...(l.startup as unknown as Startup),
       job_title: l.job_title
     }));
@@ -309,15 +303,26 @@ export async function getFounderBySlug(slug: string): Promise<FounderWithStartup
   };
 }
 
+let cachedIndustries: Array<{ category: string; count: number }> | null = null;
+let cachedIndustriesTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export async function getStartupIndustries(): Promise<Array<{ category: string; count: number }>> {
+  const now = Date.now();
+  if (cachedIndustries && (now - cachedIndustriesTime < CACHE_TTL_MS)) {
+    return cachedIndustries;
+  }
+
   const { data, error } = await supabase
     .from('startups')
     .select('industry')
     .not('industry', 'is', null);
 
-  if (error || !data) return [];
+  if (error || !data) return cachedIndustries || [];
   const rawList = data.map(d => d.industry);
-  return getNormalizedCategoryCounts(rawList);
+  cachedIndustries = getNormalizedCategoryCounts(rawList);
+  cachedIndustriesTime = now;
+  return cachedIndustries;
 }
 
 // -------------------------------------------------------------
@@ -391,15 +396,25 @@ export async function getInvestorBySlug(slug: string): Promise<Investor | null> 
   return investor as Investor;
 }
 
+let cachedInvestorTypes: string[] | null = null;
+let cachedInvestorTypesTime = 0;
+
 export async function getInvestorTypes(): Promise<string[]> {
+  const now = Date.now();
+  if (cachedInvestorTypes && (now - cachedInvestorTypesTime < CACHE_TTL_MS)) {
+    return cachedInvestorTypes;
+  }
+
   const { data, error } = await supabase
     .from('investors')
     .select('investor_type')
     .not('investor_type', 'is', null);
 
-  if (error) return [];
+  if (error || !data) return cachedInvestorTypes || [];
   const types = Array.from(new Set(data.map(d => d.investor_type).filter(Boolean))) as string[];
-  return types.sort();
+  cachedInvestorTypes = types.sort();
+  cachedInvestorTypesTime = now;
+  return cachedInvestorTypes;
 }
 
 
