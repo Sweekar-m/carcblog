@@ -3,18 +3,22 @@
 // surface-card stats, badge-pill status, EB Garamond 300 headings, hairline dividers
 import DashboardTour from '../islands/DashboardTour';
 
+interface RecentActivityItem {
+  type: 'article' | 'engagement' | 'follow';
+  id?: string;
+  slug?: string;
+  title?: string;
+  description?: string;
+  timestamp: string;
+}
+
 interface Props {
   stats: {
     articleCount: number;
     viewCount: number;
     readTime: number;
   };
-  recentActivity: Array<{
-    type: 'article' | 'engagement' | 'follow';
-    title?: string;
-    description?: string;
-    timestamp: string;
-  }>;
+  recentActivity: RecentActivityItem[];
   userName?: string;
 }
 
@@ -97,7 +101,10 @@ function formatDate(ts: string) {
     {recentActivity.length > 0 ? (
       <div class="activity-list">
         {recentActivity.map((activity) => (
-          <div class="activity-row">
+          <a
+            href="/dashboard/articles"
+            class="activity-row"
+          >
             <div class="activity-icon-wrap" aria-hidden="true">
               {activity.type === 'article' && (
                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -121,7 +128,7 @@ function formatDate(ts: string) {
             </div>
             <!-- badge-pill type indicator -->
             <span class="badge-pill activity-type-badge">{activity.type}</span>
-          </div>
+          </a>
         ))}
       </div>
     ) : (
@@ -281,10 +288,18 @@ function formatDate(ts: string) {
     gap: var(--space-sm);
     padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid var(--color-hairline-soft);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
     transition: background var(--duration-150) var(--ease-out);
   }
   .activity-row:last-child { border-bottom: none; }
-  .activity-row:hover { background: var(--color-canvas-soft); }
+  .activity-row:hover {
+    background: var(--color-surface-strong, #F1F5F9);
+  }
+  .activity-row:hover .activity-title {
+    color: var(--color-ink-strong);
+  }
 
   /* voice-icon-circular style */
   .activity-icon-wrap {
