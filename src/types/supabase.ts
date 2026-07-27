@@ -74,6 +74,32 @@ export interface Founder {
   updated_at: string;
 }
 
+// ─── Investors ────────────────────────────────────────────────────────────
+
+/**
+ * Row type for the `investors` table (sourced from OpenVC).
+ */
+export interface Investor {
+  id: string;
+  name: string;
+  slug: string;
+  investor_type: string | null;
+  website: string | null;
+  profile_url: string | null;
+  application_url: string | null;
+  thesis: string | null;
+  value_add: string | null;
+  first_check: string | null;
+  investment_stage: string | null;
+  solicitation_policy: string | null;
+  reply_rate: string | null;
+  target_geography: string[] | null;
+  linkedin_urls: string[] | null;
+  team_members: Array<{ name: string; profile_url?: string; linkedin_url?: string }> | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Founder ↔ Startup Junction ────────────────────────────────────────────
 
 /**

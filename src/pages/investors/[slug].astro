@@ -1,0 +1,218 @@
+---
+import Layout from '@/components/layout/Layout.astro';
+import { getInvestorBySlug } from '@/lib/supabase';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.redirect('/investors');
+}
+
+const investor = await getInvestorBySlug(slug);
+if (!investor) {
+  return Astro.redirect('/404');
+}
+---
+
+<Layout title={`${investor.name} - Investor Profile`} description={investor.thesis || `${investor.name} investor profile and venture details.`}>
+  <div style="max-width:1000px;margin:0 auto;padding:40px 24px 80px">
+    
+    {/* Back to Directory */}
+    <a href="/investors" style="display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;color:#0284C7;text-decoration:none;margin-bottom:24px">
+      ← Back to Investor Directory
+    </a>
+
+    {/* Header Profile Card */}
+    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:24px;padding:36px;box-shadow:0px 2px 4px rgba(0,0,0,0.04);margin-bottom:32px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+            <span style="padding:4px 14px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">
+              {investor.investor_type || 'Venture Capital / Investor'}
+            </span>
+            {investor.first_check && (
+              <span style="padding:4px 14px;border-radius:9999px;background:rgba(14,165,233,0.08);border:1px solid rgba(14,165,233,0.2);font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0284C7">
+                First Check: {investor.first_check}
+              </span>
+            )}
+            {investor.reply_rate && (
+              <span style="padding:4px 14px;border-radius:9999px;background:#F0FDF4;border:1px solid #BBF7D0;font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#166534">
+                Reply Rate: {investor.reply_rate}
+              </span>
+            )}
+          </div>
+
+          <h1 style="font-family:var(--font-sans);font-size:2.25rem;font-weight:700;color:#0F172A;margin:0 0 12px;line-height:1.2">
+            {investor.name}
+          </h1>
+
+          {investor.investment_stage && (
+            <p style="font-family:var(--font-sans);font-size:1rem;color:#64748B;margin:0 0 16px">
+              Investment Stage: <strong style="color:#0F172A">{investor.investment_stage}</strong>
+            </p>
+          )}
+        </div>
+
+        {/* Action / Link Buttons */}
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          {investor.application_url && (
+            <a
+              href={investor.application_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style="padding:10px 20px;border-radius:9999px;background:#0F172A;color:#FFFFFF;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"
+            >
+              Submit Pitch / Apply ↗
+            </a>
+          )}
+          {investor.website && (
+            <a
+              href={investor.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              style="padding:10px 20px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;color:#0F172A;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"
+            >
+              Official Website ↗
+            </a>
+          )}
+          {investor.profile_url && (
+            <a
+              href={investor.profile_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style="padding:10px 20px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;color:#64748B;font-family:var(--font-sans);font-size:0.875rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px"
+            >
+              OpenVC Profile ↗
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Target Geographies */}
+      {investor.target_geography && investor.target_geography.length > 0 && (
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid #F1F5F9;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-family:var(--font-sans);font-size:0.875rem;font-weight:600;color:#64748B">Target Geographies:</span>
+          {investor.target_geography.map((geo) => (
+            <span style="font-family:var(--font-sans);font-size:0.8125rem;color:#0F172A;background:#F1F5F9;padding:4px 12px;border-radius:6px;font-weight:500">
+              📍 {geo}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+
+    {/* Details Grid */}
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+      
+      {/* Main Content Column */}
+      <div style="display:flex;flex-direction:column;gap:24px">
+        
+        {/* Thesis */}
+        {investor.thesis && (
+          <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:28px">
+            <h2 style="font-family:var(--font-sans);font-size:1.25rem;font-weight:700;color:#0F172A;margin:0 0 14px">
+              Investment Thesis & Focus
+            </h2>
+            <p style="font-family:var(--font-sans);font-size:1rem;color:#334155;line-height:1.7;white-space:pre-wrap;margin:0">
+              {investor.thesis}
+            </p>
+          </div>
+        )}
+
+        {/* Value Add */}
+        {investor.value_add && (
+          <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:28px">
+            <h2 style="font-family:var(--font-sans);font-size:1.25rem;font-weight:700;color:#0F172A;margin:0 0 14px">
+              Value-Add & Operational Support
+            </h2>
+            <p style="font-family:var(--font-sans);font-size:1rem;color:#334155;line-height:1.7;white-space:pre-wrap;margin:0">
+              {investor.value_add}
+            </p>
+          </div>
+        )}
+
+        {/* Team Members */}
+        {investor.team_members && investor.team_members.length > 0 && (
+          <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:28px">
+            <h2 style="font-family:var(--font-sans);font-size:1.25rem;font-weight:700;color:#0F172A;margin:0 0 16px">
+              Investment Team & Partners
+            </h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
+              {investor.team_members.map((member) => (
+                <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:16px">
+                  <p style="font-family:var(--font-sans);font-size:0.9375rem;font-weight:700;color:#0F172A;margin:0 0 6px">
+                    {member.name}
+                  </p>
+                  {member.linkedin_url && (
+                    <a
+                      href={member.linkedin_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style="font-family:var(--font-sans);font-size:0.8125rem;color:#0284C7;text-decoration:none;font-weight:600"
+                    >
+                      LinkedIn Profile ↗
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Sidebar Metadata */}
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px">
+          <h3 style="font-family:var(--font-sans);font-size:0.875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748B;margin:0 0 16px">
+            Investment Summary
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div>
+              <span style="font-family:var(--font-sans);font-size:0.75rem;color:#64748B;display:block">Check Range</span>
+              <span style="font-family:var(--font-sans);font-size:0.9375rem;font-weight:600;color:#0F172A">
+                {investor.first_check || 'Not specified'}
+              </span>
+            </div>
+            <div>
+              <span style="font-family:var(--font-sans);font-size:0.75rem;color:#64748B;display:block">Solicitation Policy</span>
+              <span style="font-family:var(--font-sans);font-size:0.9375rem;font-weight:600;color:#0F172A">
+                {investor.solicitation_policy || 'Standard'}
+              </span>
+            </div>
+            <div>
+              <span style="font-family:var(--font-sans);font-size:0.75rem;color:#64748B;display:block">Response Rate</span>
+              <span style="font-family:var(--font-sans);font-size:0.9375rem;font-weight:600;color:#0F172A">
+                {investor.reply_rate || 'N/A'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Social & Reference Links */}
+        {investor.linkedin_urls && investor.linkedin_urls.length > 0 && (
+          <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px">
+            <h3 style="font-family:var(--font-sans);font-size:0.875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748B;margin:0 0 12px">
+              LinkedIn Networks
+            </h3>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              {investor.linkedin_urls.map((link, idx) => (
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="font-family:var(--font-sans);font-size:0.8125rem;color:#0284C7;text-decoration:none;font-weight:500;word-break:break-all"
+                >
+                  LinkedIn link #{idx + 1} ↗
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+    </div>
+
+  </div>
+</Layout>

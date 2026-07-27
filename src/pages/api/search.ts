@@ -98,6 +98,25 @@ export const GET: APIRoute = async ({ request }) => {
       });
     }
 
+    // Query Investors
+    const { data: investors } = await supabase
+      .from('investors')
+      .select('id, name, slug, investor_type, first_check')
+      .or(`name.ilike.${term},investor_type.ilike.${term},thesis.ilike.${term}`)
+      .limit(6);
+
+    if (investors && investors.length > 0) {
+      investors.forEach(inv => {
+        results.push({
+          id: `investor-${inv.id}`,
+          title: inv.name,
+          subtitle: [inv.investor_type || 'Investor', inv.first_check].filter(Boolean).join(' • '),
+          type: 'investor',
+          href: `/investors/${inv.slug}`,
+        });
+      });
+    }
+
     if (results.length > 0) {
       return new Response(JSON.stringify(results), {
         status: 200,

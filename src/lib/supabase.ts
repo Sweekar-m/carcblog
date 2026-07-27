@@ -302,5 +302,80 @@ export async function getStartupIndustries(): Promise<string[]> {
   return industries.sort();
 }
 
+// -------------------------------------------------------------
+// Investor Directory Helper Functions
+// -------------------------------------------------------------
+
+export interface Investor {
+  id: string;
+  name: string;
+  slug: string;
+  investor_type: string | null;
+  website: string | null;
+  profile_url: string | null;
+  application_url: string | null;
+  thesis: string | null;
+  value_add: string | null;
+  first_check: string | null;
+  investment_stage: string | null;
+  solicitation_policy: string | null;
+  reply_rate: string | null;
+  target_geography: string[] | null;
+  linkedin_urls: string[] | null;
+  team_members: Array<{ name: string; profile_url?: string; linkedin_url?: string }> | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getInvestors(options: { search?: string; type?: string; limit?: number; offset?: number } = {}) {
+  let query = supabase.from('investors').select('*', { count: 'exact' });
+
+  if (options.search && options.search.trim()) {
+    const term = `%${options.search.trim()}%`;
+    query = query.or(`name.ilike.${term},thesis.ilike.${term},value_add.ilike.${term}`);
+  }
+
+  if (options.type && options.type.trim() && options.type !== 'All') {
+    query = query.eq('investor_type', options.type);
+  }
+
+  query = query.order('name', { ascending: true });
+
+  if (options.limit) {
+    const offset = options.offset || 0;
+    query = query.range(offset, offset + options.limit - 1);
+  }
+
+  const { data, count, error } = await query;
+  if (error) throw error;
+  return { investors: (data || []) as Investor[], total: count || 0 };
+}
+
+export async function getInvestorBySlug(slug: string): Promise<Investor | null> {
+  const { data: investor, error } = await supabase
+    .from('investors')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !investor) {
+    if (error?.code === 'PGRST116') return null;
+    throw error;
+  }
+
+  return investor as Investor;
+}
+
+export async function getInvestorTypes(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('investors')
+    .select('investor_type')
+    .not('investor_type', 'is', null);
+
+  if (error) return [];
+  const types = Array.from(new Set(data.map(d => d.investor_type).filter(Boolean))) as string[];
+  return types.sort();
+}
+
 
 
