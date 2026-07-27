@@ -3,6 +3,7 @@ import Layout from '@/layouts/Layout.astro';
 import ArticleCMSManager from '@/components/islands/dashboard/ArticleCMSManager';
 import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
+import { getArticlesMetricsMap } from '@/lib/analytics';
 
 export const prerender = false;
 
@@ -17,7 +18,17 @@ if (user.role !== 'writer' && user.role !== 'admin') {
 
 let articles = [];
 try {
-  articles = await getSanityArticlesByAuthor(user.id, 100);
+  const sanityArticles = await getSanityArticlesByAuthor(user.id, 100);
+  const metricsMap = await getArticlesMetricsMap(sanityArticles);
+  articles = sanityArticles.map((art) => {
+    const m = metricsMap[art._id] || { views: 0, likes: 0, comments: 0 };
+    return {
+      ...art,
+      viewsCount: m.views,
+      likesCount: m.likes,
+      commentsCount: m.comments,
+    };
+  });
 } catch (e) {
   console.error('Failed to fetch articles for CMS manager:', e);
 }

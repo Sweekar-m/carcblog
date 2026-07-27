@@ -15,6 +15,74 @@ export interface WriterAnalyticsSummary {
   trafficSources: { source: string; count: number }[];
 }
 
+export interface ArticleMetrics {
+  views: number;
+  likes: number;
+  comments: number;
+}
+
+export async function getArticlesMetricsMap(
+  articles: { _id: string; slug?: { current?: string } | string }[]
+): Promise<Record<string, ArticleMetrics>> {
+  const result: Record<string, ArticleMetrics> = {};
+  if (!articles || articles.length === 0) return result;
+
+  const keyToArticleIdMap: Record<string, string> = {};
+  const allIdentifiers: string[] = [];
+
+  for (const art of articles) {
+    const rawId = art._id;
+    const pubId = rawId.replace(/^drafts\./, '');
+    const slugStr = typeof art.slug === 'string' ? art.slug : art.slug?.current;
+
+    result[rawId] = { views: 0, likes: 0, comments: 0 };
+
+    keyToArticleIdMap[rawId] = rawId;
+    keyToArticleIdMap[pubId] = rawId;
+    allIdentifiers.push(rawId, pubId);
+
+    if (slugStr) {
+      keyToArticleIdMap[slugStr] = rawId;
+      allIdentifiers.push(slugStr);
+    }
+  }
+
+  const uniqueKeys = Array.from(new Set(allIdentifiers));
+
+  try {
+    const [viewsRes, likesRes, commentsRes] = await Promise.all([
+      supabase.from('article_views').select('article_id').in('article_id', uniqueKeys),
+      supabase.from('likes').select('article_id').in('article_id', uniqueKeys),
+      supabase.from('comments').select('article_id').in('article_id', uniqueKeys),
+    ]);
+
+    if (viewsRes.data) {
+      for (const row of viewsRes.data) {
+        const artId = keyToArticleIdMap[row.article_id];
+        if (artId && result[artId]) result[artId].views += 1;
+      }
+    }
+
+    if (likesRes.data) {
+      for (const row of likesRes.data) {
+        const artId = keyToArticleIdMap[row.article_id];
+        if (artId && result[artId]) result[artId].likes += 1;
+      }
+    }
+
+    if (commentsRes.data) {
+      for (const row of commentsRes.data) {
+        const artId = keyToArticleIdMap[row.article_id];
+        if (artId && result[artId]) result[artId].comments += 1;
+      }
+    }
+  } catch (err) {
+    console.error('[getArticlesMetricsMap] Failed to query metrics from Supabase:', err);
+  }
+
+  return result;
+}
+
 export async function getWriterAnalytics(articleIds: string[]): Promise<WriterAnalyticsSummary> {
   if (!articleIds || articleIds.length === 0) {
     return {
@@ -33,12 +101,14 @@ export async function getWriterAnalytics(articleIds: string[]): Promise<WriterAn
     };
   }
 
+  const expandedIds = Array.from(new Set(articleIds.flatMap(id => [id, id.replace(/^drafts\./, '')])));
+
   // Aggregate stats from Supabase
   const [viewsRes, likesRes, commentsRes, bookmarksRes] = await Promise.all([
-    supabase.from('article_views').select('*').in('article_id', articleIds),
-    supabase.from('likes').select('id', { count: 'exact', head: true }).in('article_id', articleIds),
-    supabase.from('comments').select('id', { count: 'exact', head: true }).in('article_id', articleIds),
-    supabase.from('bookmarks').select('id', { count: 'exact', head: true }).in('article_id', articleIds),
+    supabase.from('article_views').select('*').in('article_id', expandedIds),
+    supabase.from('likes').select('id', { count: 'exact', head: true }).in('article_id', expandedIds),
+    supabase.from('comments').select('id', { count: 'exact', head: true }).in('article_id', expandedIds),
+    supabase.from('bookmarks').select('id', { count: 'exact', head: true }).in('article_id', expandedIds),
   ]);
 
   const views = viewsRes.data || [];

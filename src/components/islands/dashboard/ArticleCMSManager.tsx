@@ -180,17 +180,17 @@ export default function ArticleCMSManager({ articles: initialArticles }: Article
 
                 {/* Metrics */}
                 <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--color-steel)', paddingRight: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Total Views">
                     <Eye style={{ width: '15px', height: '15px' }} />
-                    <span>0</span>
+                    <span>{(art as any).viewsCount ?? (art as any).views ?? 0}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Likes">
                     <Heart style={{ width: '15px', height: '15px' }} />
-                    <span>0</span>
+                    <span>{(art as any).likesCount ?? (art as any).likes ?? 0}</span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Comments">
                     <MessageSquare style={{ width: '15px', height: '15px' }} />
-                    <span>0</span>
+                    <span>{(art as any).commentsCount ?? (art as any).comments ?? 0}</span>
                   </div>
                 </div>
 
