@@ -65,6 +65,7 @@ export interface OutlineItem {
 // ─── Publish Metadata ────────────────────────────────────────────────────────
 
 export interface PublishMetadata {
+  articleId?: string | null;
   slug: string;
   tags: string[];
   category: string;

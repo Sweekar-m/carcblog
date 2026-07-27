@@ -180,10 +180,11 @@ export async function getSanityArticlesByAuthor(
   clerkUserId: string,
   limit = 100
 ): Promise<SanityArticle[]> {
-  return sanityClient.fetch<SanityArticle[]>(
-    `*[_type == "article" && author->clerkUserId == $clerkUserId]
+  const client = sanityApiToken ? sanityWriteClient : sanityClient;
+  return client.fetch<SanityArticle[]>(
+    `*[_type == "article" && (author->clerkUserId == $clerkUserId || author._ref in *[_type == "author" && clerkUserId == $clerkUserId]._id)]
      | order(_createdAt desc)[0...$limit]
-     { _id, title, slug, publishedAt, excerpt, status,
+     { _id, title, slug, publishedAt, excerpt, status, body,
        "coverImage": coalesce(coverImage.asset->url, coverImage),
        author->{ _id, clerkUserId, name, "image": coalesce(image.asset->url, image) } }`,
     { clerkUserId, limit }

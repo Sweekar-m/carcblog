@@ -91,28 +91,32 @@ export function RightPanel({ onClose }: RightPanelProps) {
     setSlugError(null);
 
     try {
-      const response = await fetch('/api/articles', {
-        method: 'POST',
+      const isEditing = !!metadata.articleId;
+      const targetUrl = isEditing ? `/api/articles/${metadata.articleId}` : '/api/articles';
+      const targetMethod = isEditing ? 'PUT' : 'POST';
+
+      const response = await fetch(targetUrl, {
+        method: targetMethod,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
           slug: metadata.slug.trim(),
-          excerpt: subtitle.trim() || null,
+          excerpt: subtitle.trim() || undefined,
           body: content,
-          coverImage: metadata.coverImageUrl || null,
+          coverImage: metadata.coverImageUrl || undefined,
           status: metadata.publishStatus,
-          categoryId: metadata.category || null,
+          categoryId: metadata.category || undefined,
           tags: metadata.tags || [],
-          scheduledAt: metadata.publishStatus === 'scheduled' ? metadata.scheduledAt : null,
+          scheduledAt: metadata.publishStatus === 'scheduled' ? metadata.scheduledAt : undefined,
         }),
       });
 
       const contentType = response.headers.get('content-type');
-      let result: { success?: boolean; article?: { slug?: { current?: string } }; error?: string } = {};
+      let result: { success?: boolean; article?: { _id?: string; slug?: { current?: string } | string }; error?: string } = {};
       if (contentType && contentType.includes('application/json')) {
         result = (await response.json()) as {
           success?: boolean;
-          article?: { slug?: { current?: string } };
+          article?: { _id?: string; slug?: { current?: string } | string };
           error?: string;
         };
       } else {
@@ -122,6 +126,10 @@ export function RightPanel({ onClose }: RightPanelProps) {
 
       if (!response.ok) {
         throw new Error(result.error ?? 'Failed to publish article.');
+      }
+
+      if (result.article?._id) {
+        $metadata.setKey('articleId', result.article._id);
       }
 
       setSubmitState('success');
@@ -134,11 +142,10 @@ export function RightPanel({ onClose }: RightPanelProps) {
       }
       localStorage.removeItem(LEGACY_DRAFT_KEY);
 
-
       const rawSlug = result.article?.slug;
       const slug = typeof rawSlug === 'string' ? rawSlug : rawSlug?.current;
       setTimeout(() => {
-        window.location.href = slug ? `/article/${slug}` : '/dashboard/articles';
+        window.location.href = metadata.publishStatus === 'published' && slug ? `/article/${slug}` : '/dashboard/articles';
       }, 1200);
 
     } catch (err: unknown) {

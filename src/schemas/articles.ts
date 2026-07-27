@@ -23,14 +23,14 @@ export const createArticleSchema = z.object({
     .min(1, 'Title is required')
     .max(200, 'Title must be under 200 characters'),
   slug: slugSchema,
-  excerpt: z.string().max(500, 'Excerpt must be under 500 characters').optional(),
+  excerpt: z.string().max(500, 'Excerpt must be under 500 characters').nullable().optional(),
   /** Portable Text body — array of blocks, or a raw markdown string. */
   body: z.union([z.array(z.record(z.unknown())), z.string()]),
-  coverImage: z.string().url('Cover image must be a valid URL').optional().or(z.literal('')),
+  coverImage: z.string().nullable().optional(),
   status: z.enum(ARTICLE_STATUSES).default('draft'),
-  categoryId: z.string().optional(),
-  tags: z.array(z.string().max(50)).max(20, 'Maximum 20 tags').optional(),
-  scheduledAt: z.string().datetime({ offset: true }).optional().nullable(),
+  categoryId: z.string().nullable().optional(),
+  tags: z.array(z.string().max(50)).max(20, 'Maximum 20 tags').nullable().optional(),
+  scheduledAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 export type CreateArticleInput = z.infer<typeof createArticleSchema>;
@@ -42,14 +42,14 @@ export type CreateArticleInput = z.infer<typeof createArticleSchema>;
 export const updateArticleSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   slug: slugSchema.optional(),
-  excerpt: z.string().max(500).optional(),
+  excerpt: z.string().max(500).nullable().optional(),
   body: z.union([z.array(z.record(z.unknown())), z.string()]).optional(),
-  coverImage: z.string().url().optional().or(z.literal('')).optional(),
+  coverImage: z.string().nullable().optional(),
   status: z.enum(ARTICLE_STATUSES).optional(),
-  categoryId: z.string().optional(),
-  tags: z.array(z.string().max(50)).max(20).optional(),
-  scheduledAt: z.string().datetime({ offset: true }).optional().nullable(),
-  publishedAt: z.string().datetime({ offset: true }).optional().nullable(),
+  categoryId: z.string().nullable().optional(),
+  tags: z.array(z.string().max(50)).max(20).nullable().optional(),
+  scheduledAt: z.string().datetime({ offset: true }).nullable().optional(),
+  publishedAt: z.string().datetime({ offset: true }).nullable().optional(),
 });
 
 export type UpdateArticleInput = z.infer<typeof updateArticleSchema>;

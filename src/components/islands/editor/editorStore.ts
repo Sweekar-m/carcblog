@@ -43,6 +43,7 @@ export const LEGACY_DRAFT_KEY = 'carcblog_editor_draft_v1';
 // ─── Default values ──────────────────────────────────────────────────────────
 
 const DEFAULT_METADATA: PublishMetadata = {
+  articleId: null,
   slug: '',
   tags: [],
   category: '',

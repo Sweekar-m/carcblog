@@ -86,8 +86,10 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
   // ── Populate initial article if editing an existing article ────────────
   useEffect(() => {
     if (initialArticle) {
+      if (initialArticle._id) $metadata.setKey('articleId', initialArticle._id);
       if (initialArticle.title) $title.set(initialArticle.title);
       if (initialArticle.excerpt) $subtitle.set(initialArticle.excerpt);
+      if (initialArticle.status) $metadata.setKey('publishStatus', initialArticle.status);
       $metadata.setKey('slug', initialArticle.slug?.current || generateSlug(initialArticle.title || ''));
       if (initialArticle.coverImage) {
         const coverUrl = typeof initialArticle.coverImage === 'string'
