@@ -71,9 +71,11 @@ function getPageUrl(p: number) {
               onchange="this.form.submit()"
               style="width:100%;padding:0 36px 0 14px;height:44px;appearance:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;cursor:pointer"
             >
-              <option value="All" selected={industry === 'All'}>All Industries</option>
+              <option value="All" selected={industry === 'All' || industry === 'All Categories'}>All Categories</option>
               {industries.map((ind) => (
-                <option value={ind} selected={industry === ind}>{ind}</option>
+                <option value={ind.category} selected={industry === ind.category}>
+                  {ind.category} ({ind.count.toLocaleString()})
+                </option>
               ))}
             </select>
             <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">

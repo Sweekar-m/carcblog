@@ -1,6 +1,7 @@
 import type { SearchIndexRecord, SearchEntityType } from './types';
 import { supabase } from '@/lib/supabase';
 import { sanityClient } from '@/lib/sanity';
+import { normalizeIndustryString } from '@/utils/industryNormalizer';
 import { AlgoliaProvider } from './providers/AlgoliaProvider';
 import { MeilisearchProvider } from './providers/MeilisearchProvider';
 
@@ -48,20 +49,24 @@ export async function fetchStartupsForIndex(): Promise<SearchIndexRecord[]> {
     return [];
   }
 
-  return (data || []).map(s => ({
-    objectID: `startup-${s.id}`,
-    entityType: 'startup' as SearchEntityType,
-    title: s.name,
-    subtitle: [s.industry, [s.city, s.country].filter(Boolean).join(', ')].filter(Boolean).join(' • '),
-    excerpt: s.description || '',
-    href: `/startups/${s.slug}`,
-    image: s.logo_url || null,
-    industry: s.industry || null,
-    stage: s.funding_stage || null,
-    city: s.city || null,
-    country: s.country || null,
-    updated_at: s.updated_at,
-  }));
+  return (data || []).map(s => {
+    const normalizedCategories = normalizeIndustryString(s.industry);
+    const primaryCategory = normalizedCategories.join(', ');
+    return {
+      objectID: `startup-${s.id}`,
+      entityType: 'startup' as SearchEntityType,
+      title: s.name,
+      subtitle: [primaryCategory, [s.city, s.country].filter(Boolean).join(', ')].filter(Boolean).join(' • '),
+      excerpt: s.description || '',
+      href: `/startups/${s.slug}`,
+      image: s.logo_url || null,
+      industry: primaryCategory,
+      stage: s.funding_stage || null,
+      city: s.city || null,
+      country: s.country || null,
+      updated_at: s.updated_at,
+    };
+  });
 }
 
 export async function fetchFoundersForIndex(): Promise<SearchIndexRecord[]> {

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { getCountriesForRegion } from '@/utils/regionTaxonomy';
+import { getNormalizedCategoryCounts, getSearchTermsForCanonicalCategory } from '@/utils/industryNormalizer';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL || (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.PUBLIC_SUPABASE_URL : '') || '';
@@ -186,8 +187,10 @@ export async function getStartups(options: { search?: string; industry?: string;
     query = query.or(`name.ilike.${term},description.ilike.${term},city.ilike.${term},country.ilike.${term}`);
   }
 
-  if (options.industry && options.industry.trim() && options.industry !== 'All') {
-    query = query.eq('industry', options.industry);
+  if (options.industry && options.industry.trim() && options.industry !== 'All' && options.industry !== 'All Categories') {
+    const terms = getSearchTermsForCanonicalCategory(options.industry);
+    const ilikeConditions = terms.map(t => `industry.ilike.%${t}%`).join(',');
+    query = query.or(ilikeConditions);
   }
 
   if (options.region && options.region.trim() && options.region !== 'All' && options.region !== 'All Regions') {
@@ -306,15 +309,15 @@ export async function getFounderBySlug(slug: string): Promise<FounderWithStartup
   };
 }
 
-export async function getStartupIndustries(): Promise<string[]> {
+export async function getStartupIndustries(): Promise<Array<{ category: string; count: number }>> {
   const { data, error } = await supabase
     .from('startups')
     .select('industry')
     .not('industry', 'is', null);
 
-  if (error) return [];
-  const industries = Array.from(new Set(data.map(d => d.industry).filter(Boolean))) as string[];
-  return industries.sort();
+  if (error || !data) return [];
+  const rawList = data.map(d => d.industry);
+  return getNormalizedCategoryCounts(rawList);
 }
 
 // -------------------------------------------------------------
@@ -398,6 +401,8 @@ export async function getInvestorTypes(): Promise<string[]> {
   const types = Array.from(new Set(data.map(d => d.investor_type).filter(Boolean))) as string[];
   return types.sort();
 }
+
+
 
 
 
