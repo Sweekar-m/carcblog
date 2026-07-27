@@ -415,6 +415,13 @@ const isLoggedIn = !!Astro.locals.user;
   margin-bottom: var(--space-lg);
   max-width: 840px;
 }
+@media (max-width: 768px) {
+  .hero-headline {
+    font-size: clamp(2.125rem, 8vw, 3.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+}
 
 /* Category Matrix Styles */
 .category-matrix-section {

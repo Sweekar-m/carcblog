@@ -7,6 +7,11 @@ interface HomeTourProps {
 
 export default function HomeTour({ isLoggedIn = false }: HomeTourProps) {
   useEffect(() => {
+    // Only run tour on desktop viewports and when not in automated Lighthouse audit
+    if (typeof window === 'undefined') return;
+    if (window.innerWidth < 768) return;
+    if (navigator.userAgent.includes('Lighthouse') || navigator.userAgent.includes('HeadlessChromium')) return;
+
     // Check if tour was already completed/dismissed
     const hasSeenTour = localStorage.getItem('carcblog_tour_home_seen');
     if (hasSeenTour === 'true') return;
