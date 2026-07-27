@@ -1,16 +1,18 @@
 ---
 import Layout from '@/components/layout/Layout.astro';
 import { getFounders } from '@/lib/supabase';
+import { REGION_OPTIONS } from '@/utils/regionTaxonomy';
 
 export const prerender = false;
 
 const url = new URL(Astro.request.url);
 const search = url.searchParams.get('q') || '';
+const selectedRegion = url.searchParams.get('region') || 'All Regions';
 const page = parseInt(url.searchParams.get('page') || '1', 10);
 const limit = 24;
 const offset = (page - 1) * limit;
 
-const { founders, total } = await getFounders({ search, limit, offset });
+const { founders, total } = await getFounders({ search, region: selectedRegion, limit, offset });
 const totalPages = Math.ceil(total / limit);
 
 function getPageUrl(p: number) {
@@ -53,6 +55,23 @@ function getPageUrl(p: number) {
             style="width:100%;padding:0 16px 0 42px;height:44px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;box-sizing:border-box"
           />
         </div>
+
+        <div style="position:relative;min-width:180px">
+          <select
+            name="region"
+            id="region-filter"
+            onchange="this.form.submit()"
+            style="width:100%;padding:0 36px 0 14px;height:44px;appearance:none;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;font-family:var(--font-sans);font-size:0.875rem;color:#0F172A;outline:none;cursor:pointer"
+          >
+            {REGION_OPTIONS.map((reg) => (
+              <option value={reg} selected={selectedRegion === reg}>{reg}</option>
+            ))}
+          </select>
+          <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:#94A3B8;display:flex;align-items:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </span>
+        </div>
+
         <button
           type="submit"
           id="founder-search-submit"

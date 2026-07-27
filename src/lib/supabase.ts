@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getCountriesForRegion } from '@/utils/regionTaxonomy';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.PUBLIC_SUPABASE_URL || (typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env.PUBLIC_SUPABASE_URL : '') || '';
@@ -177,7 +178,7 @@ export interface FounderWithStartups extends Founder {
   startups: Array<Startup & { job_title: string | null }>;
 }
 
-export async function getStartups(options: { search?: string; industry?: string; limit?: number; offset?: number } = {}) {
+export async function getStartups(options: { search?: string; industry?: string; region?: string; limit?: number; offset?: number } = {}) {
   let query = supabase.from('startups').select('*', { count: 'exact' });
 
   if (options.search && options.search.trim()) {
@@ -187,6 +188,13 @@ export async function getStartups(options: { search?: string; industry?: string;
 
   if (options.industry && options.industry.trim() && options.industry !== 'All') {
     query = query.eq('industry', options.industry);
+  }
+
+  if (options.region && options.region.trim() && options.region !== 'All' && options.region !== 'All Regions') {
+    const matchingCountries = getCountriesForRegion(options.region);
+    if (matchingCountries.length > 0) {
+      query = query.in('country', matchingCountries);
+    }
   }
 
   query = query.order('name', { ascending: true });
@@ -236,12 +244,19 @@ export async function getStartupBySlug(slug: string): Promise<StartupWithFounder
   };
 }
 
-export async function getFounders(options: { search?: string; limit?: number; offset?: number } = {}) {
+export async function getFounders(options: { search?: string; region?: string; limit?: number; offset?: number } = {}) {
   let query = supabase.from('founders').select('*', { count: 'exact' });
 
   if (options.search && options.search.trim()) {
     const term = `%${options.search.trim()}%`;
     query = query.or(`name.ilike.${term},job_title.ilike.${term},city.ilike.${term},country.ilike.${term}`);
+  }
+
+  if (options.region && options.region.trim() && options.region !== 'All' && options.region !== 'All Regions') {
+    const matchingCountries = getCountriesForRegion(options.region);
+    if (matchingCountries.length > 0) {
+      query = query.in('country', matchingCountries);
+    }
   }
 
   query = query.order('name', { ascending: true });
@@ -327,7 +342,7 @@ export interface Investor {
   updated_at: string;
 }
 
-export async function getInvestors(options: { search?: string; type?: string; limit?: number; offset?: number } = {}) {
+export async function getInvestors(options: { search?: string; type?: string; region?: string; limit?: number; offset?: number } = {}) {
   let query = supabase.from('investors').select('*', { count: 'exact' });
 
   if (options.search && options.search.trim()) {
@@ -337,6 +352,13 @@ export async function getInvestors(options: { search?: string; type?: string; li
 
   if (options.type && options.type.trim() && options.type !== 'All') {
     query = query.eq('investor_type', options.type);
+  }
+
+  if (options.region && options.region.trim() && options.region !== 'All' && options.region !== 'All Regions') {
+    const matchingCountries = getCountriesForRegion(options.region);
+    if (matchingCountries.length > 0) {
+      query = query.overlaps('target_geography', matchingCountries);
+    }
   }
 
   query = query.order('name', { ascending: true });
