@@ -28,7 +28,7 @@ const articleSlug = typeof slug === 'string'
     ? slug.filter(s => s !== '').join('/')
     : '';
 
-import { recordArticleView } from '@/lib/analytics';
+import { recordArticleView, getArticlesMetricsMap } from '@/lib/analytics';
 
 const articleRaw = await getSanityArticleBySlugForUser(articleSlug, userId, isAdmin);
 
@@ -40,6 +40,10 @@ if (!articleRaw) {
 if (articleRaw.publishedAt) {
   recordArticleView(articleRaw._id, userId ?? undefined).catch(() => null);
 }
+
+// Fetch view count metrics for article header
+const metricsMap = await getArticlesMetricsMap([articleRaw]);
+const viewsCount = (metricsMap[articleRaw._id]?.views ?? 0) + (articleRaw.publishedAt ? 1 : 0);
 
 // Helper to extract plain text from Portable Text for excerpt if needed
 const extractPlainText = (blocks) => {
@@ -147,7 +151,7 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
                 })
               ) : (
                 'Draft (Unpublished)'
-              )} · 5 min read
+              )} · 5 min read · {viewsCount} views
             </time>
             <div class="article-social-controls" style="display: flex; align-items: center; gap: 8px;">
               <LikeButton client:load articleId={article.id} authorId={articleRaw.author?.clerkUserId} />
