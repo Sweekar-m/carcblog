@@ -258,11 +258,13 @@ export function SearchModal({ isOpen: externalIsOpen, onClose }: { isOpen?: bool
     setLoading(true);
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const catParam = activeCategory !== 'all' ? `&type=${activeCategory}` : '';
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}${catParam}`);
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setResults(data);
+          const items = Array.isArray(data) ? data : (data.hits || []);
+          if (items.length > 0) {
+            setResults(items);
             setLoading(false);
             return;
           }

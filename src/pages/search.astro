@@ -107,10 +107,10 @@ import Layout from '@/components/layout/Layout.astro';
       resultsRegion!.innerHTML = html;
     }
 
-    function renderResults(data: SearchResponse, query: string): string {
-      const total = (data.startups?.length ?? 0) + (data.founders?.length ?? 0);
+    function renderResults(data: any, query: string): string {
+      const hits = Array.isArray(data) ? data : (data.hits || []);
 
-      if (total === 0) {
+      if (hits.length === 0) {
         return `
           <div class="no-results">
             <p class="no-results-text">No results for <strong>"${escapeHtml(query)}"</strong>.</p>
@@ -118,31 +118,30 @@ import Layout from '@/components/layout/Layout.astro';
           </div>`;
       }
 
-      let html = `<p class="results-count">${total} result${total !== 1 ? 's' : ''} for <strong>"${escapeHtml(query)}"</strong></p>`;
+      let html = `<p class="results-count">${hits.length} result${hits.length !== 1 ? 's' : ''} for <strong>"${escapeHtml(query)}"</strong></p>`;
 
-      if (data.startups?.length) {
-        html += `<h3 class="results-group-title">Startups</h3><ul class="results-list">`;
-        for (const s of data.startups) {
-          html += `
-            <li class="result-card">
-              <a href="/startups/${escapeHtml(s.slug || s.id)}" class="result-card-link">
-                <span class="result-name">${escapeHtml(s.name)}</span>
-                ${s.industry ? `<span class="result-meta">${escapeHtml(s.industry)}</span>` : ''}
-                ${s.description ? `<span class="result-desc">${escapeHtml(s.description.slice(0, 100))}${s.description.length > 100 ? '…' : ''}</span>` : ''}
-              </a>
-            </li>`;
-        }
-        html += `</ul>`;
+      const grouped: Record<string, any[]> = {};
+      for (const item of hits) {
+        const type = item.type || 'article';
+        if (!grouped[type]) grouped[type] = [];
+        grouped[type].push(item);
       }
 
-      if (data.founders?.length) {
-        html += `<h3 class="results-group-title">Founders</h3><ul class="results-list">`;
-        for (const f of data.founders) {
+      const labels: Record<string, string> = {
+        startup: 'Startups',
+        founder: 'Founders',
+        investor: 'Investors & VCs',
+        article: 'Articles',
+      };
+
+      for (const [type, group] of Object.entries(grouped)) {
+        html += `<h3 class="results-group-title">${labels[type] || type}</h3><ul class="results-list">`;
+        for (const item of group) {
           html += `
             <li class="result-card">
-              <a href="/founders/${escapeHtml(f.slug || f.id)}" class="result-card-link">
-                <span class="result-name">${escapeHtml(f.name)}</span>
-                ${f.job_title ? `<span class="result-meta">${escapeHtml(f.job_title)}</span>` : ''}
+              <a href="${escapeHtml(item.href || '#')}" class="result-card-link">
+                <span class="result-name">${escapeHtml(item.title)}</span>
+                ${item.subtitle ? `<span class="result-meta">${escapeHtml(item.subtitle)}</span>` : ''}
               </a>
             </li>`;
         }
