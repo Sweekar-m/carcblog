@@ -209,22 +209,38 @@ export function RightPanel({ onClose }: RightPanelProps) {
   }, [addTag]);
 
   return (
-    <aside
-      id="editor-right-panel"
-      aria-label="Article settings"
-      role="complementary"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        width: '100%',
-        maxWidth: '320px',
-        flexShrink: 0,
-        borderLeft: '1px solid var(--color-hairline)',
-        backgroundColor: 'var(--color-surface-card)',
-        overflowY: 'auto',
-      }}
-    >
+    <>
+      <style>{`
+        @media (max-width: 767px) {
+          #editor-right-panel {
+            position: fixed !important;
+            top: 52px !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            z-index: 60 !important;
+            box-shadow: var(--shadow-modal) !important;
+          }
+        }
+      `}</style>
+      <aside
+        id="editor-right-panel"
+        aria-label="Article settings"
+        role="complementary"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          width: '100%',
+          maxWidth: '320px',
+          flexShrink: 0,
+          borderLeft: '1px solid var(--color-hairline)',
+          backgroundColor: 'var(--color-surface-card)',
+          overflowY: 'auto',
+        }}
+      >
       {/* Panel Header */}
       <div
         style={{
@@ -423,5 +439,6 @@ export function RightPanel({ onClose }: RightPanelProps) {
         </button>
       </div>
     </aside>
+    </>
   );
 }

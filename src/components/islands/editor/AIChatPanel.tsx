@@ -280,7 +280,17 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
       />
 
       {/* Sliding AI Panel */}
+      <style>{`
+        @media (max-width: 767px) {
+          .editor-ai-chat-drawer {
+            width: 100vw !important;
+            left: 0 !important;
+            right: 0 !important;
+          }
+        }
+      `}</style>
       <div
+        className="editor-ai-chat-drawer"
         style={{
           position: 'fixed',
           top: '52px',

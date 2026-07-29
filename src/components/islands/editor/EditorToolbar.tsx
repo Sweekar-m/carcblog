@@ -13,6 +13,7 @@ import {
   Upload,
   Loader2,
   Save,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   $draftStatus,
@@ -190,9 +191,11 @@ function ToolbarDivider() {
 interface EditorToolbarProps {
   /** Called when the Publish button is clicked — opens the right panel */
   onPublishClick: () => void;
+  /** Called when the mobile More Tools button is clicked */
+  onOpenTools?: () => void;
 }
 
-export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
+export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProps) {
   const title = useStore($title);
   const ui = useStore($ui);
   const [scrolled, setScrolled] = useState(false);
@@ -295,78 +298,88 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
       </div>
 
       {/* Right: tertiary actions + primary publish */}
-      <div className="editor-toolbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xxs)', flex: '0 0 auto' }}>
+      <div className="editor-toolbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '0 0 auto' }}>
         <style>{`
+          /* Mobile (<768px): Hide individual desktop tertiary buttons, show compact Publish & More Tools button */
           @media (max-width: 767px) {
-            .editor-toolbar-right-controls {
-              overflow-x: auto !important;
-              max-width: calc(100vw - 120px) !important;
-              scrollbar-width: none !important;
-              -ms-overflow-style: none !important;
+            .editor-desktop-tool-action {
+              display: none !important;
             }
-            .editor-toolbar-right-controls::-webkit-scrollbar {
+            .editor-mobile-tools-toggle {
+              display: inline-flex !important;
+            }
+          }
+          /* Desktop (≥768px): Hide mobile tools toggle, show full desktop buttons */
+          @media (min-width: 768px) {
+            .editor-desktop-tool-action {
+              display: inline-flex !important;
+            }
+            .editor-mobile-tools-toggle {
               display: none !important;
             }
           }
         `}</style>
-        <TertiaryButton
-          id="editor-focus-mode-btn"
-          onClick={toggleFocusMode}
-          label={ui.focusMode ? 'Exit focus mode (F)' : 'Focus mode (F)'}
-          active={ui.focusMode}
-        >
-          <Focus size={14} strokeWidth={1.75} aria-hidden="true" />
-          <span>Focus</span>
-        </TertiaryButton>
 
-        <TertiaryButton
-          id="editor-preview-btn"
-          onClick={togglePreviewMode}
-          label={ui.previewMode ? 'Exit preview' : 'Preview article'}
-          active={ui.previewMode}
-        >
-          <Eye size={14} strokeWidth={1.75} aria-hidden="true" />
-          <span>Preview</span>
-        </TertiaryButton>
+        <div className="editor-desktop-tool-action" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-xxs)' }}>
+          <TertiaryButton
+            id="editor-focus-mode-btn"
+            onClick={toggleFocusMode}
+            label={ui.focusMode ? 'Exit focus mode (F)' : 'Focus mode (F)'}
+            active={ui.focusMode}
+          >
+            <Focus size={14} strokeWidth={1.75} aria-hidden="true" />
+            <span>Focus</span>
+          </TertiaryButton>
 
-        <ToolbarDivider />
+          <TertiaryButton
+            id="editor-preview-btn"
+            onClick={togglePreviewMode}
+            label={ui.previewMode ? 'Exit preview' : 'Preview article'}
+            active={ui.previewMode}
+          >
+            <Eye size={14} strokeWidth={1.75} aria-hidden="true" />
+            <span>Preview</span>
+          </TertiaryButton>
 
-        <AIWriterMenu />
+          <ToolbarDivider />
 
-        <TertiaryButton
-          id="editor-media-btn"
-          onClick={() => window.dispatchEvent(new CustomEvent('editor:open-media-search'))}
-          label="Search and insert images"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-            <circle cx="9" cy="9" r="2"/>
-            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-          </svg>
-          <span>Media</span>
-        </TertiaryButton>
+          <AIWriterMenu />
 
-        <TertiaryButton
-          id="editor-save-btn"
-          onClick={() => window.dispatchEvent(new CustomEvent('editor:save-requested'))}
-          label="Save draft (Ctrl+S / Cmd+S)"
-          active={status === 'saving'}
-        >
-          <Save size={14} strokeWidth={1.75} aria-hidden="true" />
-          <span>Save</span>
-        </TertiaryButton>
+          <TertiaryButton
+            id="editor-media-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('editor:open-media-search'))}
+            label="Search and insert images"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+              <circle cx="9" cy="9" r="2"/>
+              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+            </svg>
+            <span>Media</span>
+          </TertiaryButton>
 
-        <TertiaryButton
-          id="editor-settings-btn"
-          onClick={toggleRightPanel}
-          label="Article settings"
-          active={ui.rightPanelOpen}
-        >
-          <Settings2 size={14} strokeWidth={1.75} aria-hidden="true" />
-          <span>Settings</span>
-        </TertiaryButton>
+          <TertiaryButton
+            id="editor-save-btn"
+            onClick={() => window.dispatchEvent(new CustomEvent('editor:save-requested'))}
+            label="Save draft (Ctrl+S / Cmd+S)"
+            active={status === 'saving'}
+          >
+            <Save size={14} strokeWidth={1.75} aria-hidden="true" />
+            <span>Save</span>
+          </TertiaryButton>
 
-        {/* button-primary from design.md: ink pill, height 40px, rounded pill */}
+          <TertiaryButton
+            id="editor-settings-btn"
+            onClick={toggleRightPanel}
+            label="Article settings"
+            active={ui.rightPanelOpen}
+          >
+            <Settings2 size={14} strokeWidth={1.75} aria-hidden="true" />
+            <span>Settings</span>
+          </TertiaryButton>
+        </div>
+
+        {/* Primary Publish button (always visible) */}
         <button
           id="editor-publish-btn"
           type="button"
@@ -376,26 +389,44 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
             display: 'inline-flex',
             alignItems: 'center',
             gap: 'var(--space-xxs)',
-            height: 'var(--h-btn)',
-            padding: '10px var(--space-md)',
+            height: '36px',
+            padding: '0 14px',
             borderRadius: 'var(--radius-pill)',
             border: 'none',
             cursor: 'pointer',
             fontFamily: 'var(--font-sans)',
-            fontSize: 'var(--fs-btn)',
+            fontSize: '13px',
             fontWeight: 'var(--fw-medium)',
-            lineHeight: 'var(--lh-btn)',
             background: 'var(--color-primary)',
             color: 'var(--color-on-primary)',
             transition: `background var(--duration-200) var(--ease-out)`,
           }}
-          onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary-active)'; }}
-          onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary)'; }}
-          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-ink)'; }}
-          onMouseUp={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-primary-active)'; }}
         >
           <Upload size={13} strokeWidth={2} aria-hidden="true" />
-          Publish
+          <span>Publish</span>
+        </button>
+
+        {/* Mobile "More Tools" Button (<768px) */}
+        <button
+          id="editor-mobile-more-tools-btn"
+          type="button"
+          className="editor-mobile-tools-toggle"
+          onClick={onOpenTools}
+          aria-label="More editor tools"
+          style={{
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '40px',
+            height: '40px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-hairline)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-ink)',
+            cursor: 'pointer',
+          }}
+        >
+          <SlidersHorizontal size={18} />
         </button>
       </div>
     </header>

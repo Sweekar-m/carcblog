@@ -293,13 +293,7 @@ export function LeftSidebar() {
       <style>{`
         @media (max-width: 767px) {
           .editor-responsive-left-sidebar {
-            position: fixed !important;
-            top: 52px !important;
-            left: 0 !important;
-            bottom: 0 !important;
-            z-index: 60 !important;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15) !important;
-            max-width: 85vw !important;
+            display: none !important;
           }
         }
       `}</style>
