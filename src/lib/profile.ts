@@ -184,6 +184,7 @@ export async function updateProfileDetails(userId: string, updates: Partial<Exte
     console.error('Error upserting profile:', error);
     throw new Error(error.message || 'Failed to save profile record in database');
   }
+  clearProfileCache(userId);
   return data as ExtendedProfile;
 }
 

@@ -5,7 +5,7 @@ import { SignUp } from '@clerk/astro/components';
 ---
 <Layout title="Sign Up — Carcblog" description="Create a new Carcblog account">
   <div class="auth-container">
-    <SignUp forceRedirectUrl="/dashboard" />
+    <SignUp forceRedirectUrl="/onboarding" fallbackRedirectUrl="/onboarding" />
   </div>
 </Layout>
 

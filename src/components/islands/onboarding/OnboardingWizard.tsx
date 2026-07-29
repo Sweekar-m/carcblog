@@ -29,8 +29,8 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Form State
-  const [role, setRole] = useState<'reader' | 'writer'>(initialUser.role === 'writer' ? 'writer' : 'reader');
+  // Form State — Default to 'writer' so users get access to publishing tools
+  const [role, setRole] = useState<'reader' | 'writer'>(initialUser.role === 'reader' ? 'reader' : 'writer');
   const [fullName, setFullName] = useState(initialUser.full_name || '');
   const [username, setUsername] = useState(initialUser.username || '');
   const [avatarUrl, setAvatarUrl] = useState(initialUser.avatar_url || '');
