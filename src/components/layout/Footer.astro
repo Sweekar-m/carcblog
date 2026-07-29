@@ -121,6 +121,9 @@
   gap: var(--space-sm);
   grid-column: 1;
 }
+@media (max-width: 768px) {
+  .footer-brand-col { grid-column: 1 / -1; margin-bottom: var(--space-md); }
+}
 
 .footer-wordmark {
   font-family: var(--font-sans);

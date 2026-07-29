@@ -156,7 +156,11 @@ const recentArticles = sanityArticles.map(article => ({
   background: var(--color-surface);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-full);
-  padding: 6px 14px;
+  padding: 8px 16px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: background var(--duration-150) var(--ease-out), border-color var(--duration-150) var(--ease-out);
 }

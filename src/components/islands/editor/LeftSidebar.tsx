@@ -279,6 +279,7 @@ export function LeftSidebar() {
     <aside
       id="editor-left-sidebar"
       aria-label="Article outline and statistics"
+      className="editor-responsive-left-sidebar"
       style={{
         position: 'relative',
         flexShrink: 0,
@@ -289,6 +290,19 @@ export function LeftSidebar() {
         opacity: ui.leftSidebarOpen ? 1 : 0,
       }}
     >
+      <style>{`
+        @media (max-width: 767px) {
+          .editor-responsive-left-sidebar {
+            position: fixed !important;
+            top: 52px !important;
+            left: 0 !important;
+            bottom: 0 !important;
+            z-index: 60 !important;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15) !important;
+            max-width: 85vw !important;
+          }
+        }
+      `}</style>
       <div
         style={{
           width: '260px',

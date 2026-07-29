@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Search, Filter, Plus, FileText, Eye, Heart, MessageSquare, Bookmark, Clock, MoreVertical, Edit3, Copy, Trash2, Archive, ExternalLink
+  Search, Plus, FileText, Eye, Heart, MessageSquare, Edit3, ExternalLink
 } from 'lucide-react';
 import type { SanityArticle } from '@/types/sanity';
 
@@ -31,67 +31,79 @@ export default function ArticleCMSManager({ articles: initialArticles }: Article
   };
 
   return (
-    <div style={{ padding: '32px 0' }}>
+    <div style={{ padding: '16px 0 40px 0', fontFamily: 'var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif)' }}>
       
       {/* Top Header Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--color-ink)' }}>Article Management CMS</h1>
-          <p style={{ color: 'var(--color-steel)', margin: 0, fontSize: '0.9375rem' }}>Search, filter, edit, publish, and analyze your publications.</p>
+          <h1 style={{ fontFamily: 'var(--font-sans, sans-serif)', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--color-ink, #0f172a)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+            Article Management CMS
+          </h1>
+          <p style={{ fontFamily: 'var(--font-sans, sans-serif)', color: 'var(--color-steel, #64748b)', margin: 0, fontSize: '0.875rem' }}>
+            Search, filter, edit, publish, and analyze your publications.
+          </p>
         </div>
 
         <a
           href="/dashboard/articles/new"
           style={{
-            display: 'inline-flex',
+            display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '8px',
-            padding: '10px 20px',
+            height: '44px',
+            padding: '0 20px',
             borderRadius: '9999px',
             background: 'var(--color-primary, #0F172A)',
             color: '#ffffff',
             fontWeight: 700,
             fontSize: '14px',
-            textDecoration: 'none'
+            textDecoration: 'none',
+            fontFamily: 'var(--font-sans, sans-serif)',
+            boxSizing: 'border-box',
           }}
         >
-          <Plus style={{ width: '16px', height: '16px' }} />
-          Create New Article
+          <Plus size={16} />
+          <span>Create New Article</span>
         </a>
       </div>
 
       {/* Filter & Search Toolbar */}
-      <div style={{ background: '#ffffff', border: '1px solid var(--color-hairline)', borderRadius: '16px', padding: '16px 20px', marginBottom: '24px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ background: '#ffffff', border: '1px solid var(--color-hairline, #e2e8f0)', borderRadius: '16px', padding: '14px', marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         
-        {/* Search */}
-        <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-          <Search style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'var(--color-steel)' }} />
+        {/* Search Input Row */}
+        <div style={{ position: 'relative', width: '100%', boxSizing: 'border-box' }}>
+          <Search style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', width: '16px', height: '16px', color: 'var(--color-steel, #64748b)' }} />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Search articles by title or excerpt..."
-            style={{ width: '100%', height: '42px', paddingLeft: '40px', paddingRight: '14px', borderRadius: '10px', border: '1px solid var(--color-hairline)', outline: 'none', fontSize: '14px', boxSizing: 'border-box' }}
+            placeholder="Search articles by title..."
+            style={{ width: '100%', height: '42px', paddingLeft: '38px', paddingRight: '12px', borderRadius: '10px', border: '1px solid var(--color-hairline, #e2e8f0)', outline: 'none', fontSize: '14px', fontFamily: 'var(--font-sans, sans-serif)', boxSizing: 'border-box', background: 'var(--color-surface, #f8fafc)' }}
           />
         </div>
 
-        {/* Status Filters */}
-        <div style={{ display: 'flex', gap: '6px', background: 'var(--color-surface)', padding: '4px', borderRadius: '10px' }}>
+        {/* Status Filter Tabs Row */}
+        <div style={{ display: 'flex', gap: '6px', background: 'var(--color-surface, #f8fafc)', padding: '4px', borderRadius: '10px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', width: '100%', boxSizing: 'border-box' }}>
           {(['all', 'published', 'draft', 'archived'] as const).map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
               style={{
-                padding: '6px 14px',
+                flex: '1 0 auto',
+                padding: '8px 14px',
+                minHeight: '36px',
                 borderRadius: '8px',
                 border: 'none',
                 background: statusFilter === st ? '#ffffff' : 'transparent',
-                color: statusFilter === st ? 'var(--color-ink)' : 'var(--color-steel)',
+                color: statusFilter === st ? 'var(--color-ink, #0f172a)' : 'var(--color-steel, #64748b)',
                 fontWeight: statusFilter === st ? 700 : 500,
-                fontSize: '13px',
+                fontSize: '12px',
+                fontFamily: 'var(--font-sans, sans-serif)',
                 cursor: 'pointer',
                 textTransform: 'capitalize',
-                boxShadow: statusFilter === st ? 'var(--color-shadow-subtle)' : 'none'
+                boxShadow: statusFilter === st ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                whiteSpace: 'nowrap',
               }}
             >
               {st}
@@ -99,131 +111,136 @@ export default function ArticleCMSManager({ articles: initialArticles }: Article
           ))}
         </div>
 
-        {/* Bulk Action Bar if Selected */}
+        {/* Bulk Delete Bar */}
         {selectedIds.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '12px', borderLeft: '1px solid var(--color-hairline)' }}>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink)' }}>{selectedIds.length} selected</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '8px', borderTop: '1px solid var(--color-hairline, #e2e8f0)' }}>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-ink, #0f172a)' }}>{selectedIds.length} selected</span>
             <button
               onClick={handleBulkDelete}
-              style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #dc2626', background: 'rgba(220, 38, 38, 0.05)', color: '#dc2626', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}
+              style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #dc2626', background: '#fef2f2', color: '#dc2626', fontWeight: 600, fontSize: '12px', cursor: 'pointer' }}
             >
-              Delete Selected
+              Delete
             </button>
           </div>
         )}
       </div>
 
-      {/* Article Cards Grid */}
-      {filteredArticles.length > 0 ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          {filteredArticles.map((art) => {
+      {/* Articles List */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {filteredArticles.length > 0 ? (
+          filteredArticles.map((art) => {
             const isSelected = selectedIds.includes(art._id);
+            const coverUrl = typeof art.coverImage === 'string' ? art.coverImage : (art.coverImage as any)?.asset?.url;
             return (
               <div
                 key={art._id}
                 style={{
                   background: '#ffffff',
-                  border: isSelected ? '2px solid var(--color-accent, #0EA5E9)' : '1px solid var(--color-hairline)',
+                  border: isSelected ? '2px solid #0ea5e9' : '1px solid var(--color-hairline, #e2e8f0)',
                   borderRadius: '16px',
-                  padding: '20px',
+                  padding: '16px',
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: '20px',
-                  boxShadow: 'var(--shadow-subtle)',
-                  transition: 'all 150ms ease'
+                  flexDirection: 'column',
+                  gap: '12px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                  boxSizing: 'border-box',
                 }}
               >
-                <input
-                  type="checkbox"
-                  checked={isSelected}
-                  onChange={() => toggleSelect(art._id)}
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-
-                {/* Article Cover Preview */}
-                <div style={{ width: '90px', height: '65px', borderRadius: '8px', background: 'var(--color-surface)', overflow: 'hidden', flexShrink: 0 }}>
-                  {art.coverImage ? (
-                    <img src={typeof art.coverImage === 'string' ? art.coverImage : (art.coverImage as any)?.asset?.url} alt={art.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-steel)' }}>
-                      <FileText style={{ width: '24px', height: '24px' }} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Article Meta */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                {/* Card Header Row: Badge + Date + Selection Checkbox */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{
-                      fontSize: '11px',
+                      fontSize: '10px',
                       fontWeight: 700,
-                      padding: '2px 8px',
+                      padding: '3px 10px',
                       borderRadius: '9999px',
-                      background: (art.status || 'published') === 'published' ? 'rgba(5, 150, 105, 0.1)' : 'var(--color-surface)',
-                      color: (art.status || 'published') === 'published' ? '#059669' : 'var(--color-slate)',
-                      textTransform: 'uppercase'
+                      background: (art.status || 'published') === 'published' ? '#d1fae5' : '#f1f5f9',
+                      color: (art.status || 'published') === 'published' ? '#047857' : '#64748b',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
                     }}>
                       {art.status || 'published'}
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--color-stone)' }}>
+                    <span style={{ fontSize: '12px', color: '#94a3b8' }}>
                       {new Date(art.publishedAt || (art as any)._createdAt).toLocaleDateString()}
                     </span>
                   </div>
 
-                  <h3 style={{ fontSize: '1.0625rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--color-ink)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {art.title}
-                  </h3>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--color-steel)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {art.excerpt || 'No description summary.'}
-                  </p>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => toggleSelect(art._id)}
+                    style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
                 </div>
 
-                {/* Metrics */}
-                <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--color-steel)', paddingRight: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Total Views">
-                    <Eye style={{ width: '15px', height: '15px' }} />
-                    <span>{(art as any).viewsCount ?? (art as any).views ?? 0}</span>
+                {/* Card Content Row: Cover Thumbnail + Title */}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                  <div style={{ width: '64px', height: '52px', borderRadius: '8px', background: '#f8fafc', overflow: 'hidden', flexShrink: 0, border: '1px solid #e2e8f0' }}>
+                    {coverUrl ? (
+                      <img src={coverUrl} alt={art.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                        <FileText size={20} />
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Likes">
-                    <Heart style={{ width: '15px', height: '15px' }} />
-                    <span>{(art as any).likesCount ?? (art as any).likes ?? 0}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Comments">
-                    <MessageSquare style={{ width: '15px', height: '15px' }} />
-                    <span>{(art as any).commentsCount ?? (art as any).comments ?? 0}</span>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h3 style={{ fontFamily: 'var(--font-sans, sans-serif)', fontSize: '0.9375rem', fontWeight: 700, margin: '0 0 4px 0', color: '#0f172a', lineHeight: 1.35 }}>
+                      {art.title}
+                    </h3>
+                    <p style={{ fontFamily: 'var(--font-sans, sans-serif)', fontSize: '0.8125rem', color: '#64748b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      {art.excerpt || 'No description summary available.'}
+                    </p>
                   </div>
                 </div>
 
-                {/* Quick Actions */}
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <a
-                    href={`/article/${art.slug.current}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--color-hairline)', color: 'var(--color-ink)' }}
-                    title="View Published Article"
-                  >
-                    <ExternalLink style={{ width: '15px', height: '15px' }} />
-                  </a>
-                  <a
-                    href={`/dashboard/articles/new?id=${art._id}`}
-                    style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--color-hairline)', color: 'var(--color-ink)' }}
-                    title="Edit Article"
-                  >
-                    <Edit3 style={{ width: '15px', height: '15px' }} />
-                  </a>
+                {/* Card Footer Row: Metrics + Action Buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px', color: '#64748b' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Views">
+                      <Eye size={14} /> {(art as any).viewsCount ?? (art as any).views ?? 0}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Likes">
+                      <Heart size={14} /> {(art as any).likesCount ?? (art as any).likes ?? 0}
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Comments">
+                      <MessageSquare size={14} /> {(art as any).commentsCount ?? (art as any).comments ?? 0}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <a
+                      href={`/article/${typeof art.slug === 'string' ? art.slug : art.slug?.current}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
+                      title="View Article"
+                    >
+                      <ExternalLink size={16} />
+                    </a>
+                    <a
+                      href={`/dashboard/articles/new?id=${art._id}`}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
+                      title="Edit Article"
+                    >
+                      <Edit3 size={16} />
+                    </a>
+                  </div>
                 </div>
+
               </div>
             );
-          })}
-        </div>
-      ) : (
-        <div style={{ textAlign: 'center', padding: '64px', background: '#ffffff', borderRadius: '16px', border: '1px solid var(--color-hairline)' }}>
-          <FileText style={{ width: '40px', height: '40px', color: 'var(--color-steel)', margin: '0 auto 12px' }} />
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 700, margin: '0 0 6px 0' }}>No articles match your filter</h3>
-          <p style={{ color: 'var(--color-steel)', fontSize: '0.875rem', margin: 0 }}>Try clearing your search or creating a new story.</p>
-        </div>
-      )}
+          })
+        ) : (
+          <div style={{ textAlign: 'center', padding: '48px 16px', background: '#ffffff', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+            <FileText size={36} style={{ color: '#94a3b8', margin: '0 auto 12px' }} />
+            <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '0 0 4px 0', color: '#0f172a' }}>No articles found</h3>
+            <p style={{ color: '#64748b', fontSize: '0.875rem', margin: 0 }}>Try clearing your search query or creating a new story.</p>
+          </div>
+        )}
+      </div>
 
     </div>
   );

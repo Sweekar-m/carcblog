@@ -47,7 +47,7 @@ const isLoggedIn = !!Astro.locals.user;
 
       <!-- Main headline — hero-display: DM Sans 600, 80px, tight leading -->
       <h1 class="hero-headline">
-        Where great startup<br />
+        Where great startup<br class="hidden sm:inline" />
         ideas go public.
       </h1>
 
@@ -611,6 +611,9 @@ const isLoggedIn = !!Astro.locals.user;
   width: 1px;
   height: 32px;
   background: var(--color-hairline);
+}
+@media (max-width: 640px) {
+  .stat-divider { display: none; }
 }
 
 /* ════════════════════════════════════════════════════════════

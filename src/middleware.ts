@@ -44,14 +44,11 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
   const isOnboardingApi = pathname.startsWith('/api/onboarding');
   const isAuthRoute = ['/auth/sign-in', '/auth/sign-up', '/sign-in', '/sign-up'].includes(pathname);
 
-  // 2. Dev-mode bypass for local automated testing
-  const isDevTest = process.env.NODE_ENV === 'development' && (
-    context.request.headers.get('x-dev-test') === 'true' || 
-    url.searchParams.get('dev_test') === 'true'
-  );
+  // 2. Dev-mode bypass strictly for explicit automated test runs with ?dev_test=true
+  const hasDevTestQuery = process.env.NODE_ENV === 'development' && url.searchParams.get('dev_test') === 'true';
 
-  if (isDevTest && !userId) {
-    const customUserId = context.request.headers.get('x-test-user-id') || url.searchParams.get('test_as_user') || 'user_3GxVczR4xrrhZPPFGQHOj2TILhY';
+  if (hasDevTestQuery && !userId) {
+    const customUserId = url.searchParams.get('test_as_user') || 'user_3GxVczR4xrrhZPPFGQHOj2TILhY';
     try {
       const realProfile = await getUserProfile(customUserId);
       context.locals.user = {

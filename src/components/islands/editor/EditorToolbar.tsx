@@ -295,7 +295,20 @@ export function EditorToolbar({ onPublishClick }: EditorToolbarProps) {
       </div>
 
       {/* Right: tertiary actions + primary publish */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xxs)', flex: '0 0 auto' }}>
+      <div className="editor-toolbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-xxs)', flex: '0 0 auto' }}>
+        <style>{`
+          @media (max-width: 767px) {
+            .editor-toolbar-right-controls {
+              overflow-x: auto !important;
+              max-width: calc(100vw - 120px) !important;
+              scrollbar-width: none !important;
+              -ms-overflow-style: none !important;
+            }
+            .editor-toolbar-right-controls::-webkit-scrollbar {
+              display: none !important;
+            }
+          }
+        `}</style>
         <TertiaryButton
           id="editor-focus-mode-btn"
           onClick={toggleFocusMode}

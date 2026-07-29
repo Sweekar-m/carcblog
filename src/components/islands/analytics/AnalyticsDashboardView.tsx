@@ -28,18 +28,18 @@ export default function AnalyticsDashboardView({ analytics }: AnalyticsDashboard
     <div style={{ padding: '32px 0' }}>
       
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '28px' }}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--color-ink)' }}>Writer Performance Analytics</h1>
-          <p style={{ color: 'var(--color-steel)', margin: 0, fontSize: '0.9375rem' }}>Track engagement, readership growth, traffic origins, and read depth.</p>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink mb-1">Writer Performance Analytics</h1>
+          <p className="text-steel text-xs sm:text-sm">Track engagement, readership growth, traffic origins, and read depth.</p>
         </div>
 
         <button
           onClick={exportCSV}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', borderRadius: '9999px', border: '1px solid var(--color-hairline)', background: '#ffffff', color: 'var(--color-ink)', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-hairline bg-canvas text-ink font-semibold text-xs sm:text-sm min-h-[44px] w-full sm:w-auto shadow-xs"
         >
-          <Download style={{ width: '16px', height: '16px' }} />
-          Export CSV
+          <Download className="w-4 h-4" />
+          <span>Export CSV</span>
         </button>
       </div>
 

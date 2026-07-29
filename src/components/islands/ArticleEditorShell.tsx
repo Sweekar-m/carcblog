@@ -14,6 +14,7 @@ import React, {
   useState,
 } from 'react';
 import { useStore } from '@nanostores/react';
+import { SlidersHorizontal, X, BarChart3, ListTree, Settings, Upload } from 'lucide-react';
 import {
   $blockNoteDocument,
   $clerkUserId,
@@ -82,6 +83,8 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
   const [recoverySnapshot, setRecoverySnapshot] = useState<DraftSnapshot | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [pexelsOpen, setPexelsOpen] = useState(false);
+  const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
+  const [mobileToolsTab, setMobileToolsTab] = useState<'stats' | 'outline' | 'publish'>('stats');
 
   // ── Populate initial article if editing an existing article ────────────
   useEffect(() => {
@@ -249,6 +252,7 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
       if (e.key === 'Escape') {
         if (shortcutsOpen) setShortcutsOpen(false);
         else if (pexelsOpen) setPexelsOpen(false);
+        else if (mobileToolsOpen) setMobileToolsOpen(false);
         else if (ui.focusMode) toggleFocusMode();
         else if (ui.rightPanelOpen) toggleRightPanel();
       }
@@ -488,15 +492,15 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
           }}
         >
           <div
+            className="w-full px-4 sm:px-6 md:px-8"
             style={{
               marginLeft: 'auto',
               marginRight: 'auto',
-              paddingTop: 'var(--space-xxl)',
+              paddingTop: 'var(--space-xl)',
               paddingBottom: 'var(--space-xxl)',
-              paddingLeft: 'var(--space-xl)', // Generous left padding to prevent edge compaction
-              paddingRight: 'var(--space-xl)', // Generous right padding
               maxWidth: '740px',
               minHeight: '100%',
+              boxSizing: 'border-box',
             }}
           >
             {/* Cover Image Banner */}
@@ -580,6 +584,280 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
           onClose={() => setPexelsOpen(false)}
           onSelect={handleSelectPexelsImage}
         />
+      )}
+
+      {/* Floating Action Button ("Tools") on Mobile screens (<768px) */}
+      <button
+        id="editor-mobile-tools-fab"
+        type="button"
+        onClick={() => setMobileToolsOpen(true)}
+        style={{
+          position: 'fixed',
+          bottom: '24px',
+          right: '24px',
+          zIndex: 40,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          height: '48px',
+          padding: '0 20px',
+          borderRadius: 'var(--radius-pill)',
+          background: 'var(--color-primary)',
+          color: 'var(--color-on-primary)',
+          fontFamily: 'var(--font-sans)',
+          fontSize: '13px',
+          fontWeight: 600,
+          border: 'none',
+          boxShadow: 'var(--shadow-modal)',
+          cursor: 'pointer',
+        }}
+        className="md:hidden"
+        aria-label="Open editor tools"
+      >
+        <SlidersHorizontal size={16} />
+        <span>Tools</span>
+      </button>
+
+      {/* Mobile Tools Bottom Sheet Overlay (<768px) */}
+      {mobileToolsOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 100,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            background: 'rgba(15, 23, 42, 0.6)',
+            backdropFilter: 'blur(4px)',
+          }}
+          className="md:hidden"
+          role="dialog"
+          aria-modal="true"
+        >
+          {/* Backdrop click */}
+          <div
+            style={{ position: 'absolute', inset: 0 }}
+            onClick={() => setMobileToolsOpen(false)}
+            aria-hidden="true"
+          />
+
+          {/* Sheet panel */}
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 10,
+              width: '100%',
+              maxHeight: '85vh',
+              backgroundColor: 'var(--color-canvas)',
+              borderTop: '1px solid var(--color-hairline)',
+              borderTopLeftRadius: '20px',
+              borderTopRightRadius: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+              boxShadow: 'var(--shadow-modal)',
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                borderBottom: '1px solid var(--color-hairline)',
+                backgroundColor: 'var(--color-surface)',
+              }}
+            >
+              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--color-ink)' }}>
+                Editor Studio Tools
+              </span>
+              <button
+                onClick={() => setMobileToolsOpen(false)}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'var(--color-canvas)',
+                  border: '1px solid var(--color-hairline)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--color-steel)',
+                  cursor: 'pointer',
+                }}
+                aria-label="Close tools sheet"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--color-hairline)', background: 'var(--color-surface-soft)', padding: '6px' }}>
+              <button
+                onClick={() => setMobileToolsTab('stats')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: mobileToolsTab === 'stats' ? '1px solid var(--color-hairline)' : 'none',
+                  background: mobileToolsTab === 'stats' ? 'var(--color-canvas)' : 'transparent',
+                  color: mobileToolsTab === 'stats' ? 'var(--color-ink)' : 'var(--color-steel)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <BarChart3 size={14} />
+                <span>Stats</span>
+              </button>
+              <button
+                onClick={() => setMobileToolsTab('outline')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: mobileToolsTab === 'outline' ? '1px solid var(--color-hairline)' : 'none',
+                  background: mobileToolsTab === 'outline' ? 'var(--color-canvas)' : 'transparent',
+                  color: mobileToolsTab === 'outline' ? 'var(--color-ink)' : 'var(--color-steel)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <ListTree size={14} />
+                <span>Outline ({useStore($outline).length})</span>
+              </button>
+              <button
+                onClick={() => setMobileToolsTab('publish')}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  height: '40px',
+                  borderRadius: '8px',
+                  border: mobileToolsTab === 'publish' ? '1px solid var(--color-hairline)' : 'none',
+                  background: mobileToolsTab === 'publish' ? 'var(--color-canvas)' : 'transparent',
+                  color: mobileToolsTab === 'publish' ? 'var(--color-ink)' : 'var(--color-steel)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                <Settings size={14} />
+                <span>Publish</span>
+              </button>
+            </div>
+
+            {/* Tab Body */}
+            <div style={{ padding: '20px', overflowY: 'auto', minHeight: '220px' }}>
+              {mobileToolsTab === 'stats' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-hairline)' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-stone)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Words</span>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)' }}>{useStore($stats).wordCount.toLocaleString()}</span>
+                    </div>
+                    <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-hairline)' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-stone)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Characters</span>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)' }}>{useStore($stats).charCount.toLocaleString()}</span>
+                    </div>
+                    <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-hairline)' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-stone)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Paragraphs</span>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)' }}>{useStore($stats).paragraphCount}</span>
+                    </div>
+                    <div style={{ padding: '12px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-hairline)' }}>
+                      <span style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--color-stone)', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Read Time</span>
+                      <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--color-ink)' }}>{useStore($stats).readingTimeMinutes} min</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {mobileToolsTab === 'outline' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {useStore($outline).length > 0 ? (
+                    useStore($outline).map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setMobileToolsOpen(false);
+                          const el = document.querySelector(`[data-id="${item.id}"]`);
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        style={{
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: 'transparent',
+                          color: 'var(--color-steel)',
+                          fontFamily: 'var(--font-sans)',
+                          fontSize: '13px',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          minHeight: '44px',
+                        }}
+                      >
+                        {item.level === 2 ? '↳ ' : item.level >= 3 ? '  └ ' : ''}{item.text}
+                      </button>
+                    ))
+                  ) : (
+                    <p style={{ fontSize: '13px', color: 'var(--color-stone)', italic: 'true' }}>Add headings in the editor to populate your outline.</p>
+                  )}
+                </div>
+              )}
+
+              {mobileToolsTab === 'publish' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <p style={{ fontSize: '13px', color: 'var(--color-steel)' }}>Configure article category, tags, custom slug, or publish your draft directly.</p>
+                  <button
+                    onClick={() => {
+                      setMobileToolsOpen(false);
+                      handlePublishClick();
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '48px',
+                      borderRadius: 'var(--radius-pill)',
+                      background: 'var(--color-primary)',
+                      color: 'var(--color-on-primary)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px',
+                    }}
+                  >
+                    <Upload size={16} />
+                    <span>Open Article Settings & Publish</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
