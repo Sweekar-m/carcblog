@@ -46,16 +46,24 @@ if (id) {
 
   <script is:inline>
     // Hide the SSR skeleton as soon as the React shell mounts
-    document.addEventListener('DOMContentLoaded', () => {
-      const observer = new MutationObserver(() => {
+    (function () {
+      function checkAndHide() {
         const shell = document.getElementById('publishing-studio');
         const skeleton = document.getElementById('editor-ssr-skeleton');
         if (shell && skeleton) {
           skeleton.style.display = 'none';
-          observer.disconnect();
+          return true;
         }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
+        return false;
+      }
+      if (!checkAndHide()) {
+        const observer = new MutationObserver(() => {
+          if (checkAndHide()) {
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+      }
+    })();
   </script>
 </EditorLayout>

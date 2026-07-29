@@ -528,6 +528,15 @@ export function BlockNoteEditor({ onContentChange }: BlockNoteEditorProps) {
           color: var(--color-muted-soft) !important;
           font-style: normal !important;
         }
+        /* BlockNote floating toolbars, formatting menus & slash command popups */
+        .bn-side-menu,
+        .bn-formatting-toolbar,
+        .bn-slash-menu,
+        .bn-drag-handle,
+        .bn-toolbar,
+        .bn-menu-dropdown {
+          z-index: 100 !important;
+        }
       `}</style>
     </div>
   );

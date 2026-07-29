@@ -301,28 +301,8 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
 
       {/* Right: tertiary actions + primary publish */}
       <div className="editor-toolbar-right-controls" style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: '0 0 auto' }}>
-        <style>{`
-          /* Mobile (<768px): Hide individual desktop tertiary buttons, show compact Publish & More Tools button */
-          @media (max-width: 767px) {
-            .editor-desktop-tool-action {
-              display: none !important;
-            }
-            .editor-mobile-tools-toggle {
-              display: inline-flex !important;
-            }
-          }
-          /* Desktop (≥768px): Hide mobile tools toggle, show full desktop buttons */
-          @media (min-width: 768px) {
-            .editor-desktop-tool-action {
-              display: inline-flex !important;
-            }
-            .editor-mobile-tools-toggle {
-              display: none !important;
-            }
-          }
-        `}</style>
-
-        <div className="editor-desktop-tool-action" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--space-xxs)' }}>
+        {/* Desktop actions (≥768px) */}
+        <div className="hidden md:inline-flex items-center gap-xxs">
           <TertiaryButton
             id="editor-focus-mode-btn"
             onClick={toggleFocusMode}
@@ -385,14 +365,11 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
         <button
           id="editor-mobile-ai-btn"
           type="button"
-          className="editor-mobile-tools-toggle"
+          className="inline-flex md:hidden items-center justify-center"
           onClick={() => window.dispatchEvent(new CustomEvent('editor:open-ai-chat'))}
           aria-label="AI Writing Assistant"
           title="AI Story Assistant"
           style={{
-            display: 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '36px',
             height: '36px',
             borderRadius: 'var(--radius-md)',
@@ -408,14 +385,11 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
         <button
           id="editor-mobile-media-btn"
           type="button"
-          className="editor-mobile-tools-toggle"
+          className="inline-flex md:hidden items-center justify-center"
           onClick={() => window.dispatchEvent(new CustomEvent('editor:open-media-search'))}
           aria-label="Search media images"
           title="Media Search"
           style={{
-            display: 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '36px',
             height: '36px',
             borderRadius: 'var(--radius-md)',
@@ -459,13 +433,10 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
         <button
           id="editor-mobile-more-tools-btn"
           type="button"
-          className="editor-mobile-tools-toggle"
+          className="inline-flex md:hidden items-center justify-center"
           onClick={onOpenTools}
           aria-label="More editor tools"
           style={{
-            display: 'none',
-            alignItems: 'center',
-            justifyContent: 'center',
             width: '36px',
             height: '36px',
             borderRadius: 'var(--radius-md)',
