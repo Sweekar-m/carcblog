@@ -14,7 +14,21 @@ import React, {
   useState,
 } from 'react';
 import { useStore } from '@nanostores/react';
-import { SlidersHorizontal, X, BarChart3, ListTree, Settings, Upload } from 'lucide-react';
+import {
+  SlidersHorizontal,
+  X,
+  BarChart3,
+  ListTree,
+  Settings,
+  Upload,
+  Sparkles,
+  Image as ImageIcon,
+  Eye,
+  Focus,
+  Save,
+  Settings2,
+  Keyboard,
+} from 'lucide-react';
 import {
   $blockNoteDocument,
   $clerkUserId,
@@ -47,6 +61,7 @@ import { DraftRecoveryBanner } from './editor/DraftRecoveryBanner';
 import { PreviewPanel } from './editor/PreviewPanel';
 import { KeyboardShortcutsModal } from './editor/KeyboardShortcutsModal';
 import { PexelsModal } from './editor/PexelsModal';
+import { AIChatPanel } from './editor/AIChatPanel';
 import type { DraftSnapshot } from '@/types/editor';
 
 // ─── Lazy load BlockNote (largest chunk) ─────────────────────────────────────
@@ -83,8 +98,21 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
   const [recoverySnapshot, setRecoverySnapshot] = useState<DraftSnapshot | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [pexelsOpen, setPexelsOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileToolsTab, setMobileToolsTab] = useState<'stats' | 'outline' | 'publish'>('stats');
+
+  // ── Global event listeners for AI Chat & Media Search ───────────────────
+  useEffect(() => {
+    const handleOpenMedia = () => setPexelsOpen(true);
+    const handleOpenAi = () => setAiChatOpen(true);
+    window.addEventListener('editor:open-media-search', handleOpenMedia);
+    window.addEventListener('editor:open-ai-chat', handleOpenAi);
+    return () => {
+      window.removeEventListener('editor:open-media-search', handleOpenMedia);
+      window.removeEventListener('editor:open-ai-chat', handleOpenAi);
+    };
+  }, []);
 
   // ── Populate initial article if editing an existing article ────────────
   useEffect(() => {
@@ -589,6 +617,12 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
         />
       )}
 
+      {/* AI Assistant Chat Panel */}
+      <AIChatPanel
+        isOpen={aiChatOpen}
+        onClose={() => setAiChatOpen(false)}
+      />
+
       {/* Mobile Tools Bottom Sheet Overlay (<768px) */}
       {mobileToolsOpen && (
         <div
@@ -642,7 +676,7 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
               }}
             >
               <span style={{ fontFamily: 'var(--font-sans)', fontSize: '15px', fontWeight: 700, color: 'var(--color-ink)' }}>
-                Editor Studio Actions
+                Editor Studio Actions & Tools
               </span>
               <button
                 onClick={() => setMobileToolsOpen(false)}
@@ -664,39 +698,41 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
               </button>
             </div>
 
-            {/* Quick Actions List (Min 44px touch target per item) */}
-            <div style={{ padding: '16px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Quick Actions List (Min 48px touch target per item) */}
+            <div style={{ padding: '16px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               
-              {/* 1. Article Settings & Publish */}
+              {/* 1. AI Story Assistant */}
               <button
                 onClick={() => {
                   setMobileToolsOpen(false);
-                  handlePublishClick();
+                  setAiChatOpen(true);
                 }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
                   width: '100%',
-                  minHeight: '48px',
+                  minHeight: '50px',
                   padding: '0 16px',
-                  borderRadius: 'var(--radius-pill)',
-                  background: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  border: 'none',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(14, 165, 233, 0.12) 100%)',
+                  border: '1px solid rgba(124, 58, 237, 0.3)',
                   fontFamily: 'var(--font-sans)',
                   fontSize: '14px',
                   fontWeight: 600,
+                  color: '#7C3AED',
                   cursor: 'pointer',
+                  textAlign: 'left',
                 }}
               >
-                <Upload size={18} />
-                <span>Configure Article Settings & Publish</span>
+                <Sparkles size={20} style={{ color: '#7C3AED' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span>⚡ AI Story Assistant</span>
+                  <span style={{ fontSize: '11px', color: 'var(--color-slate)', fontWeight: 400 }}>Brainstorm ideas, generate body, structure & tone</span>
+                </div>
               </button>
 
-              <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '4px 0' }} />
-
-              {/* 2. Cover / Media Search */}
+              {/* 2. Media & Photo Search */}
               <button
                 onClick={() => {
                   setMobileToolsOpen(false);
@@ -720,11 +756,41 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
                   textAlign: 'left',
                 }}
               >
-                <SlidersHorizontal size={18} style={{ color: 'var(--color-steel)' }} />
-                <span>Add / Change Cover Image (Pexels)</span>
+                <ImageIcon size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>🖼️ Media & Photo Search (Pexels / Unsplash)</span>
               </button>
 
-              {/* 3. Preview Article */}
+              {/* 3. Article Settings & Metadata */}
+              <button
+                onClick={() => {
+                  setMobileToolsOpen(false);
+                  toggleRightPanel();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  minHeight: '48px',
+                  padding: '0 16px',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-hairline)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--color-ink)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <Settings2 size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>⚙️ Article Settings (Category, Tags, SEO, Cover)</span>
+              </button>
+
+              <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '2px 0' }} />
+
+              {/* 4. Preview Article */}
               <button
                 onClick={() => {
                   setMobileToolsOpen(false);
@@ -748,11 +814,11 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
                   textAlign: 'left',
                 }}
               >
-                <BarChart3 size={18} style={{ color: 'var(--color-steel)' }} />
-                <span>{ui.previewMode ? 'Exit Preview Mode' : 'Preview Article'}</span>
+                <Eye size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>{ui.previewMode ? 'Exit Preview Mode' : '👁️ Preview Article'}</span>
               </button>
 
-              {/* 4. Focus Mode */}
+              {/* 5. Focus Mode */}
               <button
                 onClick={() => {
                   setMobileToolsOpen(false);
@@ -776,11 +842,11 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
                   textAlign: 'left',
                 }}
               >
-                <SlidersHorizontal size={18} style={{ color: 'var(--color-steel)' }} />
-                <span>{ui.focusMode ? 'Exit Focus Mode' : 'Focus Writing Mode'}</span>
+                <Focus size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>{ui.focusMode ? 'Exit Focus Mode' : '🎯 Focus Writing Mode'}</span>
               </button>
 
-              {/* 5. Save Draft */}
+              {/* 6. Save Draft */}
               <button
                 onClick={() => {
                   setMobileToolsOpen(false);
@@ -804,11 +870,39 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
                   textAlign: 'left',
                 }}
               >
-                <Settings size={18} style={{ color: 'var(--color-steel)' }} />
-                <span>Save Draft Now</span>
+                <Save size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>💾 Save Draft Now</span>
               </button>
 
-              <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '4px 0' }} />
+              {/* 7. Keyboard Shortcuts */}
+              <button
+                onClick={() => {
+                  setMobileToolsOpen(false);
+                  setShortcutsOpen(true);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  width: '100%',
+                  minHeight: '48px',
+                  padding: '0 16px',
+                  borderRadius: 'var(--radius-lg)',
+                  background: 'transparent',
+                  border: '1px solid var(--color-hairline-soft)',
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--color-ink)',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <Keyboard size={18} style={{ color: 'var(--color-steel)' }} />
+                <span>⌨️ Keyboard Shortcuts</span>
+              </button>
+
+              <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '2px 0' }} />
 
               {/* Stats Summary Card */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', padding: '12px', borderRadius: '12px', background: 'var(--color-surface)', border: '1px solid var(--color-hairline)' }}>

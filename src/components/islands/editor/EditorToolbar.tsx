@@ -14,6 +14,8 @@ import {
   Loader2,
   Save,
   SlidersHorizontal,
+  Sparkles,
+  Image as ImageIcon,
 } from 'lucide-react';
 import {
   $draftStatus,
@@ -379,6 +381,53 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
           </TertiaryButton>
         </div>
 
+        {/* Mobile quick actions (<768px): AI Assistant & Media Search */}
+        <button
+          id="editor-mobile-ai-btn"
+          type="button"
+          className="editor-mobile-tools-toggle"
+          onClick={() => window.dispatchEvent(new CustomEvent('editor:open-ai-chat'))}
+          aria-label="AI Writing Assistant"
+          title="AI Story Assistant"
+          style={{
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid rgba(124, 58, 237, 0.3)',
+            background: 'rgba(124, 58, 237, 0.08)',
+            color: '#7C3AED',
+            cursor: 'pointer',
+          }}
+        >
+          <Sparkles size={16} strokeWidth={2} />
+        </button>
+
+        <button
+          id="editor-mobile-media-btn"
+          type="button"
+          className="editor-mobile-tools-toggle"
+          onClick={() => window.dispatchEvent(new CustomEvent('editor:open-media-search'))}
+          aria-label="Search media images"
+          title="Media Search"
+          style={{
+            display: 'none',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '36px',
+            height: '36px',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid var(--color-hairline)',
+            background: 'var(--color-surface)',
+            color: 'var(--color-ink)',
+            cursor: 'pointer',
+          }}
+        >
+          <ImageIcon size={16} strokeWidth={1.75} />
+        </button>
+
         {/* Primary Publish button (always visible) */}
         <button
           id="editor-publish-btn"
@@ -417,8 +466,8 @@ export function EditorToolbar({ onPublishClick, onOpenTools }: EditorToolbarProp
             display: 'none',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '40px',
-            height: '40px',
+            width: '36px',
+            height: '36px',
             borderRadius: 'var(--radius-md)',
             border: '1px solid var(--color-hairline)',
             background: 'var(--color-surface)',
