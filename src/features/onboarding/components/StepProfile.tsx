@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, BookOpen, PenTool } from 'lucide-react';
+import { User, PenTool } from 'lucide-react';
 import { UserRole, type UserRoleType } from '@/types/roles';
 
 interface StepProfileProps {
@@ -53,57 +53,14 @@ export const StepProfile: React.FC<StepProfileProps> = ({
         Select your primary role and set up your public identity on CarcBlog.
       </p>
 
-      {/* Role Selection */}
-      <div style={{ marginBottom: '24px' }}>
-        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '10px' }}>
-          Account Type (Role) *
-        </label>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-          <div
-            onClick={() => setRole(UserRole.READER)}
-            style={{
-              padding: '16px',
-              borderRadius: '12px',
-              border: role === UserRole.READER ? '2px solid var(--color-primary, #0F172A)' : '1px solid var(--color-hairline, #E2E8F0)',
-              background: role === UserRole.READER ? 'var(--color-surface, #F8FAFC)' : '#ffffff',
-              cursor: 'pointer',
-              transition: 'all 150ms ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '15px', color: 'var(--color-ink)' }}>
-                <BookOpen style={{ width: '18px', height: '18px', color: 'var(--color-accent)' }} />
-                Reader / Explorer
-              </div>
-              <input type="radio" name="role" checked={role === UserRole.READER} onChange={() => setRole(UserRole.READER)} />
-            </div>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-steel)', lineHeight: 1.4 }}>
-              Discover tech startups, read founder stories, bookmark articles & follow creators.
-            </p>
-          </div>
-
-          <div
-            onClick={() => setRole(UserRole.WRITER)}
-            style={{
-              padding: '16px',
-              borderRadius: '12px',
-              border: role === UserRole.WRITER ? '2px solid var(--color-primary, #0F172A)' : '1px solid var(--color-hairline, #E2E8F0)',
-              background: role === UserRole.WRITER ? 'var(--color-surface, #F8FAFC)' : '#ffffff',
-              cursor: 'pointer',
-              transition: 'all 150ms ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, fontSize: '15px', color: 'var(--color-ink)' }}>
-                <PenTool style={{ width: '18px', height: '18px', color: 'var(--color-accent)' }} />
-                Writer & Creator
-              </div>
-              <input type="radio" name="role" checked={role === UserRole.WRITER} onChange={() => setRole(UserRole.WRITER)} />
-            </div>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-steel)', lineHeight: 1.4 }}>
-              Publish long-form stories, use AI Story Assistant, track article analytics & build audience.
-            </p>
-          </div>
+      {/* Creator Profile Badge */}
+      <div style={{ marginBottom: '24px', padding: '14px 18px', borderRadius: '12px', background: 'var(--color-surface, #F8FAFC)', border: '1px solid var(--color-hairline, #E2E8F0)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <PenTool style={{ width: '20px', height: '20px', color: 'var(--color-accent, #0EA5E9)', flexShrink: 0 }} />
+        <div>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--color-ink, #0F172A)' }}>Writer & Creator Account</span>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--color-steel, #64748B)' }}>
+            All members get full writing, story publishing, and creator studio access.
+          </p>
         </div>
       </div>
 

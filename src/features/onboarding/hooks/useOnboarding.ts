@@ -7,10 +7,8 @@ export function useOnboarding(initialUser: OnboardingUserProps) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Step 1: Basic Profile & Role (Default to WRITER for full studio access)
-  const [role, setRole] = useState<UserRoleType>(
-    initialUser.role === UserRole.READER ? UserRole.READER : UserRole.WRITER
-  );
+  // Step 1: Basic Profile & Role (Default to WRITER for all users)
+  const [role, setRole] = useState<UserRoleType>(UserRole.WRITER);
   const [fullName, setFullName] = useState(initialUser.full_name || '');
   const [username, setUsername] = useState(initialUser.username || '');
   const [avatarUrl, setAvatarUrl] = useState(initialUser.avatar_url || '');

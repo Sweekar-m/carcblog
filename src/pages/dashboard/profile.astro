@@ -1,478 +1,84 @@
 ---
-// Profile page — ElevenLabs editorial design system
+// Dashboard Profile Page — User Profile View
 import Layout from '@/layouts/Layout.astro';
-import { supabase } from '@/lib/supabase';
+import PublicProfileView from '@/components/islands/profile/PublicProfileView';
+import {
+  getProfileByUserId,
+  getUserSocialLinks,
+  getProfileStats,
+  getUserActivityFeed,
+  getUserFollowers,
+  getUserFollowing
+} from '@/lib/profile';
+import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
 
 export const prerender = false;
 
-const user = await getCurrentUser(Astro.locals);
-if (!user) {
+const currentUser = await getCurrentUser(Astro.locals);
+if (!currentUser) {
   return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
 }
-let profile = null;
 
-if (user) {
-  try {
-    const { data: profileData, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-    if (error) throw error;
-    profile = profileData;
-  } catch (error) {
-    console.error('Failed to fetch profile:', error);
-    profile = {
-      id: user.id,
-      username: user.username,
-      full_name: user.full_name,
-      avatar_url: user.avatar_url,
-      bio: user.bio,
-      website: null,
-      role: user.role,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-  }
+let profile = await getProfileByUserId(currentUser.id);
+if (!profile) {
+  profile = {
+    id: currentUser.id,
+    username: currentUser.username || `user_${currentUser.id.slice(-6)}`,
+    full_name: currentUser.full_name || 'User',
+    avatar_url: currentUser.avatar_url || null,
+    cover_url: null,
+    bio: currentUser.bio || null,
+    tagline: null,
+    website: null,
+    country: null,
+    city: null,
+    timezone: 'UTC',
+    preferred_language: 'en',
+    company: null,
+    job_title: null,
+    years_experience: 0,
+    industry: null,
+    skills: [],
+    interests: [],
+    expertise: [],
+    writing_topics: [],
+    notification_prefs: {},
+    role: currentUser.role || 'writer',
+    verified: false,
+    onboarding_completed: true,
+    profile_completion_pct: 50,
+    created_at: new Date().toISOString()
+  };
 }
+
+const [socialLinks, stats, userArticles, activityFeed, followersList, followingList] = await Promise.all([
+  getUserSocialLinks(currentUser.id).catch(() => []),
+  getProfileStats(currentUser.id).catch(() => ({ followersCount: 0, followingCount: 0, likesCount: 0, bookmarksCount: 0 })),
+  getSanityArticlesByAuthor(currentUser.id, 50).catch(() => []),
+  getUserActivityFeed(currentUser.id, 20).catch(() => []),
+  getUserFollowers(currentUser.id).catch(() => []),
+  getUserFollowing(currentUser.id).catch(() => []),
+]);
 ---
-<Layout title="Profile - Dashboard" description="Manage your account settings on Carcblog">
 
-  <div class="page-content">
-
-    <!-- Page header -->
-    <div class="page-header">
-      <h1 class="page-title">Profile</h1>
-      <p class="page-sub">Manage your account information and preferences.</p>
-    </div>
-
-    <div class="profile-layout">
-
-      <!-- Avatar card -->
-      <div class="profile-card">
-        <div class="avatar-section">
-          <div class="avatar-wrap">
-            {profile?.avatar_url ? (
-              <img
-                src={profile.avatar_url}
-                alt={`${profile?.full_name || 'User'}'s avatar`}
-                class="avatar-img"
-              />
-            ) : (
-              <div class="avatar-placeholder" aria-hidden="true">
-                <span>{user?.full_name?.charAt(0)?.toUpperCase() || 'U'}</span>
-              </div>
-            )}
-          </div>
-          <h2 class="profile-name">{profile?.full_name || user?.full_name || 'Anonymous User'}</h2>
-          <p class="profile-email">{(profile as any)?.email || user?.email || 'email@example.com'}</p>
-          <span class="badge-pill profile-role">{profile?.role || user?.role || 'Writer'}</span>
-        </div>
-      </div>
-
-      <!-- Form card -->
-      <div class="profile-card form-card">
-
-        <!-- Account info rows -->
-        <h3 class="form-section-title">Account</h3>
-        <div class="info-rows">
-          <div class="info-row">
-            <div class="info-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div class="info-body">
-              <p class="info-label">Username</p>
-              <p class="info-value">{profile?.username || 'username'}</p>
-            </div>
-          </div>
-          <div class="info-row">
-            <div class="info-icon" aria-hidden="true">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div class="info-body">
-              <p class="info-label">Email</p>
-              <p class="info-value">{(profile as any)?.email || user?.email || 'email@example.com'}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bio -->
-        <div class="form-group">
-          <label class="form-label" for="bio">Bio</label>
-          <textarea id="bio" rows="3" class="form-textarea" placeholder="Tell people about yourself...">{profile?.bio || user?.bio || ''}</textarea>
-        </div>
-
-        <!-- Social links -->
-        <div class="form-group">
-          <h3 class="form-section-title">Social Links</h3>
-          <div class="social-inputs">
-            <div class="social-row">
-              <div class="social-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </div>
-              <input type="text" id="twitter" class="social-input" placeholder="@yourhandle" />
-            </div>
-            <div class="social-row">
-              <div class="social-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                </svg>
-              </div>
-              <input type="text" id="instagram" class="social-input" placeholder="@yourhandle" />
-            </div>
-            <div class="social-row">
-              <div class="social-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-              <input type="url" id="website" class="social-input" placeholder="https://yourwebsite.com" value={profile?.website || ''} />
-            </div>
-          </div>
-        </div>
-
-        <!-- Preferences -->
-        <div class="form-group">
-          <h3 class="form-section-title">Preferences</h3>
-          <div class="pref-list">
-            <label class="pref-row">
-              <input type="checkbox" id="email-notifications" checked class="pref-check" />
-              <div class="pref-body">
-                <p class="pref-name">Email notifications for new followers</p>
-                <p class="pref-desc">Get notified when someone follows you</p>
-              </div>
-            </label>
-            <label class="pref-row">
-              <input type="checkbox" id="newsletter" class="pref-check" />
-              <div class="pref-body">
-                <p class="pref-name">Newsletter subscription</p>
-                <p class="pref-desc">Receive monthly digest of top stories</p>
-              </div>
-            </label>
-            <label class="pref-row">
-              <input type="checkbox" id="allow-comments" checked class="pref-check" />
-              <div class="pref-body">
-                <p class="pref-name">Allow comments on your articles</p>
-                <p class="pref-desc">Readers can leave comments on your published work</p>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <button id="saveButton" class="btn-primary">Save Changes</button>
-      </div>
-    </div>
-
+<Layout
+  title={`${profile.full_name || profile.username} — Profile`}
+  description={profile.bio || `${profile.full_name}'s creator profile on CarcBlog.`}
+  hideSidebar={true}
+>
+  <div style="padding-top: 16px;">
+    <PublicProfileView
+      client:load
+      profile={profile}
+      socialLinks={socialLinks}
+      stats={stats}
+      followersList={followersList}
+      followingList={followingList}
+      userArticles={userArticles}
+      activityFeed={activityFeed}
+      currentUserId={currentUser.id}
+      initialIsFollowing={false}
+    />
   </div>
-
 </Layout>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
-    if (!saveButton) return;
-
-    saveButton.addEventListener('click', async () => {
-      const original = saveButton.textContent!;
-      saveButton.textContent = 'Saving…';
-      saveButton.disabled = true;
-      await new Promise(r => setTimeout(r, 1000));
-      saveButton.textContent = 'Saved!';
-      saveButton.classList.add('save-success');
-      setTimeout(() => {
-        saveButton.textContent = original;
-        saveButton.disabled = false;
-        saveButton.classList.remove('save-success');
-      }, 2000);
-    });
-  });
-</script>
-
-<style>
-  .page-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xl);
-    max-width: 800px;
-  }
-
-  /* ── Page header ── */
-  .page-header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-    padding-bottom: var(--space-lg);
-    border-bottom: 1px solid var(--color-hairline);
-  }
-
-  /* heading-md: DM Sans 600, 32px */
-  .page-title {
-    font-family: var(--font-sans);
-    font-size: var(--fs-heading-md);
-    font-weight: var(--fw-semibold);
-    color: var(--color-ink-strong);
-    margin: 0;
-    line-height: var(--lh-heading-md);
-    letter-spacing: -0.01em;
-  }
-
-  .page-sub {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-steel);
-    margin: 0;
-  }
-
-  /* ── Layout ── */
-  .profile-layout {
-    display: grid;
-    grid-template-columns: 220px 1fr;
-    gap: var(--space-lg);
-    align-items: start;
-  }
-  @media (max-width: 768px) {
-    .profile-layout { grid-template-columns: 1fr; }
-  }
-
-  /* ── Card — white, hairline border, xl radius, soft shadow ── */
-  .profile-card {
-    background: var(--color-surface-card);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-xl);
-    padding: var(--space-lg);
-    transition: box-shadow var(--duration-200) var(--ease-out);
-  }
-  .profile-card:hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-
-  /* ── Avatar section ── */
-  .avatar-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-sm);
-  }
-
-  .avatar-wrap {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    border: 1px solid var(--color-hairline-strong);
-  }
-
-  .avatar-img { width: 100%; height: 100%; object-fit: cover; }
-
-  /* voice-icon-circular style fallback */
-  .avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    background: var(--color-surface-strong);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: var(--fw-medium);
-    font-size: 28px;
-    color: var(--color-ink);
-    font-family: var(--font-sans);
-  }
-
-  .profile-name {
-    font-family: var(--font-sans);
-    font-size: var(--fs-title-sm);
-    font-weight: var(--fw-medium);
-    color: var(--color-ink);
-    margin: 0;
-  }
-
-  .profile-email {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption);
-    color: var(--color-muted);
-    margin: 0;
-    word-break: break-all;
-  }
-
-  .profile-role {
-    margin-top: var(--space-xxs);
-  }
-
-  /* ── Form card ── */
-  .form-card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-  }
-
-  /* caption-uppercase */
-  .form-section-title {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption-upper);
-    font-weight: var(--fw-semibold);
-    color: var(--color-ink);
-    text-transform: uppercase;
-    letter-spacing: var(--ls-caption-upper);
-    margin: var(--space-xs) 0 2px;
-    border-bottom: 1px solid var(--color-hairline-soft);
-    padding-bottom: 6px;
-  }
-
-  /* ── Info rows ── */
-  .info-rows { display: flex; flex-direction: column; gap: var(--space-xs); }
-
-  .info-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-md);
-  }
-
-  .info-icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-muted);
-    flex-shrink: 0;
-  }
-
-  .info-body { display: flex; flex-direction: column; gap: 1px; }
-
-  .info-label {
-    font-family: var(--font-sans);
-    font-size: 11px;
-    color: var(--color-muted-soft);
-    margin: 0;
-    font-weight: var(--fw-medium);
-  }
-
-  .info-value {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-body-strong);
-    margin: 0;
-    font-weight: var(--fw-medium);
-  }
-
-  /* ── Form groups ── */
-  .form-group { display: flex; flex-direction: column; gap: var(--space-xs); }
-
-  /* body-strong */
-  .form-label {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption);
-    font-weight: var(--fw-medium);
-    color: var(--color-body-strong);
-  }
-
-  /* text-input standard styling */
-  .form-textarea {
-    width: 100%;
-    padding: 10px var(--space-sm);
-    border: 1px solid var(--color-hairline-strong);
-    border-radius: var(--radius-md);
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-ink);
-    background: var(--color-surface-card);
-    resize: none;
-    transition: border-color var(--duration-150) var(--ease-out);
-    box-sizing: border-box;
-  }
-  .form-textarea:focus {
-    outline: none;
-    border-color: var(--color-ink);
-    border-width: 1.5px;
-  }
-
-  /* ── Social inputs ── */
-  .social-inputs { display: flex; flex-direction: column; gap: var(--space-xs); }
-
-  .social-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: 8px var(--space-sm);
-    background: var(--color-canvas-soft);
-    border: 1px solid var(--color-hairline);
-    border-radius: var(--radius-md);
-  }
-
-  .social-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-muted);
-    flex-shrink: 0;
-  }
-
-  .social-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    color: var(--color-ink);
-    min-width: 0;
-    outline: none;
-  }
-  .social-input::placeholder { color: var(--color-muted-soft); }
-
-  /* ── Preferences ── */
-  .pref-list { display: flex; flex-direction: column; gap: var(--space-sm); }
-
-  .pref-row {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-sm);
-    cursor: pointer;
-  }
-
-  .pref-check {
-    width: 16px;
-    height: 16px;
-    margin-top: 3px;
-    flex-shrink: 0;
-    accent-color: var(--color-primary);
-    cursor: pointer;
-  }
-
-  .pref-body { display: flex; flex-direction: column; gap: 1px; }
-
-  .pref-name {
-    font-family: var(--font-sans);
-    font-size: var(--fs-body-sm);
-    font-weight: var(--fw-medium);
-    color: var(--color-body-strong);
-    margin: 0;
-  }
-
-  .pref-desc {
-    font-family: var(--font-sans);
-    font-size: var(--fs-caption);
-    color: var(--color-muted);
-    margin: 0;
-  }
-
-  /* Success state for button */
-  .save-success {
-    background: var(--color-semantic-success) !important;
-    border-color: var(--color-semantic-success) !important;
-    color: var(--color-on-primary) !important;
-  }
-</style>

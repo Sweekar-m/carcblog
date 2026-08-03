@@ -26,12 +26,7 @@ if (!user) {
   return Astro.redirect('/auth/sign-in?redirect_url=' + encodeURIComponent(Astro.url.pathname));
 }
 
-// Reader role gating: Redirect readers to their personal bookmarks tab
-if (user.role === 'reader') {
-  return Astro.redirect('/dashboard/bookmarks');
-}
-
-// Writer / Admin: Fetch user articles for overview
+// Fetch user articles for overview
 let userArticles: any[] = [];
 try {
   userArticles = await getSanityArticlesByAuthor(user.id, 100);
@@ -45,26 +40,17 @@ const stats: UserStats = {
   readTime: 0,
 };
 
-const recentActivity: ActivityItem[] = userArticles.length > 0
-  ? userArticles
-      .map(article => ({
-        type: 'article' as const,
-        id: article._id,
-        slug: article.slug?.current || '',
-        title: article.title,
-        timestamp: article.publishedAt || (article as any)._createdAt || new Date().toISOString(),
-      }))
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 5)
-  : [
-      {
-        type: 'article' as const,
-        id: 'midnight-pivot-demo',
-        slug: 'the-midnight-pivot-how-one-struggling-saas-rebuilt-everything-around-ai',
-        title: 'The Midnight Pivot: How One Struggling SaaS Rebuilt Everything Around AI',
-        timestamp: new Date().toISOString(),
-      }
-    ];
+const recentActivity: ActivityItem[] = userArticles
+  .map(article => ({
+    type: 'article' as const,
+    id: article._id,
+    slug: article.slug?.current || '',
+    title: article.title,
+    timestamp: article.publishedAt || (article as any)._createdAt || new Date().toISOString(),
+  }))
+  .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+  .slice(0, 5);
+
 ---
 <Layout title="Writer Dashboard - Carcblog" description="Your writer dashboard">
   <WriterDashboard

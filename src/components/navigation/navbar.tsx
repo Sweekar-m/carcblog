@@ -304,6 +304,7 @@ const S = {
     cursor: 'pointer',
     overflow: 'hidden',
     padding: 0,
+    textDecoration: 'none',
   },
   avatarDropdown: {
     position: 'absolute' as const,
@@ -1149,11 +1150,11 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
           {/* Desktop Auth Controls (desktop only ≥1024px) */}
           {isAuthenticated ? (
             <div ref={avatarRef} style={{ position: 'relative' }} className="nav-desktop-auth">
-              <button
+              <a
+                href="/dashboard/profile"
                 style={S.avatarBtn}
-                onClick={() => setAvatarOpen(!avatarOpen)}
-                aria-label="User menu"
-                aria-expanded={avatarOpen}
+                aria-label="View Profile"
+                title="View Profile"
               >
                 {user?.avatar_url ? (
                   <img src={user.avatar_url} alt={user.full_name || 'User'} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
@@ -1162,63 +1163,7 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
                     {(user?.full_name || user?.username || 'U').charAt(0).toUpperCase()}
                   </span>
                 )}
-              </button>
-
-              {avatarOpen && (
-                <div style={S.avatarDropdown} role="menu">
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-hairline)', marginBottom: '4px' }}>
-                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: 600, color: 'var(--color-ink-strong)' }}>
-                      {user?.full_name || user?.username || 'Account'}
-                    </div>
-                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--color-steel)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700, marginTop: '2px' }}>
-                      {userRole.toUpperCase()} ROLE
-                    </div>
-                  </div>
-
-                  {menuItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        role="menuitem"
-                        style={S.avatarMenuItem}
-                        onMouseEnter={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = 'var(--color-surface)';
-                          (e.currentTarget as HTMLElement).style.color = 'var(--color-ink)';
-                        }}
-                        onMouseLeave={(e) => {
-                          (e.currentTarget as HTMLElement).style.background = 'transparent';
-                          (e.currentTarget as HTMLElement).style.color = 'var(--color-steel)';
-                        }}
-                      >
-                        <ItemIcon style={{ width: '15px', height: '15px', color: 'var(--color-steel)' }} />
-                        <span>{item.label}</span>
-                      </a>
-                    );
-                  })}
-
-                  <div style={{ borderTop: '1px solid var(--color-hairline)', margin: '4px 0' }} />
-                  <a
-                    href="/api/auth/signout"
-                    role="menuitem"
-                    onClick={handleLogout}
-                    style={{
-                      ...S.avatarMenuItem,
-                      color: 'var(--color-error, #dc2626)',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(220, 38, 38, 0.05)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'transparent';
-                    }}
-                  >
-                    <LogOut style={{ width: '15px', height: '15px' }} />
-                    <span>Sign Out</span>
-                  </a>
-                </div>
-              )}
+              </a>
             </div>
           ) : (
             <div className="nav-desktop-auth" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

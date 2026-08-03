@@ -13,26 +13,36 @@ DM Sans anchors every surface from oversized 80px hero displays down to 12px mic
 - Documentation surfaces use a 3-column layout: left sidebar nav, center prose body, right table-of-contents
 - Black promo banners ({colors.primary}) above the nav for time-bound brand moments
 
-## Colors
+## Colors — Updated Palette (CarcBlog v2, bolder accent system)
 
-> Source pages: minimax.io/ (homepage), /models/text/m27 (product showcase), platform.minimax.io/docs/guides/models-intro (documentation), /subscribe/token-plan (pricing). Token coverage was identical across all four pages.
+### Base (unchanged — keep the strong monochrome foundation)
+- **Primary/Ink** ({colors.primary}): #0F172A — dominant CTA and headline color
+- **Canvas** ({colors.canvas}): #FFFFFF
+- **Surface** ({colors.surface}): #F8FAFC
+- **Hairline** ({colors.hairline}): #E2E8F0
 
-### Brand & Accent
-- **Brand Coral** ({colors.brand-coral}): Signature high-impact accent. Used on M2.7 product card, "Token Plan" hero band, promo CTA strips, and "NEW" badges. Carries the brand's most attention-grabbing energy.
-- **Brand Magenta** ({colors.brand-magenta}): Secondary product-card identity (Music 2.6); used for music/audio product encoding.
-- **Brand Blue** ({colors.brand-blue}): Hailuo video product identity; primary blue accent across the system.
-- **Brand Blue Deep** ({colors.brand-blue-deep}): Form-control activation, link emphasis.
-- **Brand Blue 700** ({colors.brand-blue-700}): Documentation tag and reference text color.
-- **Brand Cyan** ({colors.brand-cyan}): Atmospheric blue for product gradients and decorative wash.
-- **Brand Blue 200** ({colors.brand-blue-200}): Code badges, info-tag backgrounds.
-- **Brand Purple** ({colors.brand-purple}): Speech 2.8 and minor purple-product identity; gradient mate for magenta cards.
+### Bold Accent System (expanded — one strong color per ecosystem category)
+- **Funding & Capital — Coral** ({colors.brand-coral}): #FF5A36 (bumped from #F97316 — more saturated, more "signal" energy for high-stakes funding news)
+- **Product Launches — Electric Blue** ({colors.brand-blue}): #0066FF (bumped from #0EA5E9 — punchier, more "new tech" energy)
+- **Founder Stories — Hot Magenta** ({colors.brand-magenta}): #E019C9 (bumped from #D946EF — richer, more emotionally warm for personal narrative content)
+- **AI & Deep Tech — Deep Violet** ({colors.brand-purple}): #6D28D9 (bumped from #8B5CF6 — deeper, more "serious research" weight)
+- **Founders/Investors — Emerald** ({colors.brand-emerald}) [NEW]: #059669 — for Founder/Investor directory category encoding, distinct from the 4 editorial colors above
+- **Government Schemes — Amber** ({colors.brand-amber}) [NEW]: #D97706 — for the Schemes module, distinct warm tone signaling "official/institutional"
 
-### Surface
-- **Canvas White** ({colors.canvas}): Primary page background and card surface.
-- **Surface** ({colors.surface}): Subtle section backgrounds, search-pill rest, sidebar-nav active state.
-- **Surface Soft** ({colors.surface-soft}): Quieter section divisions.
-- **Hairline** ({colors.hairline}): 1px input border and primary divider.
-- **Hairline Soft** ({colors.hairline-soft}): Quieter table-row divider and secondary section break.
+### Usage Rule (unchanged from MiniMax discipline)
+- These bold accents are used ONLY for: category-encoded product cards (per the existing 32px-radius vibrant card pattern), category badge pills, and directory-section identity moments (e.g. the Startups vs Founders vs Investors vs Schemes tab/icon color in the Ecosystem dropdown).
+- NEVER on body text, NEVER on standard buttons (those stay black-pill per the existing system) — this keeps the bold colors meaningful instead of diluted.
+- Each accent maps to exactly ONE category, consistently, everywhere it appears (nav dropdown icon color, directory page header accent, card gradient) — same discipline as MiniMax's per-product color assignment.
+
+### New: Accent Gradient Pairs (for vibrant cards)
+Each accent should render as a two-stop gradient (matching the vibrant product-card pattern), not flat color, for the featured/hero card treatment:
+- Coral: `linear-gradient(135deg, #FF5A36, #C2410C)`
+- Blue: `linear-gradient(135deg, #0066FF, #1E3A8A)`
+- Magenta: `linear-gradient(135deg, #E019C9, #86198F)`
+- Purple: `linear-gradient(135deg, #6D28D9, #4C1D95)`
+- Emerald: `linear-gradient(135deg, #059669, #064E3B)`
+- Amber: `linear-gradient(135deg, #D97706, #92400E)`
+
 
 ### Text
 - **Ink** ({colors.ink}): Primary headline and CTA text — the brand's near-black anchor.

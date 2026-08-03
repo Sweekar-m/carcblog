@@ -1,7 +1,7 @@
 ---
 import Layout from '@/components/layout/Layout.astro';
 import PublicProfileView from '@/components/islands/profile/PublicProfileView';
-import { getProfileByUsername, getUserSocialLinks, getProfileStats, getUserActivityFeed } from '@/lib/profile';
+import { getProfileByUsername, getUserSocialLinks, getProfileStats, getUserActivityFeed, getUserFollowers, getUserFollowing } from '@/lib/profile';
 import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
 import { getFollowStatus } from '@/lib/social';
@@ -20,12 +20,14 @@ if (!profile) {
 
 const currentUser = await getCurrentUser(Astro.locals);
 
-const [socialLinks, stats, userArticles, activityFeed, followStatus] = await Promise.all([
+const [socialLinks, stats, userArticles, activityFeed, followStatus, followersList, followingList] = await Promise.all([
   getUserSocialLinks(profile.id),
   getProfileStats(profile.id),
-  getSanityArticlesByAuthor(profile.id, 50),
-  getUserActivityFeed(profile.id, 20),
-  getFollowStatus(currentUser?.id || null, profile.id)
+  getSanityArticlesByAuthor(profile.id, 50).catch(() => []),
+  getUserActivityFeed(profile.id, 20).catch(() => []),
+  getFollowStatus(currentUser?.id || null, profile.id),
+  getUserFollowers(profile.id).catch(() => []),
+  getUserFollowing(profile.id).catch(() => []),
 ]);
 ---
 
@@ -35,6 +37,8 @@ const [socialLinks, stats, userArticles, activityFeed, followStatus] = await Pro
     profile={profile}
     socialLinks={socialLinks}
     stats={stats}
+    followersList={followersList}
+    followingList={followingList}
     userArticles={userArticles}
     activityFeed={activityFeed}
     currentUserId={currentUser?.id || null}

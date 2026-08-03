@@ -18,10 +18,11 @@ export function isValidUserRole(role: string): role is UserRole {
 }
 
 /**
- * Check if role has creator/writer permissions
+ * Every registered user is both a reader and a writer/creator.
  */
 export function isWriter(role?: string | null): boolean {
-  return role === UserRole.WRITER || role === UserRole.ADMIN;
+  // All authenticated users have writer/creator permissions
+  return true;
 }
 
 /**
@@ -32,8 +33,9 @@ export function isAdmin(role?: string | null): boolean {
 }
 
 /**
- * Check if role is reader
+ * Every registered user has reader capabilities
  */
 export function isReader(role?: string | null): boolean {
-  return role === UserRole.READER;
+  return true;
 }
+

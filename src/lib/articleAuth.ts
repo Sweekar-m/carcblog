@@ -74,16 +74,8 @@ export async function authorizeArticleAction(
     };
   }
 
-  if (requiredRole === 'writer' && userRole !== 'writer' && userRole !== 'admin') {
-    return {
-      userId,
-      profile: effectiveProfile,
-      errorResponse: errorResponse(
-        `Forbidden: Only writers can publish articles. Your current role is '${userRole}'. Please re-onboard and select "Writer & Creator" to get publishing access.`,
-        403
-      ),
-    };
-  }
+  // All onboarded users are both readers and writers
+
 
   // ── 3. Article Lookup & Ownership Validation ──────────────────────────────
   if (options.articleId) {

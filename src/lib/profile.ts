@@ -223,6 +223,48 @@ export async function getUserActivityFeed(userId: string, limit = 20) {
 }
 
 /**
+ * Fetch detailed profiles of users following this user
+ */
+export async function getUserFollowers(userId: string): Promise<ExtendedProfile[]> {
+  const { data: followRows, error: followErr } = await supabase
+    .from('follows')
+    .select('follower_id')
+    .eq('following_id', userId);
+
+  if (followErr || !followRows || followRows.length === 0) return [];
+  const followerIds = followRows.map(r => r.follower_id);
+
+  const { data: profiles, error: profileErr } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', followerIds);
+
+  if (profileErr || !profiles) return [];
+  return profiles as ExtendedProfile[];
+}
+
+/**
+ * Fetch detailed profiles of users this user is following
+ */
+export async function getUserFollowing(userId: string): Promise<ExtendedProfile[]> {
+  const { data: followRows, error: followErr } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId);
+
+  if (followErr || !followRows || followRows.length === 0) return [];
+  const followingIds = followRows.map(r => r.following_id);
+
+  const { data: profiles, error: profileErr } = await supabase
+    .from('profiles')
+    .select('*')
+    .in('id', followingIds);
+
+  if (profileErr || !profiles) return [];
+  return profiles as ExtendedProfile[];
+}
+
+/**
  * Record activity feed item
  */
 export async function recordActivity(userId: string, activityType: string, targetTitle: string, targetUrl: string, metadata = {}) {

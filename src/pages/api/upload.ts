@@ -26,7 +26,7 @@ export const prerender = false;
 
 // ── Storage client (server-side only) ─────────────────────────────────────────
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
-const serviceRoleKey = import.meta.env.SUBBASE_SERVICE_ROLE_KEY || '';
+const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 /**
  * Admin Supabase client initialised at module scope.
@@ -54,9 +54,10 @@ export const POST: APIRoute = async ({ locals, request }) => {
     return errorResponse('Failed to verify user permissions.', 500, err);
   }
 
-  if (!profile || (profile.role !== 'writer' && profile.role !== 'admin')) {
-    return errorResponse('Forbidden: only writers may upload files.', 403);
+  if (!profile) {
+    return errorResponse('Forbidden: User profile not found.', 403);
   }
+
 
   // ── 3. Content-Length pre-check (before buffering the body) ──────────────────
   const clCheck = validateContentLength(request);

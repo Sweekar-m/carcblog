@@ -57,43 +57,6 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
 }
 
 /**
- * Upsert a user profile — creates a new row if it doesn't exist,
- * otherwise updates the existing one. Used by the onboarding flow.
- */
-export async function upsertUserProfile(
-  userId: string,
-  profile: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>
-) {
-  clearProfileCache(userId);
-  // Format occupation into bio to avoid database migrations
-  let finalBio = profile.bio || '';
-  if (profile.occupation) {
-    finalBio = `[${profile.occupation}] ${finalBio}`.trim();
-  }
-
-  // Omit occupation from the database payload to avoid column missing errors
-  const { occupation, ...dbProfile } = profile;
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .upsert(
-      {
-        id: userId,
-        ...dbProfile,
-        bio: finalBio || null,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'id' }
-    )
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-/**
  * Check whether a user has completed onboarding.
  * Returns true if a profile row exists with onboarding_completed = true.
  */
