@@ -66,7 +66,7 @@ const role = Astro.locals.user?.role || 'writer';
         - hideSidebar={false}: Layout shell applies p-4 sm:p-6 lg:p-8. Pages must NOT add their own outer padding.
         - hideSidebar={true}:  Layout shell applies NO padding. The page/island component is responsible for its own container (e.g. SettingsManager, PublicProfileView).
     */}
-    <main class={`flex-1 w-full min-w-0 overflow-y-auto ${hideSidebar ? '' : 'p-4 sm:p-6 lg:p-8'}`}>
+    <main class={`flex-1 w-full min-w-0 ${hideSidebar ? '' : 'overflow-y-auto p-4 sm:p-6 lg:p-8'}`}>
       <slot />
     </main>
   </div>
