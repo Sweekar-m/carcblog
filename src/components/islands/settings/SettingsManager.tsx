@@ -130,37 +130,20 @@ export default function SettingsManager({
     'disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none';
 
   return (
-    /*
-     * LAYOUT NOTES
-     * ─────────────────────────────────────────────────────────────────────────
-     * The dashboard Layout.astro wraps this in:
-     *   <main class="flex-1 w-full min-w-0 overflow-y-auto">
-     *
-     * Layout.astro's <main> no longer has overflow-y-auto when hideSidebar=true,
-     * so the body/viewport scrolls. Sticky children use viewport top as reference.
-     * Navbar is sticky at 64px height.
-     *
-     *   ■ Sidebar sticky:      top-[72px] (64px navbar + 8px breathing room)
-     *   ■ Card-header sticky:  top-[64px] (flush below navbar)
-     *
-     * The outer max-w-[1100px] + mx-auto centres the content.
-     * Two-column layout uses CSS Grid (grid-cols-[240px_1fr]) — more deterministic
-     * than flexbox; the 240px column is always exactly 240px with no flex-basis fights.
-     */
-    <div className="w-full max-w-[1100px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-28 sm:pb-10 font-sans">
+    <div className="w-full max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-12 font-sans box-border">
 
-      {/* ── Page header ─────────────────────────────────────────────────── */}
-      <div className="mb-8 pb-5 border-b border-hairline">
-        <h1 className="text-2xl sm:text-[1.625rem] font-bold text-ink tracking-tight leading-tight">
+      {/* ── Page Header ─────────────────────────────────────────────────── */}
+      <div className="mb-6 sm:mb-8 pb-5 border-b border-hairline">
+        <h1 className="text-2xl sm:text-[1.75rem] font-bold text-ink tracking-tight leading-tight">
           Settings
         </h1>
-        <p className="text-body-sm text-steel mt-1.5">
+        <p className="text-body-sm text-steel mt-1">
           Manage your public profile, social links, AI settings, and notifications.
         </p>
       </div>
 
-      {/* ── Mobile / tablet section selector  (<1024px) ─────────────────── */}
-      <div className="lg:hidden mb-5 relative z-20">
+      {/* ── Mobile & Tablet Section Selector (<1024px) ─────────────────── */}
+      <div className="lg:hidden mb-6 relative z-20 w-full max-w-[820px] mx-auto">
         <button
           type="button"
           onClick={() => setMobileNavOpen(p => !p)}
@@ -186,7 +169,7 @@ export default function SettingsManager({
             )}
           </div>
           <div className="flex items-center gap-1.5 shrink-0 text-steel">
-            <span className="text-caption font-medium hidden sm:inline">Switch</span>
+            <span className="text-caption font-medium hidden sm:inline">Change Section</span>
             <ChevronDown
               className={`w-4 h-4 transition-transform duration-150 ${
                 mobileNavOpen ? 'rotate-180 text-primary' : ''
@@ -239,36 +222,28 @@ export default function SettingsManager({
         )}
       </div>
 
-      {/* ── Two-column layout — CSS Grid ─────────────────────────────────── */}
-      {/*
-       * grid-cols-[240px_1fr] on lg+:
-       *   First column is exactly 240px (sidebar).
-       *   Second column is 1fr (takes all remaining space).
-       * gap-8 = 32px between columns.
-       * items-start prevents sidebar from stretching to content height.
-       */}
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8 items-start">
+      {/* ── Main Two-Column Layout (Flexbox: Left Sidebar + Right Card) ────── */}
+      <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
 
-        {/* ── Desktop sidebar (≥1024px) — sticky top-0 in main's scroll ctx ── */}
+        {/* Left Desktop Sidebar (≥1024px) */}
         <nav
           aria-label="Settings navigation"
-          className="hidden lg:block sticky top-[72px] self-start"
+          className="hidden lg:block w-[240px] shrink-0 sticky top-[80px] self-start"
         >
           <div className="bg-white border border-hairline rounded-xl shadow-subtle overflow-hidden">
-            {/* Label row */}
             <div className="px-4 py-3 border-b border-hairline bg-surface/50">
               <span className="text-micro font-bold text-steel uppercase tracking-widest">
                 Settings
               </span>
             </div>
-            {/* Nav items */}
-            <div className="p-2 flex flex-col gap-0.5">
+            <div className="p-2 flex flex-col gap-1">
               {TAB_ITEMS.map(tab => {
                 const TabIcon = tab.icon;
                 const active  = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
+                    type="button"
                     onClick={() => setActiveTab(tab.id as any)}
                     className={
                       'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg ' +
@@ -280,7 +255,7 @@ export default function SettingsManager({
                   >
                     <TabIcon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        active ? 'text-white' : 'text-stone group-hover:text-ink'
+                        active ? 'text-white' : 'text-steel group-hover:text-ink'
                       }`}
                     />
                     <span className="flex-1 truncate">{tab.label}</span>
@@ -301,19 +276,11 @@ export default function SettingsManager({
           </div>
         </nav>
 
-        {/* ── Content panel ─────────────────────────────────────────────── */}
-        {/*
-         * min-w-0 is CRITICAL: without it, a grid 1fr child can grow beyond 1fr
-         * if its content is wider than the available space.
-         *
-         * The content card has NO overflow set (default: visible).
-         * Body/viewport is the scroll context. The sticky card-header uses
-         * top-[64px] → sticks right below the 64px navbar.
-         */}
-        <div className="min-w-0">
+        {/* Right Main Content Card */}
+        <div className="flex-1 min-w-0 w-full max-w-full lg:max-w-[850px] mx-auto lg:mx-0">
           <div className="bg-white border border-hairline rounded-2xl shadow-subtle">
 
-            {/* Sticky section header */}
+            {/* Sticky Card Header */}
             <div
               className={
                 'sticky top-[64px] z-10 bg-white rounded-t-2xl border-b border-hairline ' +
@@ -329,9 +296,9 @@ export default function SettingsManager({
                 </span>
               </div>
 
-              {/* Save — shown on sm+ (mobile uses bottom bar) */}
               {showSave && (
                 <button
+                  type="button"
                   onClick={handleSave}
                   disabled={!isDirty || saving}
                   className={`hidden sm:inline-flex ${saveBtnCls}`}
@@ -341,7 +308,7 @@ export default function SettingsManager({
               )}
             </div>
 
-            {/* Form body */}
+            {/* Form Body */}
             <div className="px-6 sm:px-8 py-8">
 
               {activeTab === 'profile' && (
@@ -358,7 +325,6 @@ export default function SettingsManager({
                     website={website}     setWebsite={setWebsite}
                   />
 
-                  {/* Social links — same card, divided */}
                   <div className="mt-8 pt-8 border-t border-hairline">
                     <div className="mb-5">
                       <h2 className="text-body-md font-semibold text-ink">
@@ -393,13 +359,14 @@ export default function SettingsManager({
 
       </div>
 
-      {/* ── Mobile sticky save-bar (<640px) ─────────────────────────────── */}
+      {/* ── Mobile Sticky Save-Bar (<640px) ─────────────────────────────── */}
       {showSave && (
         <div className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-hairline px-4 py-3 flex items-center justify-between gap-3 shadow-modal">
           <span className="text-caption font-medium text-steel">
             {saveSuccess ? '✓ Saved!' : isDirty ? 'Unsaved changes' : 'All changes saved'}
           </span>
           <button
+            type="button"
             onClick={handleSave}
             disabled={!isDirty || saving}
             className={saveBtnCls}
