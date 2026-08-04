@@ -5,7 +5,6 @@ interface AISettingsFormProps {
 }
 
 export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false }) => {
-  const [provider, setProvider] = useState<'gemini' | 'openrouter'>('gemini');
   const [apiKey, setApiKey] = useState<string>('');
   const [hasKey, setHasKey] = useState<boolean>(false);
   const [maskedKey, setMaskedKey] = useState<string | null>(null);
@@ -26,7 +25,6 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
       if (res.ok) {
         const data = await res.json();
         setHasKey(data.hasKey);
-        if (data.provider) setProvider(data.provider);
         if (data.maskedKey) setMaskedKey(data.maskedKey);
       }
     } catch (err) {
@@ -55,8 +53,8 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          provider,
-          apiKey: apiKey || 'KEEP_EXISTING', // If testing unsaved key
+          provider: 'gemini',
+          apiKey: apiKey || 'KEEP_EXISTING',
           testOnly: true
         })
       });
@@ -65,7 +63,7 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
       if (!res.ok || data.error) {
         setMessage({ type: 'error', text: data.error || 'API Key verification failed.' });
       } else {
-        setMessage({ type: 'success', text: `Connection successful! Your ${provider === 'gemini' ? 'Google Gemini' : 'OpenRouter'} key is valid.` });
+        setMessage({ type: 'success', text: 'Connection successful! Your Google Gemini key is valid.' });
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Connection test failed.' });
@@ -90,7 +88,7 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          provider,
+          provider: 'gemini',
           apiKey
         })
       });
@@ -102,7 +100,7 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
         setMessage({ type: 'success', text: 'AI Writer settings saved securely!' });
         setHasKey(true);
         setMaskedKey(data.maskedKey);
-        setApiKey(''); // Clear plaintext from local state
+        setApiKey('');
       }
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Failed to save settings.' });
@@ -155,7 +153,8 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
         marginTop: 'var(--space-xl)'
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-md)' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'var(--space-lg)', gap: '12px' }}>
         <div>
           <h3
             style={{
@@ -166,10 +165,10 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
               margin: 0
             }}
           >
-            AI Writer Settings (BYO Key)
+            AI Writer — Google Gemini
           </h3>
           <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body-sm)', color: 'var(--color-muted)', margin: '4px 0 0 0' }}>
-            Bring your own Google Gemini or OpenRouter API key to enable AI writing tools in the article editor. Keys are encrypted server-side and never exposed.
+            Add your Google Gemini API key to enable AI writing tools in the article editor. Keys are encrypted and never exposed.
           </p>
         </div>
         <span
@@ -182,11 +181,13 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
             fontSize: 'var(--fs-caption)',
             fontWeight: 'var(--fw-medium)',
             background: hasKey ? 'rgba(22, 163, 74, 0.1)' : 'var(--color-surface-strong)',
-            color: hasKey ? '#16a34a' : 'var(--color-muted)'
+            color: hasKey ? '#16a34a' : 'var(--color-muted)',
+            whiteSpace: 'nowrap',
+            flexShrink: 0
           }}
         >
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: hasKey ? '#16a34a' : 'var(--color-muted)' }} />
-          {hasKey ? 'AI Key Configured' : 'No Key Saved'}
+          {hasKey ? 'Key Configured' : 'No Key Saved'}
         </span>
       </div>
 
@@ -208,88 +209,19 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
       )}
 
       <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-        {/* Provider Selection */}
-        <div>
-          <label style={{ display: 'block', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semibold)', color: 'var(--color-ink)', marginBottom: 'var(--space-xs)' }}>
-            AI Provider
-          </label>
-          <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
-            <label
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: 'var(--space-sm) var(--space-base)',
-                borderRadius: 'var(--radius-md)',
-                border: `1px solid ${provider === 'gemini' ? 'var(--color-primary)' : 'var(--color-hairline)'}`,
-                background: provider === 'gemini' ? 'var(--color-surface-strong)' : 'transparent',
-                cursor: 'pointer',
-                fontSize: 'var(--fs-body-sm)',
-                fontFamily: 'var(--font-sans)'
-              }}
-            >
-              <input
-                type="radio"
-                name="provider"
-                value="gemini"
-                checked={provider === 'gemini'}
-                onChange={() => setProvider('gemini')}
-                style={{ accentColor: 'var(--color-primary)' }}
-              />
-              <div>
-                <strong>Google Gemini</strong>
-                <div style={{ fontSize: '12px', color: 'var(--color-muted)' }}>gemini-3.6-flash (Interactions API)</div>
-              </div>
-            </label>
-
-            <label
-              style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: 'var(--space-sm) var(--space-base)',
-                borderRadius: 'var(--radius-md)',
-                border: `1px solid ${provider === 'openrouter' ? 'var(--color-primary)' : 'var(--color-hairline)'}`,
-                background: provider === 'openrouter' ? 'var(--color-surface-strong)' : 'transparent',
-                cursor: 'pointer',
-                fontSize: 'var(--fs-body-sm)',
-                fontFamily: 'var(--font-sans)'
-              }}
-            >
-              <input
-                type="radio"
-                name="provider"
-                value="openrouter"
-                checked={provider === 'openrouter'}
-                onChange={() => setProvider('openrouter')}
-                style={{ accentColor: 'var(--color-primary)' }}
-              />
-              <div>
-                <strong>OpenRouter</strong>
-                <div style={{ fontSize: '12px', color: 'var(--color-muted)' }}>OpenAI-compatible router</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        {/* Interactive "How to get an API Key" Guide Box */}
+        {/* How to get API Key guide */}
         <div
           style={{
             background: 'var(--color-surface-soft, #f8fafc)',
             border: '1px solid var(--color-hairline, #e2e8f0)',
             borderRadius: 'var(--radius-lg, 12px)',
             padding: 'var(--space-md, 16px)',
-            margin: '4px 0'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <strong style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body-sm, 14px)', color: 'var(--color-ink-strong, #0f172a)' }}>
-                How to get your {provider === 'gemini' ? 'Google Gemini (Free)' : 'OpenRouter'} API Key
-              </strong>
-            </div>
+            <strong style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body-sm, 14px)', color: 'var(--color-ink-strong, #0f172a)' }}>
+              How to get your Google Gemini API Key (Free)
+            </strong>
             <button
               type="button"
               onClick={() => setShowGuide(!showGuide)}
@@ -303,97 +235,53 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
                 textDecoration: 'underline'
               }}
             >
-              {showGuide ? 'Hide guide' : 'Show guide'}
+              {showGuide ? 'Hide' : 'Show'}
             </button>
           </div>
 
           {showGuide && (
             <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid var(--color-hairline-soft, #f1f5f9)' }}>
-              {provider === 'gemini' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', margin: 0, lineHeight: 1.5 }}>
-                    Google provides free API keys for <strong>Gemini 3.6 Flash</strong> with generous daily quotas for creators.
-                  </p>
-                  
-                  <ol style={{ margin: 0, paddingLeft: '18px', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <li>Open <strong>Google AI Studio</strong> using the button below.</li>
-                    <li>Sign in with your Google account.</li>
-                    <li>Click the blue <strong>"Create API key"</strong> button (no credit card required).</li>
-                    <li>Copy the key string (starts with <code style={{ background: 'var(--color-surface-strong, #f1f5f9)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>AIzaSy...</code>).</li>
-                    <li>Paste it into the field below and click <strong>"Save AI Key"</strong>.</li>
-                  </ol>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', margin: 0, lineHeight: 1.5 }}>
+                  Google provides free API keys for <strong>Gemini Flash</strong> with generous daily quotas — no credit card required.
+                </p>
 
-                  <div style={{ marginTop: '4px' }}>
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: 'var(--radius-pill, 9999px)',
-                        background: 'var(--color-primary, #0f172a)',
-                        color: 'var(--color-on-primary, #ffffff)',
-                        fontSize: '12px',
-                        fontWeight: 'var(--fw-medium, 500)',
-                        textDecoration: 'none',
-                        fontFamily: 'var(--font-sans)'
-                      }}
-                    >
-                      <span>Get Free Gemini Key on Google AI Studio</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                      </svg>
-                    </a>
-                  </div>
+                <ol style={{ margin: 0, paddingLeft: '18px', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <li>Open <strong>Google AI Studio</strong> using the button below.</li>
+                  <li>Sign in with your Google account.</li>
+                  <li>Click the blue <strong>"Create API key"</strong> button.</li>
+                  <li>Copy the key (starts with <code style={{ background: 'var(--color-surface-strong, #f1f5f9)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>AIzaSy...</code>).</li>
+                  <li>Paste it into the field below and click <strong>"Save AI Key"</strong>.</li>
+                </ol>
+
+                <div style={{ marginTop: '4px' }}>
+                  <a
+                    href="https://aistudio.google.com/app/apikey"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '6px 14px',
+                      borderRadius: 'var(--radius-pill, 9999px)',
+                      background: 'var(--color-primary, #0f172a)',
+                      color: 'var(--color-on-primary, #ffffff)',
+                      fontSize: '12px',
+                      fontWeight: 'var(--fw-medium, 500)',
+                      textDecoration: 'none',
+                      fontFamily: 'var(--font-sans)'
+                    }}
+                  >
+                    <span>Get Free Gemini Key → Google AI Studio</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </a>
                 </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', margin: 0, lineHeight: 1.5 }}>
-                    OpenRouter provides access to models from OpenAI, Anthropic, Meta, and more via a unified API key.
-                  </p>
-
-                  <ol style={{ margin: 0, paddingLeft: '18px', fontFamily: 'var(--font-sans)', fontSize: '13px', color: 'var(--color-body, #475569)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    <li>Open the <strong>OpenRouter Keys page</strong> using the button below.</li>
-                    <li>Sign in or create a free OpenRouter account.</li>
-                    <li>Click <strong>"Create Key"</strong> and name it (e.g. <em>CarcBlog AI</em>).</li>
-                    <li>Copy your API key (starts with <code style={{ background: 'var(--color-surface-strong, #f1f5f9)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}>sk-or-v1-...</code>).</li>
-                    <li>Paste it into the field below and click <strong>"Save AI Key"</strong>.</li>
-                  </ol>
-
-                  <div style={{ marginTop: '4px' }}>
-                    <a
-                      href="https://openrouter.ai/keys"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        padding: '6px 14px',
-                        borderRadius: 'var(--radius-pill, 9999px)',
-                        background: 'var(--color-primary, #0f172a)',
-                        color: 'var(--color-on-primary, #ffffff)',
-                        fontSize: '12px',
-                        fontWeight: 'var(--fw-medium, 500)',
-                        textDecoration: 'none',
-                        fontFamily: 'var(--font-sans)'
-                      }}
-                    >
-                      <span>Get Key on OpenRouter</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                        <polyline points="15 3 21 3 21 9"></polyline>
-                        <line x1="10" y1="14" x2="21" y2="3"></line>
-                      </svg>
-                    </a>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
         </div>
@@ -401,18 +289,18 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
         {/* API Key Input */}
         <div>
           <label style={{ display: 'block', fontSize: 'var(--fs-caption)', fontWeight: 'var(--fw-semibold)', color: 'var(--color-ink)', marginBottom: 'var(--space-xs)' }}>
-            {provider === 'gemini' ? 'Google AI Studio API Key' : 'OpenRouter API Key'}
+            Google AI Studio API Key
           </label>
 
           {hasKey && maskedKey && !apiKey && (
             <div style={{ fontSize: 'var(--fs-caption)', color: 'var(--color-muted)', marginBottom: '6px' }}>
-              Currently saved: <code style={{ background: 'var(--color-surface-strong)', padding: '2px 6px', borderRadius: '4px' }}>{maskedKey}</code> (Enter a new key below to replace)
+              Currently saved: <code style={{ background: 'var(--color-surface-strong)', padding: '2px 6px', borderRadius: '4px' }}>{maskedKey}</code> — enter a new key below to replace
             </div>
           )}
 
           <input
             type="password"
-            placeholder={hasKey && maskedKey ? 'Enter new key to replace existing...' : provider === 'gemini' ? 'AIzaSy...' : 'sk-or-v1-...'}
+            placeholder={hasKey && maskedKey ? 'Enter new key to replace existing...' : 'AIzaSy...'}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             style={{
@@ -423,7 +311,8 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
               background: 'var(--color-surface-card)',
               color: 'var(--color-ink)',
               fontFamily: 'var(--font-mono)',
-              fontSize: 'var(--fs-body-sm)'
+              fontSize: 'var(--fs-body-sm)',
+              boxSizing: 'border-box'
             }}
           />
         </div>
@@ -447,7 +336,7 @@ export const AISettingsForm: React.FC<AISettingsFormProps> = ({ embedded = false
                 opacity: testing || (!apiKey && !hasKey) ? 0.6 : 1
               }}
             >
-              {testing ? 'Testing Connection...' : 'Test Connection'}
+              {testing ? 'Testing...' : 'Test Connection'}
             </button>
 
             <button

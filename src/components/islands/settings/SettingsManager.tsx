@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { User, Globe, Bell, Shield, Eye, Download, Key, Menu, X, ChevronDown } from 'lucide-react';
+import { User, Bell, Key, ChevronDown } from 'lucide-react';
 import type { ExtendedProfile, SocialLink } from '@/lib/profile';
 import { AISettingsForm } from '@/components/islands/AISettingsForm';
 import { ProfileTab } from './tabs/ProfileTab';
 import { SocialTab } from './tabs/SocialTab';
 import { NotificationsTab } from './tabs/NotificationsTab';
-import { PrivacyTab } from './tabs/PrivacyTab';
-import { DataExportTab } from './tabs/DataExportTab';
 
 interface SettingsManagerProps {
   profile: ExtendedProfile;
@@ -14,11 +12,11 @@ interface SettingsManagerProps {
 }
 
 export default function SettingsManager({ profile: initialProfile, socialLinks: initialSocials }: SettingsManagerProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'ai' | 'social' | 'notifications' | 'privacy' | 'appearance' | 'data'>(() => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'ai' | 'notifications'>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tab = params.get('tab');
-      if (tab && ['profile', 'ai', 'social', 'notifications', 'privacy', 'appearance', 'data'].includes(tab)) {
+      if (tab && ['profile', 'ai', 'notifications'].includes(tab)) {
         return tab as any;
       }
     }
@@ -50,7 +48,7 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
     initialProfile.notification_prefs || { likes: true, comments: true, followers: true, mentions: true, articles: true, digest: true }
   );
 
-  // Dirty state tracking (isDirty)
+  // Dirty state tracking
   const isProfileDirty =
     fullName !== (initialProfile.full_name || '') ||
     username !== (initialProfile.username || '') ||
@@ -123,12 +121,8 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
 
   const TAB_ITEMS = [
     { id: 'profile', label: 'Public Profile', icon: User },
-    { id: 'ai', label: 'AI Writer Keys (BYOK)', icon: Key, badge: 'AI' },
-    { id: 'social', label: 'Social Accounts', icon: Globe },
+    { id: 'ai', label: 'AI Settings', icon: Key, badge: 'AI' },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'privacy', label: 'Privacy & Security', icon: Shield },
-    { id: 'appearance', label: 'Appearance', icon: Eye },
-    { id: 'data', label: 'Data Export', icon: Download },
   ];
 
   const currentTabObj = TAB_ITEMS.find((t) => t.id === activeTab) || TAB_ITEMS[0];
@@ -138,10 +132,10 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
       {/* Page Header */}
       <div className="mb-6 sm:mb-8 border-b border-hairline pb-4 sm:pb-6">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight font-sans">
-          Account &amp; Preference Settings
+          Settings
         </h1>
         <p className="text-steel text-sm sm:text-base mt-1 font-sans">
-          Manage your public profile, AI Writer API key, social links, notifications, and security.
+          Manage your public profile, social links, AI settings, and notifications.
         </p>
       </div>
 
@@ -181,7 +175,7 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
           <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-hairline rounded-2xl p-2.5 shadow-xl flex flex-col gap-1.5 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
             <div className="px-3.5 py-2 font-sans text-xs font-bold text-steel uppercase tracking-wider border-b border-hairline-soft mb-1 flex items-center justify-between">
               <span>Select Settings Section</span>
-              <span className="text-[11px] font-normal text-slate-400">7 sections</span>
+              <span className="text-[11px] font-normal text-slate-400">3 sections</span>
             </div>
             {TAB_ITEMS.map((tab) => {
               const TabIcon = tab.icon;
@@ -215,12 +209,12 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
         )}
       </div>
 
-      {/* ── PAGE LAYOUT SYSTEM (Desktop sidebar + Centered content area) ── */}
+      {/* ── PAGE LAYOUT SYSTEM (Desktop sidebar + Content area) ── */}
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full min-w-0">
         {/* Fixed Desktop Navigation Sidebar (≥1024px) */}
-        <div className="hidden lg:flex flex-col gap-1.5 bg-white border border-hairline rounded-2xl p-3.5 h-fit shrink-0 w-64 sticky top-24">
+        <div className="hidden lg:flex flex-col gap-1.5 bg-white border border-hairline rounded-2xl p-3.5 h-fit shrink-0 w-56 sticky top-24">
           <div className="px-3 py-1.5 font-sans text-[11px] font-bold text-steel uppercase tracking-wider border-b border-hairline-soft pb-2.5 mb-1.5">
-            Settings Categories
+            Settings
           </div>
           {TAB_ITEMS.map((tab) => {
             const TabIcon = tab.icon;
@@ -249,7 +243,7 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
           })}
         </div>
 
-        {/* Main Content Area (Centered, max-width 800-900px on desktop) */}
+        {/* Main Content Area */}
         <div className="flex-1 min-w-0 max-w-full lg:max-w-3xl w-full bg-white border border-hairline rounded-2xl p-5 sm:p-8 shadow-card relative">
           {/* Desktop Sticky Header inside Panel */}
           {activeTab !== 'ai' && (
@@ -270,57 +264,47 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
 
           {/* Active Tab Panel Content */}
           {activeTab === 'profile' && (
-            <ProfileTab
-              fullName={fullName}
-              setFullName={setFullName}
-              username={username}
-              setUsername={setUsername}
-              tagline={tagline}
-              setTagline={setTagline}
-              bio={bio}
-              setBio={setBio}
-              company={company}
-              setCompany={setCompany}
-              jobTitle={jobTitle}
-              setJobTitle={setJobTitle}
-              city={city}
-              setCity={setCity}
-              country={country}
-              setCountry={setCountry}
-            />
-          )}
+            <div className="flex flex-col gap-8">
+              {/* Profile fields */}
+              <ProfileTab
+                fullName={fullName}
+                setFullName={setFullName}
+                username={username}
+                setUsername={setUsername}
+                tagline={tagline}
+                setTagline={setTagline}
+                bio={bio}
+                setBio={setBio}
+                company={company}
+                setCompany={setCompany}
+                jobTitle={jobTitle}
+                setJobTitle={setJobTitle}
+                city={city}
+                setCity={setCity}
+                country={country}
+                setCountry={setCountry}
+              />
 
-          {activeTab === 'ai' && <AISettingsForm embedded={true} />}
-
-          {activeTab === 'social' && (
-            <SocialTab
-              socials={socials}
-              onAddSocial={handleAddSocial}
-              onRemoveSocial={handleRemoveSocial}
-              onSocialChange={handleSocialChange}
-            />
-          )}
-
-          {activeTab === 'notifications' && (
-            <NotificationsTab notifPrefs={notifPrefs} setNotifPrefs={setNotifPrefs} />
-          )}
-
-          {activeTab === 'privacy' && <PrivacyTab profile={initialProfile} />}
-
-          {activeTab === 'appearance' && (
-            <div>
-              <p className="text-steel text-sm mb-6 font-sans">Customize your reading and writing interface preferences.</p>
-              <div className="p-5 rounded-xl border border-hairline bg-surface">
-                <div className="font-bold text-sm text-ink mb-1 font-sans">Design System: MiniMax Studio (v2)</div>
-                <p className="text-steel text-xs sm:text-sm margin-0 leading-relaxed font-sans">
-                  CarcBlog uses DM Sans geometric typography, pill-shaped action controls, and encoded category color cards for editorial clarity.
-                </p>
+              {/* Social Links section — merged into Public Profile */}
+              <div className="pt-6 border-t border-hairline">
+                <div className="mb-4">
+                  <h3 className="font-bold text-base text-ink font-sans mb-1">Social Links</h3>
+                  <p className="text-steel text-sm font-sans">Connect your public profiles across developer and social networks.</p>
+                </div>
+                <SocialTab
+                  socials={socials}
+                  onAddSocial={handleAddSocial}
+                  onRemoveSocial={handleRemoveSocial}
+                  onSocialChange={handleSocialChange}
+                />
               </div>
             </div>
           )}
 
-          {activeTab === 'data' && (
-            <DataExportTab profile={initialProfile} onNavigateTab={(tab) => setActiveTab(tab as any)} />
+          {activeTab === 'ai' && <AISettingsForm embedded={true} />}
+
+          {activeTab === 'notifications' && (
+            <NotificationsTab notifPrefs={notifPrefs} setNotifPrefs={setNotifPrefs} />
           )}
         </div>
       </div>
