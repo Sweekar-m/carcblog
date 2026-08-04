@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Globe, Bell, Shield, Eye, Download, Key } from 'lucide-react';
+import { User, Globe, Bell, Shield, Eye, Download, Key, Menu, X, ChevronDown } from 'lucide-react';
 import type { ExtendedProfile, SocialLink } from '@/lib/profile';
 import { AISettingsForm } from '@/components/islands/AISettingsForm';
 import { ProfileTab } from './tabs/ProfileTab';
@@ -27,6 +27,7 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   // Profile state
   const [fullName, setFullName] = useState(initialProfile.full_name || '');
@@ -49,6 +50,24 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
     initialProfile.notification_prefs || { likes: true, comments: true, followers: true, mentions: true, articles: true, digest: true }
   );
 
+  // Dirty state tracking (isDirty)
+  const isProfileDirty =
+    fullName !== (initialProfile.full_name || '') ||
+    username !== (initialProfile.username || '') ||
+    bio !== (initialProfile.bio || '') ||
+    tagline !== (initialProfile.tagline || '') ||
+    company !== (initialProfile.company || '') ||
+    jobTitle !== (initialProfile.job_title || '') ||
+    city !== (initialProfile.city || '') ||
+    country !== (initialProfile.country || '') ||
+    website !== (initialProfile.website || '');
+
+  const isSocialsDirty = JSON.stringify(socials) !== JSON.stringify(initialSocials.length > 0 ? initialSocials : [{ user_id: initialProfile.id, platform: 'x', url: 'https://x.com/' }]);
+
+  const isNotifsDirty = JSON.stringify(notifPrefs) !== JSON.stringify(initialProfile.notification_prefs || { likes: true, comments: true, followers: true, mentions: true, articles: true, digest: true });
+
+  const isDirty = isProfileDirty || isSocialsDirty || isNotifsDirty;
+
   const handleAddSocial = () => {
     setSocials((prev) => [...prev, { user_id: initialProfile.id, platform: 'linkedin', url: '' }]);
   };
@@ -66,6 +85,7 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
   };
 
   const handleSave = async () => {
+    if (!isDirty || saving) return;
     setSaving(true);
     setSaveSuccess(false);
     try {
@@ -101,66 +121,126 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
     }
   };
 
-  return (
-    <div style={{ padding: '32px 0' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, margin: '0 0 4px 0', color: 'var(--color-ink)' }}>Account & Preference Settings</h1>
-          <p style={{ color: 'var(--color-steel)', margin: 0, fontSize: '0.9375rem' }}>Manage your public profile, AI Writer API key, social links, notifications, and security.</p>
-        </div>
+  const TAB_ITEMS = [
+    { id: 'profile', label: 'Public Profile', icon: User },
+    { id: 'ai', label: 'AI Writer Keys (BYOK)', icon: Key, badge: 'AI' },
+    { id: 'social', label: 'Social Accounts', icon: Globe },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'privacy', label: 'Privacy & Security', icon: Shield },
+    { id: 'appearance', label: 'Appearance', icon: Eye },
+    { id: 'data', label: 'Data Export', icon: Download },
+  ];
 
-        {activeTab !== 'ai' && (
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '9999px', border: 'none', background: 'var(--color-primary, #0F172A)', color: '#ffffff', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}
-          >
-            {saving ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save Settings'}
-          </button>
+  const currentTabObj = TAB_ITEMS.find((t) => t.id === activeTab) || TAB_ITEMS[0];
+
+  return (
+    <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 font-sans pb-24 sm:pb-8">
+      {/* Page Header */}
+      <div className="mb-6 sm:mb-8 border-b border-hairline pb-4 sm:pb-6">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-ink tracking-tight font-sans">
+          Account &amp; Preference Settings
+        </h1>
+        <p className="text-steel text-sm sm:text-base mt-1 font-sans">
+          Manage your public profile, AI Writer API key, social links, notifications, and security.
+        </p>
+      </div>
+
+      {/* ── TABLET & MOBILE SECTION SELECTOR (<1024px) ── */}
+      <div className="lg:hidden mb-6 relative">
+        <button
+          onClick={() => setMobileNavOpen((prev) => !prev)}
+          className="w-full flex items-center justify-between gap-3 bg-white border border-hairline rounded-2xl p-4 shadow-xs hover:border-hairline-strong transition-all min-h-[48px] cursor-pointer text-left"
+          aria-label="Select settings category"
+          aria-expanded={mobileNavOpen}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            {React.createElement(currentTabObj.icon, {
+              className: 'w-5 h-5 text-primary shrink-0',
+            })}
+            <span className="font-sans text-sm sm:text-base font-bold text-ink truncate">
+              {currentTabObj.label}
+            </span>
+            {currentTabObj.badge && (
+              <span className="text-[10px] font-extrabold bg-brand-blue text-white px-2 py-0.5 rounded-full shrink-0">
+                {currentTabObj.badge}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 text-steel">
+            <span className="text-xs font-semibold hidden sm:inline">Change Section</span>
+            <ChevronDown
+              className={`w-5 h-5 transition-transform duration-200 ${
+                mobileNavOpen ? 'rotate-180 text-primary' : ''
+              }`}
+            />
+          </div>
+        </button>
+
+        {mobileNavOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-hairline rounded-2xl p-2.5 shadow-xl flex flex-col gap-1.5 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="px-3.5 py-2 font-sans text-xs font-bold text-steel uppercase tracking-wider border-b border-hairline-soft mb-1 flex items-center justify-between">
+              <span>Select Settings Section</span>
+              <span className="text-[11px] font-normal text-slate-400">7 sections</span>
+            </div>
+            {TAB_ITEMS.map((tab) => {
+              const TabIcon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id as any);
+                    setMobileNavOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm font-sans font-medium transition-all text-left cursor-pointer min-h-[44px] ${
+                    active
+                      ? 'bg-primary text-white font-bold shadow-xs'
+                      : 'bg-transparent text-ink hover:bg-surface'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <TabIcon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-steel'}`} />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.badge && (
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${active ? 'bg-white text-primary' : 'bg-brand-blue text-white'}`}>
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {/* Settings Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '28px' }}>
-        {/* Navigation Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', background: '#ffffff', border: '1px solid var(--color-hairline)', borderRadius: '16px', padding: '12px', height: 'fit-content' }}>
-          {[
-            { id: 'profile', label: 'Public Profile', icon: User },
-            { id: 'ai', label: 'AI Writer Keys (BYOK)', icon: Key, badge: 'AI' },
-            { id: 'social', label: 'Social Accounts', icon: Globe },
-            { id: 'notifications', label: 'Notifications', icon: Bell },
-            { id: 'privacy', label: 'Privacy & Security', icon: Shield },
-            { id: 'appearance', label: 'Appearance', icon: Eye },
-            { id: 'data', label: 'Data Export', icon: Download },
-          ].map((tab) => {
+      {/* ── PAGE LAYOUT SYSTEM (Desktop sidebar + Centered content area) ── */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start w-full min-w-0">
+        {/* Fixed Desktop Navigation Sidebar (≥1024px) */}
+        <div className="hidden lg:flex flex-col gap-1.5 bg-white border border-hairline rounded-2xl p-3.5 h-fit shrink-0 w-64 sticky top-24">
+          <div className="px-3 py-1.5 font-sans text-[11px] font-bold text-steel uppercase tracking-wider border-b border-hairline-soft pb-2.5 mb-1.5">
+            Settings Categories
+          </div>
+          {TAB_ITEMS.map((tab) => {
             const TabIcon = tab.icon;
             const active = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '10px 14px',
-                  borderRadius: '10px',
-                  border: 'none',
-                  background: active ? 'var(--color-surface, #F8FAFC)' : 'transparent',
-                  color: active ? 'var(--color-ink)' : 'var(--color-steel)',
-                  fontWeight: active ? 700 : 500,
-                  fontSize: '14px',
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
+                className={`flex items-center justify-between gap-2.5 px-4 py-3 rounded-full text-sm font-sans font-medium transition-all cursor-pointer text-left ${
+                  active
+                    ? 'bg-primary text-white font-bold shadow-xs'
+                    : 'bg-transparent text-steel hover:text-ink hover:bg-surface'
+                }`}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <TabIcon style={{ width: '16px', height: '16px', color: active ? 'var(--color-accent)' : 'inherit' }} />
+                <div className="flex items-center gap-2.5">
+                  <TabIcon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-steel'}`} />
                   <span>{tab.label}</span>
                 </div>
                 {tab.badge && (
-                  <span style={{ fontSize: '10px', fontWeight: 700, background: '#0EA5E9', color: '#fff', padding: '2px 6px', borderRadius: '9999px' }}>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${active ? 'bg-white text-primary' : 'bg-brand-blue text-white'}`}>
                     {tab.badge}
                   </span>
                 )}
@@ -169,8 +249,26 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
           })}
         </div>
 
-        {/* Tab Panels */}
-        <div style={{ background: '#ffffff', border: '1px solid var(--color-hairline)', borderRadius: '20px', padding: '32px', boxShadow: 'var(--shadow-card)' }}>
+        {/* Main Content Area (Centered, max-width 800-900px on desktop) */}
+        <div className="flex-1 min-w-0 max-w-full lg:max-w-3xl w-full bg-white border border-hairline rounded-2xl p-5 sm:p-8 shadow-card relative">
+          {/* Desktop Sticky Header inside Panel */}
+          {activeTab !== 'ai' && (
+            <div className="hidden sm:flex sticky top-0 z-20 bg-white/95 backdrop-blur-md pb-4 mb-6 border-b border-hairline items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                {React.createElement(currentTabObj.icon, { className: "w-5 h-5 text-primary shrink-0" })}
+                <span className="font-bold text-base sm:text-lg text-ink truncate font-sans">{currentTabObj.label}</span>
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={!isDirty || saving}
+                className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-primary text-white font-bold text-sm whitespace-nowrap leading-none hover:opacity-90 transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+              >
+                {saving ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save Settings'}
+              </button>
+            </div>
+          )}
+
+          {/* Active Tab Panel Content */}
           {activeTab === 'profile' && (
             <ProfileTab
               fullName={fullName}
@@ -211,11 +309,10 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
 
           {activeTab === 'appearance' && (
             <div>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 8px 0' }}>Appearance & Theme</h3>
-              <p style={{ color: 'var(--color-steel)', fontSize: '14px', marginBottom: '24px' }}>Customize your reading and writing interface preferences.</p>
-              <div style={{ padding: '20px', borderRadius: '12px', border: '1px solid var(--color-hairline)', background: 'var(--color-surface, #F8FAFC)' }}>
-                <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '6px' }}>Design System: MiniMax Studio (v2)</div>
-                <p style={{ color: 'var(--color-steel)', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>
+              <p className="text-steel text-sm mb-6 font-sans">Customize your reading and writing interface preferences.</p>
+              <div className="p-5 rounded-xl border border-hairline bg-surface">
+                <div className="font-bold text-sm text-ink mb-1 font-sans">Design System: MiniMax Studio (v2)</div>
+                <p className="text-steel text-xs sm:text-sm margin-0 leading-relaxed font-sans">
                   CarcBlog uses DM Sans geometric typography, pill-shaped action controls, and encoded category color cards for editorial clarity.
                 </p>
               </div>
@@ -227,6 +324,22 @@ export default function SettingsManager({ profile: initialProfile, socialLinks: 
           )}
         </div>
       </div>
+
+      {/* ── MOBILE STICKY BOTTOM ACTION BAR (<640px) ── */}
+      {activeTab !== 'ai' && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-hairline z-50 flex items-center justify-between gap-3 shadow-lg">
+          <div className="text-xs font-semibold text-steel font-sans">
+            {saveSuccess ? '✓ Saved!' : isDirty ? 'Unsaved changes' : 'No changes'}
+          </div>
+          <button
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            className="inline-flex items-center justify-center px-6 h-11 rounded-full bg-primary text-white font-bold text-sm whitespace-nowrap leading-none hover:opacity-90 transition-all shadow-sm active:scale-95 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+          >
+            {saving ? 'Saving...' : saveSuccess ? '✓ Saved!' : 'Save Settings'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -28,6 +28,6 @@ const articleIds = userArticles.map(a => a._id);
 const analytics = await getWriterAnalytics(articleIds);
 ---
 
-<Layout title="Writer Analytics Dashboard - CarcBlog" description="Track engagement, readership growth, traffic origins, and read depth.">
+<Layout title="Writer Analytics Dashboard - CarcBlog" description="Track engagement, readership growth, traffic origins, and read depth." hideSidebar={false}>
   <AnalyticsDashboardView client:load analytics={analytics} />
 </Layout>

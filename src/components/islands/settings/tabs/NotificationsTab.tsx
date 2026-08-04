@@ -8,14 +8,13 @@ interface NotificationsTabProps {
 export const NotificationsTab: React.FC<NotificationsTabProps> = ({ notifPrefs, setNotifPrefs }) => {
   return (
     <div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 8px 0' }}>Notification Preferences</h3>
-      <p style={{ color: 'var(--color-steel)', fontSize: '14px', marginBottom: '24px' }}>Control what events trigger email or platform notifications.</p>
+      <p className="text-steel text-sm mb-6 font-sans">Control what events trigger email or platform notifications.</p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div className="flex flex-col gap-3">
         {Object.keys(notifPrefs).map(key => (
-          <label key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: '12px', border: '1px solid var(--color-hairline)', background: 'var(--color-surface, #F8FAFC)' }}>
-            <span style={{ textTransform: 'capitalize', fontWeight: 600, fontSize: '14px' }}>{key} Alerts</span>
-            <input type="checkbox" checked={notifPrefs[key]} onChange={e => setNotifPrefs({ ...notifPrefs, [key]: e.target.checked })} style={{ width: '18px', height: '18px', accentColor: '#0F172A' }} />
+          <label key={key} className="flex items-center justify-between p-4 rounded-xl border border-hairline bg-surface hover:border-hairline-strong transition-all cursor-pointer">
+            <span className="capitalize font-semibold text-sm text-ink font-sans">{key} Alerts</span>
+            <input type="checkbox" checked={notifPrefs[key]} onChange={e => setNotifPrefs({ ...notifPrefs, [key]: e.target.checked })} className="w-5 h-5 accent-primary cursor-pointer" />
           </label>
         ))}
       </div>

@@ -1,5 +1,6 @@
 ---
 import Layout from '@/layouts/Layout.astro';
+import DashboardPage from '@/components/dashboard/DashboardPage.astro';
 import { getCurrentUser } from '@/lib/auth';
 import { getUserNotifications, markNotificationsAsRead } from '@/lib/social';
 
@@ -11,70 +12,57 @@ if (!user) {
 }
 
 const notifications = await getUserNotifications(user.id);
-await markNotificationsAsRead(user.id); // Mark all as read when visiting full page
+await markNotificationsAsRead(user.id);
 ---
 
-<Layout title="Notifications - Dashboard" description="Your activity notifications on Carcblog">
-  <div class="dashboard-page">
-    <div class="page-header">
-      <h1 class="page-title">Notifications</h1>
-      <p class="page-sub">Updates on your content, comments, and followers.</p>
-    </div>
-
+<Layout title="Notifications - Dashboard" description="Your activity notifications on Carcblog" hideSidebar={false}>
+  <DashboardPage title="Notifications" subtitle="Updates on your content, comments, and followers.">
     {notifications.length > 0 ? (
-      <div class="notifications-list">
+      <div class="flex flex-col divide-y divide-hairline border border-hairline rounded-xl overflow-hidden bg-canvas">
         {notifications.map((n) => {
           const actorName = n.actor?.full_name || n.actor?.username || 'Someone';
           return (
-            <div class={`notification-item ${!n.is_read ? 'notification-item--unread' : ''}`}>
-              <div class="actor-avatar">
+            <div class={`flex items-center gap-4 px-4 sm:px-5 py-4 transition-colors hover:bg-surface ${!n.is_read ? 'bg-blue-50/40' : 'bg-canvas'}`}>
+              <!-- Actor Avatar -->
+              <div class="w-10 h-10 rounded-full bg-surface-strong border border-hairline flex items-center justify-center overflow-hidden shrink-0 font-bold text-ink text-sm font-sans">
                 {n.actor?.avatar_url ? (
-                  <img src={n.actor.avatar_url} alt={actorName} />
+                  <img src={n.actor.avatar_url} alt={actorName} class="w-full h-full object-cover" />
                 ) : (
                   <span>{actorName.charAt(0).toUpperCase()}</span>
                 )}
               </div>
-              <div class="notification-content">
-                <p class="notification-text">
+              <!-- Notification Content -->
+              <div class="flex-1 min-w-0">
+                <p class="font-sans text-sm text-ink leading-snug">
                   <strong>{actorName}</strong>{' '}
                   {n.type === 'follow' && 'started following you.'}
                   {n.type === 'like' && 'liked your article.'}
                   {n.type === 'comment_reply' && 'responded to your post/comment.'}
                 </p>
-                <span class="notification-date">
+                <span class="font-sans text-xs text-muted mt-0.5 block">
                   {new Date(n.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
                 </span>
               </div>
+              <!-- Article Link -->
               {n.article_id && (
-                <a href={`/article/${n.article_id}`} class="btn-outline" style="font-size: 11px; padding: 4px 10px;">View Article</a>
+                <a
+                  href={`/article/${n.article_id}`}
+                  class="shrink-0 inline-flex items-center justify-center px-3 py-1.5 rounded-full border border-hairline bg-canvas text-ink font-semibold text-xs hover:bg-surface transition-colors whitespace-nowrap"
+                >
+                  View Article
+                </a>
               )}
             </div>
           );
         })}
       </div>
     ) : (
-      <div class="empty-box">
-        <p class="empty-title">No notifications yet</p>
-        <p class="empty-sub">When readers like your posts, comment, or follow your profile, alerts will appear here.</p>
+      <div class="flex flex-col items-center justify-center text-center px-6 py-16 sm:py-24 bg-surface border border-dashed border-hairline-strong rounded-xl">
+        <p class="font-sans text-base sm:text-lg font-semibold text-ink mb-2">No notifications yet</p>
+        <p class="font-sans text-sm text-steel max-w-sm">
+          When readers like your posts, comment, or follow your profile, alerts will appear here.
+        </p>
       </div>
     )}
-  </div>
+  </DashboardPage>
 </Layout>
-
-<style>
-  .dashboard-page { display: flex; flex-direction: column; gap: var(--space-xl); }
-  .page-header { border-bottom: 1px solid var(--color-hairline); padding-bottom: var(--space-md); }
-  .page-title { font-family: var(--font-sans); font-size: var(--fs-heading-md); font-weight: var(--fw-semibold); color: var(--color-ink-strong); margin: 0 0 4px 0; }
-  .page-sub { font-family: var(--font-sans); font-size: var(--fs-body-sm); color: var(--color-steel); margin: 0; }
-  .notifications-list { display: flex; flex-direction: column; gap: 1px; background: var(--color-hairline-soft); border: 1px solid var(--color-hairline); border-radius: var(--radius-xl); overflow: hidden; }
-  .notification-item { background: var(--color-canvas); padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: background 150ms ease; }
-  .notification-item--unread { background: rgba(14, 165, 233, 0.04); }
-  .actor-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--color-surface-strong); border: 1px solid var(--color-hairline); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; font-weight: 700; color: var(--color-ink); }
-  .actor-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .notification-content { flex: 1; min-width: 0; }
-  .notification-text { font-family: var(--font-sans); font-size: var(--fs-body-sm); color: var(--color-ink); margin: 0 0 2px 0; }
-  .notification-date { font-family: var(--font-sans); font-size: 11px; color: var(--color-muted); }
-  .empty-box { background: var(--color-surface); border: 1px dashed var(--color-hairline-strong); border-radius: var(--radius-xl); padding: var(--space-xxl); text-align: center; }
-  .empty-title { font-family: var(--font-sans); font-size: var(--fs-card-title); font-weight: var(--fw-semibold); color: var(--color-ink); margin: 0 0 8px 0; }
-  .empty-sub { font-family: var(--font-sans); font-size: var(--fs-body-sm); color: var(--color-steel); margin: 0; }
-</style>

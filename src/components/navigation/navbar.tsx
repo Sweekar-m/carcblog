@@ -922,37 +922,9 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
                     animation: 'mobileAccordionIn 180ms ease',
                   }}
                 >
-                  {menuItems.map((item) => {
-                    const ItemIcon = item.icon;
-                    return (
-                      <a
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeMobileDrawer}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          minHeight: '44px',
-                          padding: '0 10px',
-                          borderRadius: 'var(--radius-md)',
-                          fontFamily: 'var(--font-sans)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: 'var(--color-steel)',
-                          textDecoration: 'none',
-                          background: pathname === item.href ? 'var(--color-canvas)' : 'transparent',
-                        }}
-                      >
-                        <ItemIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-                        <span>{item.label}</span>
-                      </a>
-                    );
-                  })}
-                  <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '6px 0' }} />
                   <a
-                    href="/api/auth/signout"
-                    onClick={handleLogout}
+                    href="/dashboard/profile"
+                    onClick={closeMobileDrawer}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -963,13 +935,65 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
                       fontFamily: 'var(--font-sans)',
                       fontSize: '14px',
                       fontWeight: 600,
-                      color: '#dc2626',
+                      color: 'var(--color-ink)',
                       textDecoration: 'none',
+                      background: pathname === '/dashboard/profile' ? 'var(--color-canvas)' : 'transparent',
                     }}
                   >
-                    <LogOut style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-                    <span>Sign Out</span>
+                    <User style={{ width: '16px', height: '16px', color: 'var(--color-steel)', flexShrink: 0 }} />
+                    <span>Profile</span>
                   </a>
+
+                  <a
+                    href="/dashboard/settings"
+                    onClick={closeMobileDrawer}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      minHeight: '44px',
+                      padding: '0 10px',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'var(--color-ink)',
+                      textDecoration: 'none',
+                      background: pathname === '/dashboard/settings' ? 'var(--color-canvas)' : 'transparent',
+                    }}
+                  >
+                    <Settings style={{ width: '16px', height: '16px', color: 'var(--color-steel)', flexShrink: 0 }} />
+                    <span>Settings</span>
+                  </a>
+
+                  <div style={{ height: '1px', background: 'var(--color-hairline)', margin: '6px 0' }} />
+
+                  <button
+                    onClick={(e) => {
+                      closeMobileDrawer();
+                      handleLogout(e as any);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      minHeight: '44px',
+                      padding: '0 10px',
+                      width: '100%',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <LogOut style={{ width: '16px', height: '16px', color: '#DC2626', flexShrink: 0 }} />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               )}
             </div>

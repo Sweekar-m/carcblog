@@ -17,16 +17,15 @@ export const SocialTab: React.FC<SocialTabProps> = ({
 }) => {
   return (
     <div>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: 700, margin: '0 0 8px 0' }}>Social Accounts & Links</h3>
-      <p style={{ color: 'var(--color-steel)', fontSize: '14px', marginBottom: '24px' }}>Connect your public profiles across developer and social networks.</p>
+      <p className="text-steel text-sm mb-6 font-sans">Connect your public profiles across developer and social networks.</p>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+      <div className="flex flex-col gap-3.5 mb-6">
         {socials.map((link, idx) => (
-          <div key={idx} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div key={idx} className="flex flex-col sm:flex-row gap-2.5 sm:items-center bg-surface sm:bg-transparent p-3 sm:p-0 rounded-xl border sm:border-0 border-hairline">
             <select
               value={link.platform}
               onChange={e => onSocialChange(idx, 'platform', e.target.value)}
-              style={{ width: '140px', height: '42px', padding: '0 10px', borderRadius: '8px', border: '1px solid var(--color-hairline)', outline: 'none', background: '#fff' }}
+              className="w-full sm:w-40 min-h-[44px] px-3 rounded-xl border border-hairline bg-white text-ink text-sm font-sans focus:outline-none focus:border-primary shrink-0"
             >
               <option value="linkedin">LinkedIn</option>
               <option value="github">GitHub</option>
@@ -41,14 +40,15 @@ export const SocialTab: React.FC<SocialTabProps> = ({
               value={link.url}
               onChange={e => onSocialChange(idx, 'url', e.target.value)}
               placeholder="https://..."
-              style={{ flex: 1, height: '42px', padding: '0 14px', borderRadius: '8px', border: '1px solid var(--color-hairline)', outline: 'none', boxSizing: 'border-box' }}
+              className="flex-1 w-full min-h-[44px] px-3.5 rounded-xl border border-hairline bg-white text-ink text-sm font-sans focus:outline-none focus:border-primary"
             />
             <button
               type="button"
               onClick={() => onRemoveSocial(idx)}
-              style={{ padding: '8px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#dc2626' }}
+              className="self-end sm:self-auto p-2.5 text-error hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+              title="Remove link"
             >
-              <Trash2 style={{ width: '18px', height: '18px' }} />
+              <Trash2 className="w-4 h-4" />
             </button>
           </div>
         ))}
@@ -57,9 +57,9 @@ export const SocialTab: React.FC<SocialTabProps> = ({
       <button
         type="button"
         onClick={onAddSocial}
-        style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '9999px', border: '1px solid var(--color-hairline)', background: 'transparent', fontWeight: 600, fontSize: '13px', cursor: 'pointer' }}
+        className="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-full border border-hairline bg-white text-ink font-semibold text-xs sm:text-sm hover:bg-surface transition-all cursor-pointer min-h-[44px] w-full sm:w-auto"
       >
-        <Plus style={{ width: '14px', height: '14px' }} />
+        <Plus className="w-4 h-4" />
         Add Profile Link
       </button>
     </div>
