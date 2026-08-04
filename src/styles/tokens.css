@@ -38,17 +38,27 @@
   --color-hairline-soft:        #f1f5f9;  /* quiet table divider */
   --color-hairline-strong:      #cbd5e1;
 
-  /* ── Category Brand Accent Colors (MiniMax Product Encoding) ── */
-  --color-accent:               #0ea5e9;  /* signature sky blue accent */
-  --color-accent-2:             #7c3aed;  /* purple secondary accent */
-  --color-brand-coral:          #f97316;  /* Funding & Investments */
-  --color-brand-magenta:        #d946ef;  /* Founder Stories */
-  --color-brand-blue:           #0ea5e9;  /* Product Launches */
-  --color-brand-purple:         #8b5cf6;  /* AI & Deep Tech */
+  /* ── Category Brand Accent Colors (MiniMax Product Encoding — Design.md §24-45) ── */
+  --color-accent:               #0066ff;  /* signature electric blue accent */
+  --color-accent-2:             #6d28d9;  /* deep violet secondary accent */
+  --color-brand-coral:          #ff5a36;  /* Funding & Capital */
+  --color-brand-magenta:        #e019c9;  /* Founder Stories */
+  --color-brand-blue:           #0066ff;  /* Product Launches & Tech */
+  --color-brand-purple:         #6d28d9;  /* AI & Deep Tech */
+  --color-brand-emerald:        #059669;  /* Founders & Investors Directory */
+  --color-brand-amber:          #d97706;  /* Government Schemes */
   --color-brand-cyan:           #06b6d4;
   --color-brand-blue-deep:      #0284c7;
   --color-brand-blue-700:       #0369a1;
   --color-brand-blue-200:       #e0f2fe;
+
+  /* ── Accent Gradient Pairs (Design.md §37-45) ── */
+  --gradient-coral:             linear-gradient(135deg, #FF5A36, #C2410C);
+  --gradient-blue:              linear-gradient(135deg, #0066FF, #1E3A8A);
+  --gradient-magenta:           linear-gradient(135deg, #E019C9, #86198F);
+  --gradient-purple:            linear-gradient(135deg, #6D28D9, #4C1D95);
+  --gradient-emerald:           linear-gradient(135deg, #059669, #064E3B);
+  --gradient-amber:             linear-gradient(135deg, #D97706, #92400E);
 
   /* ── Semantic ── */
   --color-success:              #059669;

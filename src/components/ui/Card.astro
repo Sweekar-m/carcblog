@@ -1,35 +1,44 @@
 ---
 interface Props {
-  variant?: 'flat' | 'elevated' | 'glass' | 'interactive';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  variant?: 'base' | 'feature' | 'recommendation' | 'tile' | 'coral' | 'magenta' | 'blue' | 'purple' | 'emerald' | 'amber' | 'flat' | 'interactive';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   class?: string;
   href?: string;
   [key: string]: any;
 }
 
 const {
-  variant = 'flat',
+  variant = 'base',
   padding = 'md',
   class: className = '',
   href,
   ...rest
 } = Astro.props;
 
-// Premium surface elevations and layout wrappers
-const baseStyles = 'rounded-lg border border-border bg-background transition-all duration-200 overflow-hidden';
+// Design.md Card Primitives (§173-207)
+const baseStyles = 'bg-canvas border border-hairline rounded-xl transition-all duration-200 overflow-hidden';
 
 const variants = {
-  flat: 'bg-background-alt border-border/30',
-  elevated: 'shadow-md border-border/20 hover:shadow-lg transition-shadow duration-200',
-  glass: 'glass shadow-sm',
-  interactive: 'cursor-pointer hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 active:scale-[0.98]'
+  base: 'bg-canvas border-hairline rounded-xl',
+  feature: 'bg-surface border-transparent rounded-xl',
+  recommendation: 'bg-canvas border-hairline rounded-lg shadow-subtle',
+  tile: 'bg-canvas border-hairline rounded-xxxl',
+  coral: 'bg-gradient-coral text-white border-transparent rounded-hero shadow-atmospheric',
+  magenta: 'bg-gradient-magenta text-white border-transparent rounded-hero shadow-atmospheric',
+  blue: 'bg-gradient-blue text-white border-transparent rounded-hero shadow-atmospheric',
+  purple: 'bg-gradient-purple text-white border-transparent rounded-hero shadow-atmospheric',
+  emerald: 'bg-gradient-emerald text-white border-transparent rounded-hero shadow-atmospheric',
+  amber: 'bg-gradient-amber text-white border-transparent rounded-hero shadow-atmospheric',
+  flat: 'bg-canvas border-hairline rounded-xl',
+  interactive: 'bg-canvas border-hairline rounded-xl cursor-pointer hover:border-steel active:scale-[0.99] transition-all duration-150',
 };
 
 const paddings = {
   none: 'p-0',
-  sm: 'p-3',
-  md: 'p-6',
-  lg: 'p-8'
+  sm: 'p-3 md:p-4',
+  md: 'p-5 md:p-6',
+  lg: 'p-6 md:p-8',
+  xl: 'p-8 md:p-10',
 };
 
 const Element = href ? 'a' : 'div';

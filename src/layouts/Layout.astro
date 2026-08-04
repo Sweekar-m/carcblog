@@ -11,7 +11,7 @@ interface Props {
   hideSidebar?: boolean;
 }
 
-const { title = "Dashboard - Carcblog", description = "Your writer dashboard", hideSidebar = false } = Astro.props;
+const { title = "Dashboard - Carcblog", description = "Your writer dashboard", hideSidebar = true } = Astro.props;
 const pathname = new URL(Astro.request.url).pathname;
 const role = Astro.locals.user?.role || 'writer';
 ---

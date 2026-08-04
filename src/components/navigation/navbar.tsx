@@ -126,9 +126,9 @@ const S = {
     top: 0,
     zIndex: 100000,
     width: '100%',
-    height: '72px',
-    borderBottom: '1px solid var(--color-hairline)',
-    background: 'rgba(255, 255, 255, 0.96)',
+    height: '64px',
+    borderBottom: '1px solid var(--color-hairline-soft)',
+    background: 'rgba(255, 255, 255, 0.98)',
     backdropFilter: 'blur(12px)',
     WebkitBackdropFilter: 'blur(12px)',
   },
@@ -138,7 +138,9 @@ const S = {
     justifyContent: 'space-between',
     height: '100%',
     width: '100%',
-    padding: '0 24px',
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '0 32px',
     boxSizing: 'border-box' as const,
   },
   left: {
@@ -151,7 +153,7 @@ const S = {
     alignItems: 'center',
     textDecoration: 'none',
     fontFamily: 'var(--font-sans)',
-    fontSize: '1.35rem',
+    fontSize: '1.25rem',
     fontWeight: 700,
     letterSpacing: '-0.02em',
     color: 'var(--color-ink)',
@@ -257,8 +259,8 @@ const S = {
     letterSpacing: '0.04em',
   },
   badgeLive: {
-    background: 'rgba(220, 38, 38, 0.1)',
-    color: '#dc2626',
+    background: 'rgba(255, 90, 54, 0.12)',
+    color: '#FF5A36',
   },
   right: {
     display: 'flex',
@@ -270,8 +272,9 @@ const S = {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '8px',
-    padding: '6px 14px',
-    borderRadius: 'var(--radius-pill)',
+    height: '36px',
+    padding: '0 12px',
+    borderRadius: 'var(--radius-md)',
     background: 'var(--color-surface)',
     border: '1px solid var(--color-hairline)',
     fontFamily: 'var(--font-sans)',
@@ -1147,66 +1150,169 @@ export function Navbar({ onOpenSearch, user }: NavbarProps) {
             <span style={S.kbd}>⌘K</span>
           </button>
 
-          {/* Desktop Auth Controls (desktop only ≥1024px) */}
-          {isAuthenticated ? (
-            <div ref={avatarRef} style={{ position: 'relative' }} className="nav-desktop-auth">
-              <a
-                href="/dashboard/profile"
-                style={S.avatarBtn}
-                aria-label="View Profile"
-                title="View Profile"
+          {/* Desktop Auth Controls with S logo/avatar dropdown (desktop only ≥1024px) */}
+          <div ref={avatarRef} style={{ position: 'relative' }} className="nav-desktop-auth">
+            <button
+              onClick={() => setAvatarOpen((prev) => !prev)}
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                border: '1.5px solid var(--color-hairline-strong)',
+                background: 'var(--color-primary)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                padding: 0,
+                boxShadow: 'var(--shadow-subtle)',
+                transition: 'transform 150ms ease, border-color 150ms ease',
+              }}
+              aria-label="User Account Menu"
+              aria-expanded={avatarOpen}
+              title="Account Menu"
+            >
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt={user.full_name || 'User'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ fontSize: '15px', fontWeight: 800, fontFamily: 'var(--font-sans)', color: '#ffffff', letterSpacing: '-0.02em' }}>
+                  {(user?.full_name || user?.username || 'S').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </button>
+
+            {avatarOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 10px)',
+                  width: '230px',
+                  borderRadius: 'var(--radius-xl)',
+                  border: '1px solid var(--color-hairline)',
+                  background: '#ffffff',
+                  padding: '8px',
+                  boxShadow: 'var(--shadow-modal)',
+                  zIndex: 1000,
+                  animation: 'mobileAccordionIn 150ms ease',
+                }}
               >
-                {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt={user.full_name || 'User'} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-ink)' }}>
-                    {(user?.full_name || user?.username || 'U').charAt(0).toUpperCase()}
-                  </span>
+                {isAuthenticated && (
+                  <div style={{ padding: '8px 10px 10px', borderBottom: '1px solid var(--color-hairline-soft)', marginBottom: '6px' }}>
+                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '14px', fontWeight: 700, color: 'var(--color-ink-strong)' }}>
+                      {user?.full_name || user?.username || 'Writer'}
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-sans)', fontSize: '11px', color: 'var(--color-steel)', fontWeight: 500, marginTop: '2px' }}>
+                      {(userRole || 'USER').toUpperCase()}
+                    </div>
+                  </div>
                 )}
-              </a>
-            </div>
-          ) : (
-            <div className="nav-desktop-auth" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <a
-                href="/auth/sign-in"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  height: '36px',
-                  padding: '0 14px',
-                  borderRadius: 'var(--radius-pill)',
-                  border: '1px solid var(--color-hairline-strong)',
-                  background: 'transparent',
-                  color: 'var(--color-ink)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Sign in
-              </a>
-              <a
-                href="/auth/sign-up"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  height: '36px',
-                  padding: '0 16px',
-                  borderRadius: 'var(--radius-pill)',
-                  border: 'none',
-                  background: 'var(--color-primary)',
-                  color: 'var(--color-on-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Get started
-              </a>
-            </div>
-          )}
+
+                <a
+                  href="/dashboard/profile"
+                  onClick={() => setAvatarOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-ink)',
+                    textDecoration: 'none',
+                    transition: 'background 120ms ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <User size={16} style={{ color: 'var(--color-steel)' }} />
+                  Profile
+                </a>
+
+                <a
+                  href="/dashboard/settings"
+                  onClick={() => setAvatarOpen(false)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-md)',
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    color: 'var(--color-ink)',
+                    textDecoration: 'none',
+                    transition: 'background 120ms ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-surface)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <Settings size={16} style={{ color: 'var(--color-steel)' }} />
+                  Settings
+                </a>
+
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      setAvatarOpen(false);
+                      if (typeof window !== 'undefined' && (window as any).Clerk) {
+                        (window as any).Clerk.signOut(() => { window.location.href = '/'; });
+                      } else {
+                        window.location.href = '/auth/sign-in';
+                      }
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      width: '100%',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: '#DC2626',
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'background 120ms ease',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#FEF2F2')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    <LogOut size={16} style={{ color: '#DC2626' }} />
+                    Sign out
+                  </button>
+                ) : (
+                  <a
+                    href="/auth/sign-in"
+                    onClick={() => setAvatarOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'var(--color-primary)',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <LogOut size={16} style={{ color: 'var(--color-steel)' }} />
+                    Sign in
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* ── MOBILE TOGGLE BUTTON (Mobile <1024px) ── */}
           {/* Minimal single button on top-right: Menu icon (☰) when closed, Close icon (X) when open */}

@@ -481,19 +481,19 @@ const isLoggedIn = !!Astro.locals.user;
 }
 
 .product-card-coral {
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  background: var(--gradient-coral, linear-gradient(135deg, #FF5A36, #C2410C));
   color: #ffffff;
 }
 .product-card-blue {
-  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 50%, #0369a1 100%);
+  background: var(--gradient-blue, linear-gradient(135deg, #0066FF, #1E3A8A));
   color: #ffffff;
 }
 .product-card-magenta {
-  background: linear-gradient(135deg, #d946ef 0%, #c026d3 50%, #a21caf 100%);
+  background: var(--gradient-magenta, linear-gradient(135deg, #E019C9, #86198F));
   color: #ffffff;
 }
 .product-card-purple {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+  background: var(--gradient-purple, linear-gradient(135deg, #6D28D9, #4C1D95));
   color: #ffffff;
 }
 

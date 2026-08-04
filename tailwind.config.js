@@ -57,11 +57,13 @@ module.exports = {
         'on-dark': '#FFFFFF',
         'on-dark-soft': '#94A3B8',
 
-        // Category Brand Accent Colors (MiniMax Product Encoding)
-        'brand-coral': '#F97316',      // Funding & Investments
-        'brand-magenta': '#D946EF',    // Founder Stories & Podcasts
-        'brand-blue': '#0EA5E9',       // Product Launches & Tech
-        'brand-purple': '#8B5CF6',     // AI & Deep Tech
+        // Category Brand Accent Colors (MiniMax Product Encoding — Design.md §24-45)
+        'brand-coral': '#FF5A36',      // Funding & Capital
+        'brand-magenta': '#E019C9',    // Founder Stories
+        'brand-blue': '#0066FF',       // Product Launches & Tech
+        'brand-purple': '#6D28D9',     // AI & Deep Tech
+        'brand-emerald': '#059669',    // Founders & Investors Directory
+        'brand-amber': '#D97706',      // Government Schemes
         'brand-cyan': '#06B6D4',
         'brand-blue-deep': '#0284C7',
         'brand-blue-700': '#0369A1',
@@ -71,6 +73,16 @@ module.exports = {
         'semantic-success': '#059669',
         'semantic-error': '#DC2626',
         'semantic-warning': '#D97706',
+      },
+
+      // ─── Accent Gradient Pairs (Design.md §37-45) ───
+      backgroundImage: {
+        'gradient-coral': 'linear-gradient(135deg, #FF5A36, #C2410C)',
+        'gradient-blue': 'linear-gradient(135deg, #0066FF, #1E3A8A)',
+        'gradient-magenta': 'linear-gradient(135deg, #E019C9, #86198F)',
+        'gradient-purple': 'linear-gradient(135deg, #6D28D9, #4C1D95)',
+        'gradient-emerald': 'linear-gradient(135deg, #059669, #064E3B)',
+        'gradient-amber': 'linear-gradient(135deg, #D97706, #92400E)',
       },
 
       // ─── Font Families ───
