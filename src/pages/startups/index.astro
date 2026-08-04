@@ -27,6 +27,30 @@ function getPageUrl(p: number) {
   params.set('page', p.toString());
   return `/startups?${params.toString()}`;
 }
+
+/**
+ * Split a comma-separated industry string into individual category tokens.
+ * Returns an array of trimmed, non-empty strings.
+ */
+function parseCategories(industry: string | null): string[] {
+  if (!industry) return [];
+  return industry.split(',').map(s => s.trim()).filter(Boolean);
+}
+
+/**
+ * Returns the 2-letter initials for a startup name.
+ * Falls back to the first 2 chars of the name.
+ * e.g. "10x Science" → "10" | "1stCollab" → "1s" | "Acme Corp" → "AC"
+ */
+function getInitials(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) {
+    // Two-word name: first char of each word (capitalised where alpha)
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  // Single word: first two characters
+  return name.slice(0, 2).toUpperCase();
+}
 ---
 
 <Layout title="Startup Directory" description="Explore high-growth tech startups, venture-backed companies, and emerging founders.">
@@ -109,7 +133,6 @@ function getPageUrl(p: number) {
           Search
         </button>
 
-        {/* Page-level Submit Startup Action (Visible for Writers or Guests; Hidden for Readers) */}
         {(!user || user.role === 'writer' || user.role === 'admin') && (
           <a
             href={user ? "/startups/new" : "/auth/sign-in?redirect_url=%2Fstartups%2Fnew"}
@@ -134,47 +157,79 @@ function getPageUrl(p: number) {
 
     {/* ── Startup Grid ── */}
     {startups.length > 0 ? (
-      <div class="startup-grid reveal-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
-        {startups.map((startup) => (
-          <a href={`/startups/${startup.slug}`} class="startup-card" style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px;text-decoration:none;transition:border-color 200ms,box-shadow 200ms;color:inherit">
-            {/* Card header: logo + industry badge */}
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
-              <div style="width:44px;height:44px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-                {startup.logo_url ? (
-                  <img src={startup.logo_url} alt={startup.name} style="width:100%;height:100%;object-fit:cover" />
-                ) : (
-                  <span style="font-family:var(--font-sans);font-size:1rem;font-weight:700;color:#64748B">{startup.name.charAt(0).toUpperCase()}</span>
+      <div class="startup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+        {startups.map((startup) => {
+          const categories = parseCategories(startup.industry);
+          const shownCats = categories.slice(0, 2);
+          const extraCount = categories.length - shownCats.length;
+          const initials = getInitials(startup.name);
+
+          return (
+            <a
+              href={`/startups/${startup.slug}`}
+              class="startup-card"
+              style="display:flex;flex-direction:column;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:16px;padding:24px;text-decoration:none;transition:border-color 200ms,box-shadow 200ms;color:inherit"
+            >
+              {/* Card header: logo + funding stage */}
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:16px">
+                {/* Logo / Initials avatar */}
+                <div style="width:44px;height:44px;border-radius:10px;background:#F8FAFC;border:1px solid #E2E8F0;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
+                  {startup.logo_url ? (
+                    <img src={startup.logo_url} alt={startup.name} width="44" height="44" style="width:100%;height:100%;object-fit:cover" />
+                  ) : (
+                    <span style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:700;color:#64748B;letter-spacing:-0.02em;line-height:1">
+                      {initials}
+                    </span>
+                  )}
+                </div>
+
+                {/* Funding stage badge (top-right) — only if present */}
+                {startup.funding_stage && (
+                  <span style="padding:3px 10px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.6875rem;font-weight:600;color:#64748B;flex-shrink:0;white-space:nowrap">
+                    {startup.funding_stage}
+                  </span>
                 )}
               </div>
-              {startup.industry && (
-                <span style="padding:3px 10px;border-radius:9999px;background:#F8FAFC;border:1px solid #E2E8F0;font-family:var(--font-sans);font-size:0.75rem;font-weight:600;color:#64748B;flex-shrink:0;white-space:nowrap">
-                  {startup.industry}
-                </span>
+
+              {/* Company name — always plain ink, never link-blue */}
+              <p class="startup-name" style="font-family:var(--font-sans);font-size:1.0625rem;font-weight:700;color:#0F172A;margin:0 0 6px;line-height:1.3">
+                {startup.name}
+              </p>
+
+              {/* Category badge pills — individual pills, max 2 shown + "+N more" */}
+              {categories.length > 0 && (
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">
+                  {shownCats.map((cat) => (
+                    <span style="display:inline-block;padding:2px 8px;border-radius:9999px;background:#F1F5F9;font-family:var(--font-sans);font-size:0.6875rem;font-weight:600;color:#475569;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">
+                      {cat}
+                    </span>
+                  ))}
+                  {extraCount > 0 && (
+                    <span style="display:inline-block;padding:2px 8px;border-radius:9999px;background:#E2E8F0;font-family:var(--font-sans);font-size:0.6875rem;font-weight:600;color:#64748B;white-space:nowrap">
+                      +{extraCount} more
+                    </span>
+                  )}
+                </div>
               )}
-            </div>
 
-            {/* Company name */}
-            <p class="startup-name" style="font-family:var(--font-sans);font-size:1.125rem;font-weight:700;color:#0F172A;margin:0 0 8px;line-height:1.3">
-              {startup.name}
-            </p>
+              {/* Description — CSS line-clamp at 3 lines for clean truncation */}
+              <p class="startup-desc" style="font-family:var(--font-sans);font-size:0.875rem;color:#334155;line-height:1.6;margin:0 0 auto">
+                {startup.description || 'No description available for this startup profile.'}
+              </p>
 
-            {/* Description */}
-            <p style="font-family:var(--font-sans);font-size:0.875rem;color:#334155;line-height:1.6;margin:0 0 auto;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden">
-              {startup.description || 'No description available for this startup profile.'}
-            </p>
-
-            {/* Card footer */}
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #F1F5F9">
-              <div style="display:flex;align-items:center;gap:4px;font-family:var(--font-sans);font-size:0.75rem;color:#64748B">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>{[startup.city, startup.country].filter(Boolean).join(', ') || 'Global'}</span>
+              {/* Card footer */}
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid #F1F5F9">
+                <div style="display:flex;align-items:center;gap:4px;font-family:var(--font-sans);font-size:0.75rem;color:#64748B">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;color:#94A3B8"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>{[startup.city, startup.country].filter(Boolean).join(', ') || 'Global'}</span>
+                </div>
+                <span class="view-profile-link" style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">
+                  View Profile →
+                </span>
               </div>
-              <span style="font-family:var(--font-sans);font-size:0.8125rem;font-weight:600;color:#0F172A">
-                View Profile →
-              </span>
-            </div>
-          </a>
-        ))}
+            </a>
+          );
+        })}
       </div>
     ) : (
       <div style="text-align:center;padding:80px 24px;background:#F8FAFC;border-radius:16px;border:1px solid #E2E8F0">
@@ -209,12 +264,53 @@ function getPageUrl(p: number) {
 </Layout>
 
 <style>
+  /* ── Card hover state ── */
   .startup-card:hover {
     border-color: #CBD5E1 !important;
     box-shadow: 0px 4px 12px rgba(0,0,0,0.08) !important;
   }
-  .startup-card:hover .startup-name { color: #0284C7 !important; }
-  .btn-search:hover { background: #334155 !important; }
+
+  /*
+   * Title: always #0F172A (ink). On hover turn accent-blue.
+   * The `color:inherit` on the <a> wrapper plus explicit color on
+   * .startup-name prevents any browser :visited or :link color bleed.
+   */
+  .startup-card .startup-name {
+    color: #0F172A !important;
+  }
+  .startup-card:hover .startup-name {
+    color: #0284C7 !important;
+  }
+
+  /*
+   * "View Profile →" arrow — accent on hover
+   */
+  .startup-card:hover .view-profile-link {
+    color: #0284C7 !important;
+  }
+
+  /*
+   * Description: CSS line-clamp (3 lines max) — clean word-boundary truncation.
+   * Never cuts mid-word unlike a hard character limit.
+   */
+  .startup-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Prevent bare <a> link color from leaking into any child element */
+  .startup-card,
+  .startup-card:link,
+  .startup-card:visited,
+  .startup-card:hover,
+  .startup-card:active {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .btn-search:hover  { background: #334155 !important; }
   .btn-submit-startup:hover { background: #0284C7 !important; }
-  .btn-page:hover { background: #F8FAFC; }
+  .btn-page:hover    { background: #F8FAFC; }
 </style>
