@@ -7,7 +7,7 @@ import { aiWriterSchema } from '@/schemas/ai';
 export const prerender = false;
 
 const MAX_INPUT_CHARS = 10000;
-const REQUEST_TIMEOUT_MS = 35000; // 35 second timeout guardrail
+const REQUEST_TIMEOUT_MS = 30000; // 30s guardrail (reduced from 35s — if it hits this, it's a provider issue)
 
 /**
  * System prompts tailored to CarcBlog's editorial design system & writing standards.
@@ -52,7 +52,13 @@ Return ONLY the rewritten text without explanations or quotes.`
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const t0 = performance.now();
+  console.log('[ai-writer] Request received');
+
   const user = await getCurrentUser(locals);
+  const tAuth = performance.now();
+  console.log(`[ai-writer] Auth check: ${(tAuth - t0).toFixed(1)}ms — user=${user?.id ?? 'null'}`);
+
   if (!user) {
     return new Response(JSON.stringify({ error: 'Unauthorized. Please sign in to use the AI Writer.' }), { status: 401 });
   }
@@ -83,11 +89,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Fetch user's encrypted AI key and provider from Supabase profile
+    const tDbStart = performance.now();
     const { data: profile, error: dbError } = await supabase
       .from('profiles')
       .select('ai_provider, ai_api_key_encrypted')
       .eq('id', user.id)
       .single();
+    const tDbEnd = performance.now();
+    console.log(`[ai-writer] Supabase profile fetch: ${(tDbEnd - tDbStart).toFixed(1)}ms — provider=${profile?.ai_provider ?? 'null'}, hasKey=${!!profile?.ai_api_key_encrypted}`);
 
     if (dbError || !profile || !profile.ai_api_key_encrypted || !profile.ai_provider) {
       return new Response(
@@ -101,7 +110,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     let apiKey = '';
     try {
+      const tDecryptStart = performance.now();
       apiKey = decryptApiKey(profile.ai_api_key_encrypted);
+      console.log(`[ai-writer] Key decryption: ${(performance.now() - tDecryptStart).toFixed(1)}ms`);
     } catch (err: any) {
       return new Response(
         JSON.stringify({
@@ -127,11 +138,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
     let generatedText = '';
+    const tProviderStart = performance.now();
+    console.log(`[ai-writer] Starting AI provider call — provider=${profile.ai_provider}, action=${action}`);
 
     try {
       if (profile.ai_provider === 'gemini') {
         const modelName = 'gemini-3.6-flash';
-        
+        console.log(`[ai-writer] Using Gemini model: ${modelName}`);
         let fullPromptText = `${systemPrompt}\n\n`;
         if (action === 'chat' && messages.length > 0) {
           fullPromptText += `Conversation History:\n`;
@@ -144,6 +157,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         // 1. Try modern Interactions API first
         try {
+          const tIntStart = performance.now();
+          console.log('[ai-writer] Attempting Gemini Interactions API...');
           const intRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/interactions?key=${encodeURIComponent(apiKey)}`, {
             method: 'POST',
             headers: {
@@ -157,19 +172,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
             })
           });
 
+          console.log(`[ai-writer] Interactions API response: HTTP ${intRes.status} in ${(performance.now() - tIntStart).toFixed(1)}ms`);
           if (intRes.ok) {
             clearTimeout(timeoutId);
             const intData = await intRes.json();
             generatedText = intData.outputText || intData.result || intData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          } else {
+            const errBody = await intRes.text().catch(() => '');
+            console.warn(`[ai-writer] Interactions API failed (${intRes.status}), falling back to generateContent. Body: ${errBody.slice(0, 200)}`);
           }
-        } catch (e) {
-          // Fallback to generateContent
+        } catch (e: any) {
+          // AbortError means timeout — re-throw so the outer catch handles it
+          if (e?.name === 'AbortError') throw e;
+          console.warn(`[ai-writer] Interactions API threw: ${e?.message} — falling back to generateContent`);
         }
 
         // 2. Fallback to generateContent REST endpoint
         if (!generatedText) {
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
-          
+
           const geminiContents: Array<{ role: string; parts: Array<{ text: string }> }> = [];
           if (action === 'chat' && messages.length > 0) {
             for (const msg of messages) {
@@ -203,6 +224,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
               }
             })
           });
+          console.log(`[ai-writer] generateContent response: HTTP ${apiRes.status} in ${(performance.now() - tProviderStart).toFixed(1)}ms`);
 
           clearTimeout(timeoutId);
 
@@ -255,6 +277,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             max_tokens: 2048
           })
         });
+        console.log(`[ai-writer] OpenRouter response: HTTP ${apiRes.status} in ${(performance.now() - tProviderStart).toFixed(1)}ms`);
 
         clearTimeout(timeoutId);
 
@@ -272,11 +295,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     } catch (err: any) {
       clearTimeout(timeoutId);
+      console.error(`[ai-writer] Provider call failed after ${(performance.now() - tProviderStart).toFixed(1)}ms:`, err?.name, err?.message);
       if (err.name === 'AbortError') {
-        return new Response(JSON.stringify({ error: 'TIMEOUT', message: 'AI request timed out after 35 seconds. Please try again.' }), { status: 504 });
+        return new Response(JSON.stringify({ error: 'TIMEOUT', message: 'AI request timed out after 30 seconds. Please try again.' }), { status: 504 });
       }
       throw err;
     }
+
+    console.log(`[ai-writer] Total provider time: ${(performance.now() - tProviderStart).toFixed(1)}ms | Total request time: ${(performance.now() - t0).toFixed(1)}ms`);
 
     if (!generatedText.trim()) {
       return new Response(JSON.stringify({ error: 'EMPTY_RESPONSE', message: 'AI model returned an empty response. Please try rephrasing.' }), { status: 500 });

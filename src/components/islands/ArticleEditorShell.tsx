@@ -98,13 +98,18 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
   const [recoverySnapshot, setRecoverySnapshot] = useState<DraftSnapshot | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [pexelsOpen, setPexelsOpen] = useState(false);
+  const [pexelsInitialQuery, setPexelsInitialQuery] = useState('');
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [mobileToolsOpen, setMobileToolsOpen] = useState(false);
   const [mobileToolsTab, setMobileToolsTab] = useState<'stats' | 'outline' | 'publish'>('stats');
 
   // ── Global event listeners for AI Chat & Media Search ───────────────────
   useEffect(() => {
-    const handleOpenMedia = () => setPexelsOpen(true);
+    const handleOpenMedia = (e: Event) => {
+      const query = (e as CustomEvent).detail?.query || '';
+      setPexelsInitialQuery(query);
+      setPexelsOpen(true);
+    };
     const handleOpenAi = () => setAiChatOpen(true);
     window.addEventListener('editor:open-media-search', handleOpenMedia);
     window.addEventListener('editor:open-ai-chat', handleOpenAi);
@@ -289,12 +294,8 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [ui.focusMode, ui.rightPanelOpen, shortcutsOpen, pexelsOpen]);
 
-  // ── Open media search listener ───────────────────────────────────────────
-  useEffect(() => {
-    const handleOpenMedia = () => setPexelsOpen(true);
-    window.addEventListener('editor:open-media-search', handleOpenMedia);
-    return () => window.removeEventListener('editor:open-media-search', handleOpenMedia);
-  }, []);
+  // (editor:open-media-search is handled in the first useEffect above, which also
+  //  captures event.detail.query and sets pexelsInitialQuery)
 
   // ── Insert image from Pexels handler ─────────────────────────────────────
   const handleSelectPexelsImage = useCallback((url: string, alt: string, credit: string) => {
@@ -612,8 +613,9 @@ export function ArticleEditorShell({ clerkUserId, initialArticle }: ArticleEdito
       {/* Pexels Image Search Modal */}
       {pexelsOpen && (
         <PexelsModal
-          onClose={() => setPexelsOpen(false)}
+          onClose={() => { setPexelsOpen(false); setPexelsInitialQuery(''); }}
           onSelect={handleSelectPexelsImage}
+          initialQuery={pexelsInitialQuery}
         />
       )}
 

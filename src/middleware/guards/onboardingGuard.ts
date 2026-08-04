@@ -21,7 +21,7 @@ export function checkOnboardingRedirection(
 
   // Authenticated and ONBOARDED
   if (isOnboardingRoute || isAuthRoute) {
-    return { shouldRedirect: true, targetUrl: '/dashboard' };
+    return { shouldRedirect: true, targetUrl: '/dashboard/profile' };
   }
 
   return { shouldRedirect: false };

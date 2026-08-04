@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useStore } from '@nanostores/react';
 import { Sparkles } from 'lucide-react';
 import { AIChatPanel } from './AIChatPanel';
+import { $aiSettings, loadAiSettings } from './aiSettingsStore';
+import { useState } from 'react';
 
 export const AIWriterMenu: React.FC = () => {
-  const [hasKey, setHasKey] = useState<boolean>(false);
-  const [provider, setProvider] = useState<string | null>(null);
-  const [loadingConfig, setLoadingConfig] = useState<boolean>(true);
+  // Read AI settings from the shared store — no local fetch
+  const { hasKey, provider, loading: loadingConfig } = useStore($aiSettings);
   const [chatOpen, setChatOpen] = useState<boolean>(false);
 
-  // Fetch AI settings on mount
+  // Trigger the shared fetch on mount — deduplication inside loadAiSettings()
+  // means this is a no-op if AIChatPanel or AISettingsForm already called it
   useEffect(() => {
-    fetch('/api/ai-settings')
-      .then((res) => res.json())
-      .then((data) => {
-        setHasKey(!!data.hasKey);
-        setProvider(data.provider || null);
-      })
-      .catch((err) => console.error('Failed to load AI settings status:', err))
-      .finally(() => setLoadingConfig(false));
+    loadAiSettings();
   }, []);
 
   return (

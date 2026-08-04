@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useStore } from '@nanostores/react';
+import { $aiSettings, loadAiSettings } from './aiSettingsStore';
 import {
   Sparkles,
   Send,
@@ -50,11 +51,10 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
   const subtitle = useStore($subtitle);
   const content = useStore($content);
 
-  const [mounted, setMounted] = useState<boolean>(false);
-  const [hasKey, setHasKey] = useState<boolean>(false);
-  const [provider, setProvider] = useState<string | null>(null);
-  const [loadingConfig, setLoadingConfig] = useState<boolean>(true);
+  // Read AI settings from the shared store — no local fetch
+  const { hasKey, provider, loading: loadingConfig } = useStore($aiSettings);
 
+  const [mounted, setMounted] = useState<boolean>(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -64,21 +64,11 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Set mounted on client
+  // Set mounted on client + trigger shared AI settings fetch (deduplicated)
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Check AI provider settings on load
-  useEffect(() => {
-    fetch('/api/ai-settings')
-      .then((res) => res.json())
-      .then((data) => {
-        setHasKey(!!data.hasKey);
-        setProvider(data.provider || null);
-      })
-      .catch((err) => console.error('Failed to load AI settings:', err))
-      .finally(() => setLoadingConfig(false));
+    // loadAiSettings() is a no-op if already fetched/in-flight (aiSettingsStore.ts)
+    loadAiSettings();
   }, []);
 
   // Initial welcome message
@@ -162,8 +152,8 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
 
       if (!res.ok || data.error) {
         if (data.error === 'NO_KEY_CONFIGURED') {
-          setHasKey(false);
-          // In development mode, check if prompt is vague vs specific
+          // hasKey comes from the $aiSettings Nano Store — no local setter needed
+          // In development mode, return a mock structured response for testing UI
           if (process.env.NODE_ENV === 'development' || window.location.hostname === 'localhost') {
             const lower = promptToSubmit.toLowerCase();
             const isVague = promptToSubmit.length < 25 && (
@@ -214,16 +204,31 @@ export const AIChatPanel: React.FC<AIChatPanelProps> = ({ isOpen, onClose }) => 
         return;
       }
 
+
       const structured = data.structured;
+
+      // A "card" is shown when the AI returned any meaningful generated content
+      // Check all four fields — the model might populate headline/body but leave replyText empty, or vice versa
       const hasCard = !!(
         (structured?.headline && structured.headline.trim().length > 0) ||
-        (structured?.articleBody && structured.articleBody.trim().length > 0)
+        (structured?.subtitle && structured.subtitle.trim().length > 0) ||
+        (structured?.articleBody && structured.articleBody.trim().length > 0) ||
+        (structured?.imageSuggestion && structured.imageSuggestion.trim().length > 0)
       );
+
+      if (hasCard) {
+        console.log('[AIChatPanel] Structured card detected:', {
+          headline: structured?.headline?.slice(0, 50),
+          hasSubtitle: !!structured?.subtitle,
+          bodyLength: structured?.articleBody?.length ?? 0,
+          imageSuggestion: structured?.imageSuggestion,
+        });
+      }
 
       const assistantMsg: ChatMessage = {
         id: `assistant-${Date.now()}`,
         sender: 'assistant',
-        text: structured?.replyText || (hasCard ? 'I have created your article structure below:' : data.result),
+        text: structured?.replyText || (hasCard ? 'Here is your article package:' : data.result),
         structured: hasCard ? structured : undefined,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };

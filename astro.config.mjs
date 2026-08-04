@@ -37,6 +37,8 @@ export default defineConfig({
     },
     optimizeDeps: {
       include: [
+        'react',
+        'react-dom',
         '@blocknote/core',
         '@blocknote/react',
         '@blocknote/mantine',
@@ -52,6 +54,13 @@ export default defineConfig({
       }
     },
     resolve: {
+      // Force a single shared React instance across all islands and dependencies.
+      // Without this, packages like @blocknote/* and @mantine/* that bundle their
+      // own copy of react can end up with a *different* React module reference than
+      // the one Astro's React integration registers — causing "Cannot read properties
+      // of null (reading 'useRef')" at runtime because React hooks are called against
+      // a null/unregistered React context.
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
       alias: {
         '@': '/src'
       }

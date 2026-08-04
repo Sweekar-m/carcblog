@@ -10,10 +10,12 @@ import type { PexelsPhoto, PexelsSearchResult } from '@/types/editor';
 interface PexelsModalProps {
   onClose: () => void;
   onSelect: (imageUrl: string, altText: string, credit: string) => void;
+  /** Pre-filled search query — when set the modal auto-searches immediately on open */
+  initialQuery?: string;
 }
 
-export function PexelsModal({ onClose, onSelect }: PexelsModalProps) {
-  const [query, setQuery] = useState('');
+export function PexelsModal({ onClose, onSelect, initialQuery = '' }: PexelsModalProps) {
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,15 @@ export function PexelsModal({ onClose, onSelect }: PexelsModalProps) {
     }
   }, []);
 
+  // Auto-search immediately when opened with an initial query (e.g. from AI image suggestion)
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      setQuery(initialQuery);
+      fetchPhotos(initialQuery, 1);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only on mount — initialQuery won't change after open
+
   // Trigger search on query change (debounced 500ms)
   useEffect(() => {
     if (searchTimer.current) clearTimeout(searchTimer.current);
@@ -54,7 +65,7 @@ export function PexelsModal({ onClose, onSelect }: PexelsModalProps) {
       searchTimer.current = setTimeout(() => {
         setPage(1);
         fetchPhotos(query, 1);
-      }, 50000000000000000000); // Wait, this is a typo. It should be 500ms! Let's write 500.
+      }, 500);
     } else {
       setResults([]);
     }
@@ -64,8 +75,6 @@ export function PexelsModal({ onClose, onSelect }: PexelsModalProps) {
     };
   }, [query, fetchPhotos]);
 
-  // Wait, let's fix that timeout in the actual file immediately.
-  // I will write 500 directly in this template.
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
     if (searchTimer.current) clearTimeout(searchTimer.current);

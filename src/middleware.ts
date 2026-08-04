@@ -81,7 +81,7 @@ export const onRequest = clerkMiddleware(async (auth, context, next) => {
     const hasAccess = validateRoleAccess(pathname, profile?.role);
     if (!hasAccess) {
       logger.warn('Unauthorized role access attempt to writer route', { userId, role: profile?.role, pathname });
-      return context.redirect('/dashboard/bookmarks');
+      return context.redirect('/dashboard/profile');
     }
   }
 

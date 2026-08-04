@@ -4,6 +4,7 @@ import AnalyticsDashboardView from '@/components/islands/analytics/AnalyticsDash
 import { getWriterAnalytics } from '@/lib/analytics';
 import { getSanityArticlesByAuthor } from '@/lib/sanity';
 import { getCurrentUser } from '@/lib/auth';
+import { isWriter } from '@/types/roles';
 
 export const prerender = false;
 
@@ -12,8 +13,8 @@ if (!user) {
   return Astro.redirect('/auth/sign-in?redirect_url=/dashboard/analytics');
 }
 
-if (user.role !== 'writer' && user.role !== 'admin') {
-  return Astro.redirect('/dashboard/bookmarks');
+if (!isWriter(user.role)) {
+  return Astro.redirect('/dashboard/profile');
 }
 
 let userArticles = [];

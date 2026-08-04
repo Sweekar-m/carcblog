@@ -230,95 +230,117 @@ const authorInitial = article.author.name.charAt(0).toUpperCase();
 
 </Layout>
 
-<script data-article-id={article.id}>
-  const currentArticleId = document.currentScript?.getAttribute('data-article-id');
+<script is:inline>
+  // Reading history tracking
+  const articleIdEl = document.querySelector('[data-article-id]');
+  const currentArticleId = articleIdEl?.getAttribute('data-article-id');
   if (currentArticleId) {
     fetch('/api/social/history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ articleId: currentArticleId })
-    }).catch(() => {});
+    }).catch(function() {});
   }
 
+  // Reading progress bar
   const progressBar = document.getElementById('progressBar');
   if (progressBar) {
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', function() {
       const windowHeight = window.innerHeight;
       const documentHeight = document.documentElement.scrollHeight - windowHeight;
       const scrolled = window.scrollY;
       const progress = documentHeight > 0 ? (scrolled / documentHeight) * 100 : 0;
-      progressBar.style.width = `${Math.min(progress, 100)}%`;
+      progressBar.style.width = Math.min(progress, 100) + '%';
     }, { passive: true });
   }
 
-  const manageBar = document.querySelector('.owner-manage-bar');
-  if (manageBar) {
-    const articleId = manageBar.getAttribute('data-article-id');
-    const btnPublish = document.getElementById('btnPublishGlobal');
-    const btnDelete = document.getElementById('btnDeleteArticle');
+  // Global event delegation for Owner / Admin action buttons (Publish & Delete)
+  document.addEventListener('click', async function(e) {
+    const target = e.target;
+    if (!target) return;
 
-    if (btnPublish && articleId) {
-      btnPublish.addEventListener('click', async () => {
-        if (!confirm('Publish this article globally now?')) return;
-        btnPublish.setAttribute('disabled', 'true');
-        btnPublish.textContent = 'Publishing...';
-        try {
-          const res = await fetch(`/api/articles/${articleId}/publish`, { method: 'POST' });
-          const contentType = res.headers.get('content-type');
-          let data: any = {};
-          if (contentType && contentType.includes('application/json')) {
-            data = await res.json();
-          } else {
-            const text = await res.text();
-            throw new Error(text || `Server error (${res.status})`);
-          }
-          if (res.ok && data.success) {
-            alert('Article published globally successfully!');
-            window.location.reload();
-          } else {
-            alert('Failed to publish article: ' + (data.error || 'Unknown error'));
-            btnPublish.removeAttribute('disabled');
-            btnPublish.textContent = 'Publish Globally';
-          }
-        } catch (err: any) {
-          alert('Error: ' + err.message);
+    // ── 1. Publish Globally Action ──────────────────────────────────────────
+    const btnPublish = target.closest('#btnPublishGlobal');
+    if (btnPublish) {
+      const manageBar = document.querySelector('.owner-manage-bar');
+      const articleId = manageBar?.getAttribute('data-article-id');
+      if (!articleId) {
+        alert('Error: Article ID not found.');
+        return;
+      }
+
+      if (!confirm('Publish this article globally now?')) return;
+      btnPublish.setAttribute('disabled', 'true');
+      btnPublish.textContent = 'Publishing...';
+
+      try {
+        const res = await fetch('/api/articles/' + articleId + '/publish', { method: 'POST' });
+        const contentType = res.headers.get('content-type');
+        let data = {};
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(text || 'Server error (' + res.status + ')');
+        }
+
+        if (res.ok && data.success) {
+          alert('Article published globally successfully!');
+          window.location.reload();
+        } else {
+          alert('Failed to publish article: ' + (data.error || 'Unknown error'));
           btnPublish.removeAttribute('disabled');
           btnPublish.textContent = 'Publish Globally';
         }
-      });
+      } catch (err) {
+        alert('Error publishing article: ' + (err.message || 'Unexpected error'));
+        btnPublish.removeAttribute('disabled');
+        btnPublish.textContent = 'Publish Globally';
+      }
+      return;
     }
 
-    if (btnDelete && articleId) {
-      btnDelete.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
-        btnDelete.setAttribute('disabled', 'true');
-        btnDelete.textContent = 'Deleting...';
-        try {
-          const res = await fetch(`/api/articles/${articleId}`, { method: 'DELETE' });
-          const contentType = res.headers.get('content-type');
-          let data: any = {};
-          if (contentType && contentType.includes('application/json')) {
-            data = await res.json();
-          } else {
-            const text = await res.text();
-            throw new Error(text || `Server error (${res.status})`);
-          }
-          if (res.ok && data.success) {
-            alert('Article deleted successfully.');
-            window.location.href = '/dashboard/articles';
-          } else {
-            alert('Failed to delete article: ' + (data.error || 'Unknown error'));
-            btnDelete.removeAttribute('disabled');
-            btnDelete.textContent = 'Delete Article';
-          }
-        } catch (err: any) {
-          alert('Error: ' + err.message);
+    // ── 2. Delete Article Action ───────────────────────────────────────────
+    const btnDelete = target.closest('#btnDeleteArticle');
+    if (btnDelete) {
+      const manageBar = document.querySelector('.owner-manage-bar');
+      const articleId = manageBar?.getAttribute('data-article-id');
+      if (!articleId) {
+        alert('Error: Article ID not found.');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this article? This action cannot be undone.')) return;
+      btnDelete.setAttribute('disabled', 'true');
+      btnDelete.textContent = 'Deleting...';
+
+      try {
+        const res = await fetch('/api/articles/' + articleId, { method: 'DELETE' });
+        const contentType = res.headers.get('content-type');
+        let data = {};
+        if (contentType && contentType.includes('application/json')) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          throw new Error(text || 'Server error (' + res.status + ')');
+        }
+
+        if (res.ok && data.success) {
+          alert('Article deleted successfully.');
+          window.location.href = '/dashboard/articles';
+        } else {
+          alert('Failed to delete article: ' + (data.error || 'Unknown error'));
           btnDelete.removeAttribute('disabled');
           btnDelete.textContent = 'Delete Article';
         }
-      });
+      } catch (err) {
+        alert('Error deleting article: ' + (err.message || 'Unexpected error'));
+        btnDelete.removeAttribute('disabled');
+        btnDelete.textContent = 'Delete Article';
+      }
+      return;
     }
-  }
+  });
 </script>
 
 <style>

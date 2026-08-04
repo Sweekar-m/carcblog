@@ -137,7 +137,7 @@ export function useOnboarding(initialUser: OnboardingUserProps) {
 
       if (res.ok && (data.success || data.profile)) {
         const searchParams = new URLSearchParams(window.location.search);
-        const redirectUrl = searchParams.get('redirect_url') || '/dashboard';
+        const redirectUrl = searchParams.get('redirect_url') || '/dashboard/profile';
         window.location.href = redirectUrl;
       } else {
         alert(data.error || 'Failed to save profile. Please try again.');
