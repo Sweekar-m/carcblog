@@ -202,6 +202,7 @@ export default function PublicProfileView({
   const [likesState, setLikesState] = useState<Record<string, { count: number; liked: boolean }>>({});
   const [bookmarksState, setBookmarksState] = useState<Record<string, { count: number; bookmarked: boolean }>>({});
 
+  const [avatarError, setAvatarError] = useState(false);
   const isOwner = currentUserId === profile.id;
 
   const handleToggleFollow = async () => {
@@ -361,8 +362,13 @@ export default function PublicProfileView({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             backgroundColor: '#FFFFFF',
           }}>
-            {profile.avatar_url ? (
-              <img src={profile.avatar_url} alt={profile.full_name || profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {profile.avatar_url && !avatarError ? (
+              <img
+                src={profile.avatar_url}
+                alt={profile.full_name || profile.username}
+                onError={() => setAvatarError(true)}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             ) : (
               <span style={{ color: '#FFFFFF', fontSize: '2.25rem', fontWeight: 800, fontFamily: S.fontSans, textTransform: 'uppercase' }}>
                 {(profile.full_name || profile.username || 'U').charAt(0)}
