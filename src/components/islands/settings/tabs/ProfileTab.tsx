@@ -1,4 +1,18 @@
 import React from 'react';
+import { Field, inputStyle, textareaStyle, labelStyle } from '../SettingsManager';
+
+// All inline styles — see SettingsManager.tsx for why we avoid Tailwind tokens here.
+const T = {
+  ink:      '#0f172a',
+  steel:    '#64748b',
+  stone:    '#94a3b8',
+  hairline: '#e2e8f0',
+  canvas:   '#ffffff',
+  primary:  '#0f172a',
+  fontSans: "'DM Sans', Inter, system-ui, sans-serif",
+  fsSm:     '0.875rem',
+  fsXs:     '0.8125rem',
+};
 
 interface ProfileTabProps {
   fullName:   string; setFullName:  (v: string) => void;
@@ -12,180 +26,125 @@ interface ProfileTabProps {
   website:    string; setWebsite:   (v: string) => void;
 }
 
-/* ── Shared primitive classes ─────────────────────────────────────────────── */
-const input =
-  'w-full h-11 px-3.5 rounded-lg border border-hairline bg-white text-ink ' +
-  'text-body-sm font-sans placeholder:text-stone focus:outline-none ' +
-  'focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all box-border';
-
-const label = 'block text-body-sm font-semibold text-ink mb-1.5';
-const hint  = 'text-caption text-steel mt-1 leading-snug';
-
-/* ── Field helper ─────────────────────────────────────────────────────────── */
-function Field({
-  id,
-  labelText,
-  hintText,
-  children,
-}: {
-  id: string;
-  labelText: string;
-  hintText?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <label htmlFor={id} className={label}>{labelText}</label>
-      {children}
-      {hintText && <p className={hint}>{hintText}</p>}
-    </div>
-  );
-}
+// Focus handlers — JS-applied since CSS focus-visible requires the class to exist
+const onFocus = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  e.currentTarget.style.borderColor = T.primary;
+  e.currentTarget.style.boxShadow   = `0 0 0 3px rgba(15,23,42,0.08)`;
+};
+const onBlur  = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  e.currentTarget.style.borderColor = T.hairline;
+  e.currentTarget.style.boxShadow   = 'none';
+};
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({
-  fullName, setFullName,
-  username, setUsername,
-  tagline,  setTagline,
-  bio,      setBio,
-  company,  setCompany,
-  jobTitle, setJobTitle,
-  city,     setCity,
-  country,  setCountry,
-  website,  setWebsite,
+  fullName, setFullName, username, setUsername,
+  tagline, setTagline, bio, setBio,
+  company, setCompany, jobTitle, setJobTitle,
+  city, setCity, country, setCountry,
+  website, setWebsite,
 }) => (
-  <div className="flex flex-col gap-6">
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
     {/* Row 1 — Full Name + Username */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
       <Field id="fullName" labelText="Full Name">
-        <input
-          id="fullName"
-          type="text"
-          value={fullName}
-          onChange={e => setFullName(e.target.value)}
-          className={input}
-          placeholder="Your full name"
-          autoComplete="name"
+        <input id="fullName" type="text" value={fullName}
+          onChange={e => setFullName(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="Your full name" autoComplete="name"
+          style={inputStyle} className="w-full block"
         />
       </Field>
-
-      <Field
-        id="username"
-        labelText="Username"
-        hintText={`carcblog.com/u/${username || 'username'}`}
-      >
-        <input
-          id="username"
-          type="text"
-          value={username}
-          onChange={e => setUsername(e.target.value)}
-          className={input}
-          placeholder="username"
-          autoComplete="username"
+      </div>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+      <Field id="username" labelText="Username" hintText={`carcblog.com/u/${username || 'username'}`}>
+        <input id="username" type="text" value={username}
+          onChange={e => setUsername(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="username" autoComplete="username"
+          style={inputStyle} className="w-full block"
         />
       </Field>
+      </div>
     </div>
 
     {/* Row 2 — Tagline */}
-    <Field
-      id="tagline"
-      labelText="Tagline"
-      hintText="Shown below your name on your public profile."
-    >
-      <input
-        id="tagline"
-        type="text"
-        value={tagline}
-        onChange={e => setTagline(e.target.value)}
-        className={input}
+    <Field id="tagline" labelText="Tagline" hintText="Shown below your name on your public profile.">
+      <input id="tagline" type="text" value={tagline}
+        onChange={e => setTagline(e.target.value)} onFocus={onFocus} onBlur={onBlur}
         placeholder="e.g. Founder & Tech Journalist @ TechVentures"
+        style={inputStyle} className="w-full block"
       />
     </Field>
 
     {/* Row 3 — Bio */}
-    <Field id="bio" labelText="Bio">
-      <textarea
-        id="bio"
-        value={bio}
+    <div>
+      <label htmlFor="bio" style={labelStyle}>Bio</label>
+      <textarea id="bio" value={bio} rows={4}
         onChange={e => setBio(e.target.value)}
-        rows={4}
-        className={
-          'w-full min-h-[100px] px-3.5 py-3 rounded-lg border border-hairline bg-white ' +
-          'text-ink text-body-sm font-sans placeholder:text-stone focus:outline-none ' +
-          'focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all resize-y box-border'
-        }
+        onFocus={e => { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(15,23,42,0.08)`; }}
+        onBlur={e =>  { e.currentTarget.style.borderColor = T.hairline; e.currentTarget.style.boxShadow = 'none'; }}
         placeholder="Tell readers about yourself, your expertise, and what you cover…"
+        style={textareaStyle} className="w-full block"
       />
-    </Field>
+    </div>
+
+    {/* Section divider */}
+    <div style={{ borderTop: `1px solid ${T.hairline}`, paddingTop: '4px' }}>
+      <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink, marginBottom: '16px' }}>
+        Work & Location
+      </span>
+    </div>
 
     {/* Row 4 — Company + Job Title */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
       <Field id="company" labelText="Company">
-        <input
-          id="company"
-          type="text"
-          value={company}
-          onChange={e => setCompany(e.target.value)}
-          className={input}
-          placeholder="e.g. Acme Inc."
-          autoComplete="organization"
+        <input id="company" type="text" value={company}
+          onChange={e => setCompany(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="e.g. Acme Inc." autoComplete="organization"
+          style={inputStyle} className="w-full block"
         />
       </Field>
-
+      </div>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
       <Field id="jobTitle" labelText="Job Title">
-        <input
-          id="jobTitle"
-          type="text"
-          value={jobTitle}
-          onChange={e => setJobTitle(e.target.value)}
-          className={input}
-          placeholder="e.g. Founder, CEO"
-          autoComplete="organization-title"
+        <input id="jobTitle" type="text" value={jobTitle}
+          onChange={e => setJobTitle(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="e.g. Founder, CEO" autoComplete="organization-title"
+          style={inputStyle} className="w-full block"
         />
       </Field>
+      </div>
     </div>
 
     {/* Row 5 — City + Country */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
       <Field id="city" labelText="City">
-        <input
-          id="city"
-          type="text"
-          value={city}
-          onChange={e => setCity(e.target.value)}
-          className={input}
-          placeholder="e.g. Bangalore"
-          autoComplete="address-level2"
+        <input id="city" type="text" value={city}
+          onChange={e => setCity(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="e.g. Bangalore" autoComplete="address-level2"
+          style={inputStyle} className="w-full block"
         />
       </Field>
-
+      </div>
+      <div style={{ flex: '1 1 200px', minWidth: 0 }}>
       <Field id="country" labelText="Country">
-        <input
-          id="country"
-          type="text"
-          value={country}
-          onChange={e => setCountry(e.target.value)}
-          className={input}
-          placeholder="e.g. India"
-          autoComplete="country-name"
+        <input id="country" type="text" value={country}
+          onChange={e => setCountry(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+          placeholder="e.g. India" autoComplete="country-name"
+          style={inputStyle} className="w-full block"
         />
       </Field>
+      </div>
     </div>
 
     {/* Row 6 — Website */}
-    <Field
-      id="website"
-      labelText="Website"
-      hintText="Must start with https://"
-    >
-      <input
-        id="website"
-        type="url"
-        value={website}
-        onChange={e => setWebsite(e.target.value)}
-        className={input}
-        placeholder="https://yoursite.com"
-        autoComplete="url"
+    <Field id="website" labelText="Website" hintText="Must start with https://">
+      <input id="website" type="url" value={website}
+        onChange={e => setWebsite(e.target.value)} onFocus={onFocus} onBlur={onBlur}
+        placeholder="https://yoursite.com" autoComplete="url"
+        style={inputStyle} className="w-full block"
       />
     </Field>
 

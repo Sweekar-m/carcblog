@@ -63,7 +63,7 @@
   --tracking-button: 0em;
   --tracking-nav-link: 0em;
 
-  /* Color System */
+  /* ── Core semantic colors (shadcn-style) ── */
   --color-background: var(--color-background);
   --color-foreground: var(--color-foreground);
   --color-muted: var(--color-muted);
@@ -85,12 +85,76 @@
   --color-ring: var(--color-ring);
   --color-success: var(--color-success);
   --color-error: var(--color-error);
-  /* Gradient Orbs */
+
+  /* ── CarcBlog Canvas / Surface tokens ── */
+  --color-canvas: var(--color-canvas);
+  --color-canvas-soft: var(--color-canvas-soft);
+  --color-surface: var(--color-surface);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-surface-card: var(--color-surface-card);
+  --color-surface-strong: var(--color-surface-strong);
+
+  /* ── CarcBlog Ink / Text tokens ── */
+  --color-ink: var(--color-ink);
+  --color-ink-strong: var(--color-ink-strong);
+  --color-charcoal: var(--color-charcoal);
+  --color-slate: var(--color-slate);
+  --color-steel: var(--color-steel);
+  --color-stone: var(--color-stone);
+  --color-body: var(--color-body);
+  --color-body-strong: var(--color-body-strong);
+  --color-muted-soft: var(--color-muted-soft);
+
+  /* ── CarcBlog Hairline / Divider tokens ── */
+  --color-hairline: var(--color-hairline);
+  --color-hairline-soft: var(--color-hairline-soft);
+  --color-hairline-strong: var(--color-hairline-strong);
+
+  /* ── CarcBlog Brand Accent Colors ── */
+  --color-brand-coral: var(--color-brand-coral);
+  --color-brand-magenta: var(--color-brand-magenta);
+  --color-brand-blue: var(--color-brand-blue);
+  --color-brand-purple: var(--color-brand-purple);
+  --color-brand-emerald: var(--color-brand-emerald);
+  --color-brand-amber: var(--color-brand-amber);
+  --color-brand-cyan: var(--color-brand-cyan);
+  --color-brand-blue-deep: var(--color-brand-blue-deep);
+  --color-brand-blue-700: var(--color-brand-blue-700);
+  --color-brand-blue-200: var(--color-brand-blue-200);
+
+  /* ── On-color tokens ── */
+  --color-on-primary: var(--color-on-primary);
+  --color-on-dark: var(--color-on-dark);
+  --color-on-dark-soft: var(--color-on-dark-soft);
+
+  /* ── Gradient Orbs ── */
   --color-gradient-mint: var(--color-gradient-mint);
   --color-gradient-peach: var(--color-gradient-peach);
   --color-gradient-lavender: var(--color-gradient-lavender);
   --color-gradient-sky: var(--color-gradient-sky);
   --color-gradient-rose: var(--color-gradient-rose);
+
+  /* ── Shadows — mapped so shadow-subtle / shadow-card / shadow-modal work ── */
+  --shadow-subtle: var(--shadow-subtle);
+  --shadow-card: var(--shadow-card);
+  --shadow-atmospheric: var(--shadow-atmospheric);
+  --shadow-modal: var(--shadow-modal);
+  --shadow-card-hover: var(--shadow-card-hover);
+
+  /* ── CarcBlog Font Sizes (generates text-body-sm, text-caption, text-micro, etc.) ── */
+  --font-size-hero-display: 5rem;
+  --font-size-display-lg2: 3.5rem;
+  --font-size-heading-lg: 2.5rem;
+  --font-size-heading-md: 2rem;
+  --font-size-heading-sm: 1.5rem;
+  --font-size-card-title: 1.25rem;
+  --font-size-subtitle: 1.125rem;
+  --font-size-body-md: 1rem;
+  --font-size-body-sm: 0.875rem;
+  --font-size-caption: 0.8125rem;
+  --font-size-micro: 0.75rem;
+  --font-size-button-md: 0.875rem;
+
   /* Glass effects */
   --color-glass-bg: var(--color-glass-bg);
   --color-glass-border: var(--color-glass-border);

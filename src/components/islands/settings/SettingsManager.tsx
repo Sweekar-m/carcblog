@@ -1,26 +1,244 @@
 import React, { useState } from 'react';
-import { User, Bell, Key, ChevronDown } from 'lucide-react';
+import { User, Bell, Key, Link2, Shield, ChevronDown, AlertTriangle } from 'lucide-react';
 import type { ExtendedProfile, SocialLink } from '@/lib/profile';
 import { AISettingsForm } from '@/components/islands/AISettingsForm';
 import { ProfileTab } from './tabs/ProfileTab';
 import { SocialTab } from './tabs/SocialTab';
 import { NotificationsTab } from './tabs/NotificationsTab';
 
+/* ─── Design tokens — inline style constants ────────────────────────────────
+ *
+ * We use inline styles for ALL design-token-dependent visual properties.
+ * Reason: this project runs Tailwind CSS v4 (via @tailwindcss/vite), where
+ * the @theme block in tailwind.css controls which utility classes exist.
+ * The custom CarcBlog tokens (hairline, steel, canvas, surface, ink, shadow-
+ * subtle, etc.) were NOT registered in @theme, so classes like `border-hairline`,
+ * `text-steel`, `shadow-subtle` silently generated no CSS. Tailwind layout
+ * utilities (flex, grid, w-*, h-*, gap-*, p-*, rounded-*, hidden, block, etc.)
+ * are Tailwind primitives that exist in v4 and are safe to use as className.
+ *
+ * We only use className for: layout, display, position, overflow, cursor,
+ * transition-timing (hardcoded values), and responsive prefixes.
+ * ALL color, shadow, border-color, font-size, font-weight go inline.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+const T = {
+  // Colors
+  ink:            '#0f172a',
+  steel:          '#64748b',
+  stone:          '#94a3b8',
+  charcoal:       '#334155',
+  canvas:         '#ffffff',
+  surface:        '#f8fafc',
+  surfaceStrong:  '#f1f5f9',
+  hairline:       '#e2e8f0',
+  hairlineStrong: '#cbd5e1',
+  primary:        '#0f172a',
+  brandBlue:      '#0066ff',
+  red500:         '#ef4444',
+  red600:         '#dc2626',
+  red50:          '#fef2f2',
+  red200:         '#fecaca',
+  white:          '#ffffff',
+
+  // Typography
+  fsSm:     '0.875rem',   // 14px body-sm
+  fsXs:     '0.8125rem',  // 13px caption
+  fsMicro:  '0.75rem',    // 12px micro
+  fsBase:   '1rem',       // 16px body-md
+
+  // Shadows
+  shadowSubtle:  '0px 1px 2px 0px rgba(0,0,0,0.04)',
+  shadowCard:    '0px 4px 6px 0px rgba(0,0,0,0.08)',
+  shadowModal:   '0px 12px 16px -4px rgba(36,36,36,0.08)',
+
+  // Font
+  fontSans: "'DM Sans', Inter, system-ui, sans-serif",
+} as const;
+
+/* ─── Types ──────────────────────────────────────────────────────────────── */
 interface SettingsManagerProps {
   profile: ExtendedProfile;
   socialLinks: SocialLink[];
 }
 
+type SectionId = 'profile' | 'social' | 'ai' | 'notifications' | 'security';
+
+interface SectionDef {
+  id: SectionId;
+  label: string;
+  icon: React.ComponentType<{ style?: React.CSSProperties }>;
+  badge?: string;
+  category: string;
+  description: string;
+}
+
+const SECTIONS: SectionDef[] = [
+  { id: 'profile',       label: 'Public Profile',    icon: User,    category: 'Account',       description: 'Your name, bio, location, and public identity.' },
+  { id: 'social',        label: 'Social Accounts',   icon: Link2,   category: 'Account',       description: 'Connect your public profiles across social networks.' },
+  { id: 'ai',            label: 'AI Writer Keys',    icon: Key,     category: 'Writing Tools', description: 'API keys and model preferences for the AI writing assistant.', badge: 'AI' },
+  { id: 'notifications', label: 'Notifications',     icon: Bell,    category: 'Notifications', description: 'Control which activity alerts you receive.' },
+  { id: 'security',      label: 'Security',          icon: Shield,  category: 'Security',      description: 'Password, sessions, and account deletion.' },
+];
+
+const CATEGORIES = SECTIONS.reduce<{ label: string; items: SectionDef[] }[]>(
+  (acc, s) => {
+    const g = acc.find(x => x.label === s.category);
+    g ? g.items.push(s) : acc.push({ label: s.category, items: [s] });
+    return acc;
+  }, [],
+);
+
+/* ─── Shared input/form field classes (Tailwind layout only) ──────────────── */
+export const inputCls =
+  'w-full block appearance-none outline-none transition-colors';
+
+export const inputStyle: React.CSSProperties = {
+  height: '44px',
+  padding: '0 14px',
+  borderRadius: '8px',
+  border: `1px solid ${T.hairline}`,
+  background: T.canvas,
+  color: T.ink,
+  fontFamily: T.fontSans,
+  fontSize: T.fsSm,
+  fontWeight: 400,
+  boxSizing: 'border-box',
+};
+
+export const textareaStyle: React.CSSProperties = {
+  ...inputStyle,
+  height: 'auto',
+  minHeight: '100px',
+  padding: '12px 14px',
+  resize: 'vertical',
+};
+
+export const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontFamily: T.fontSans,
+  fontSize: T.fsSm,
+  fontWeight: 600,
+  color: T.ink,
+  marginBottom: '6px',
+};
+
+export const hintStyle: React.CSSProperties = {
+  fontFamily: T.fontSans,
+  fontSize: T.fsXs,
+  color: T.steel,
+  marginTop: '4px',
+  lineHeight: 1.5,
+  display: 'block',
+};
+
+/* ─── Field wrapper ───────────────────────────────────────────────────────── */
+export function Field({ id, labelText, hintText, children }: {
+  id: string; labelText: string; hintText?: string; children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} style={labelStyle}>{labelText}</label>
+      {children}
+      {hintText && <span style={hintStyle}>{hintText}</span>}
+    </div>
+  );
+}
+
+/* ─── Section card ────────────────────────────────────────────────────────── */
+function SectionCard({ children, danger }: { children: React.ReactNode; danger?: boolean }) {
+  return (
+    <div style={{
+      background: T.canvas,
+      border: `1px solid ${danger ? T.red200 : T.hairline}`,
+      borderRadius: '16px',
+      boxShadow: T.shadowCard,
+      overflow: 'hidden',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Section header strip ────────────────────────────────────────────────── */
+function SectionHeader({ section, danger }: { section: SectionDef; danger?: boolean }) {
+  const Icon = section.icon;
+  return (
+    <div style={{
+      padding: '20px 32px 16px',
+      borderBottom: `1px solid ${danger ? T.red200 : T.hairline}`,
+      background: danger ? T.red50 : T.surface,
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: '16px',
+    }}>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <Icon style={{ width: '18px', height: '18px', color: danger ? T.red600 : T.primary, flexShrink: 0 }} />
+          <span style={{ fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: danger ? T.red600 : T.ink, lineHeight: 1 }}>
+            {section.label}
+          </span>
+          {section.badge && (
+            <span style={{
+              fontFamily: T.fontSans, fontSize: T.fsMicro, fontWeight: 700,
+              background: T.brandBlue, color: T.white,
+              padding: '2px 8px', borderRadius: '9999px', lineHeight: 1.5,
+            }}>
+              {section.badge}
+            </span>
+          )}
+        </div>
+        <span style={{ fontFamily: T.fontSans, fontSize: T.fsXs, color: T.steel, lineHeight: 1.5, paddingLeft: '26px', display: 'block' }}>
+          {section.description}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Security section content ────────────────────────────────────────────── */
+function SecuritySection() {
+  return (
+    <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+        <div>
+          <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink }}>Change password</span>
+          <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, color: T.steel, marginTop: '2px' }}>Update the password you use to sign in.</span>
+        </div>
+        <button type="button" style={{ flexShrink: 0, fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink, background: T.canvas, border: `1px solid ${T.hairline}`, borderRadius: '9999px', padding: '0 16px', height: '36px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          Change
+        </button>
+      </div>
+      <div style={{ borderTop: `1px solid ${T.hairline}` }} />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+          <AlertTriangle style={{ width: '16px', height: '16px', color: T.red500, flexShrink: 0, marginTop: '2px' }} />
+          <div>
+            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.red600 }}>Delete account</span>
+            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, color: T.steel, marginTop: '2px' }}>Permanently delete your account and all associated data. This action cannot be undone.</span>
+          </div>
+        </div>
+        <button type="button" style={{ flexShrink: 0, fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.white, background: T.red600, border: 'none', borderRadius: '9999px', padding: '0 16px', height: '36px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Main component
+═══════════════════════════════════════════════════════════════════════════ */
 export default function SettingsManager({
   profile: initialProfile,
   socialLinks: initialSocials,
 }: SettingsManagerProps) {
 
-  // ── Tab state ───────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<'profile' | 'ai' | 'notifications'>(() => {
+  const [activeSection, setActiveSection] = useState<SectionId>(() => {
     if (typeof window !== 'undefined') {
       const tab = new URLSearchParams(window.location.search).get('tab');
-      if (tab && ['profile', 'ai', 'notifications'].includes(tab)) return tab as any;
+      if (tab && SECTIONS.some(s => s.id === tab)) return tab as SectionId;
     }
     return 'profile';
   });
@@ -29,7 +247,7 @@ export default function SettingsManager({
   const [saveSuccess, setSaveSuccess]     = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
-  // ── Profile state ─────────────────────────────────────────────────────────
+  // Profile state
   const [fullName, setFullName] = useState(initialProfile.full_name || '');
   const [username, setUsername] = useState(initialProfile.username  || '');
   const [bio,      setBio]      = useState(initialProfile.bio       || '');
@@ -40,279 +258,275 @@ export default function SettingsManager({
   const [country,  setCountry]  = useState(initialProfile.country   || '');
   const [website,  setWebsite]  = useState(initialProfile.website   || '');
 
-  // ── Social links ──────────────────────────────────────────────────────────
+  // Social links
   const defaultSocials: SocialLink[] = [{ user_id: initialProfile.id, platform: 'x', url: '' }];
   const [socials, setSocials] = useState<SocialLink[]>(
     initialSocials.length > 0 ? initialSocials : defaultSocials,
   );
 
-  // ── Notifications ─────────────────────────────────────────────────────────
-  const defaultNotifs = {
-    likes: true, comments: true, followers: true,
-    mentions: true, articles: true, digest: true,
-  };
+  // Notifications
+  const defaultNotifs = { likes: true, comments: true, followers: true, mentions: true, articles: true, digest: true };
   const [notifPrefs, setNotifPrefs] = useState<Record<string, boolean>>(
     initialProfile.notification_prefs || defaultNotifs,
   );
 
-  // ── Dirty tracking ────────────────────────────────────────────────────────
+  // Dirty tracking
   const isProfileDirty =
-    fullName  !== (initialProfile.full_name  || '') ||
-    username  !== (initialProfile.username   || '') ||
-    bio       !== (initialProfile.bio        || '') ||
-    tagline   !== (initialProfile.tagline    || '') ||
-    company   !== (initialProfile.company    || '') ||
-    jobTitle  !== (initialProfile.job_title  || '') ||
-    city      !== (initialProfile.city       || '') ||
-    country   !== (initialProfile.country    || '') ||
-    website   !== (initialProfile.website    || '');
-
+    fullName !== (initialProfile.full_name || '') || username !== (initialProfile.username || '') ||
+    bio !== (initialProfile.bio || '') || tagline !== (initialProfile.tagline || '') ||
+    company !== (initialProfile.company || '') || jobTitle !== (initialProfile.job_title || '') ||
+    city !== (initialProfile.city || '') || country !== (initialProfile.country || '') ||
+    website !== (initialProfile.website || '');
   const baseSocials    = initialSocials.length > 0 ? initialSocials : defaultSocials;
-  const isSocialsDirty = JSON.stringify(socials)    !== JSON.stringify(baseSocials);
-  const isNotifsDirty  = JSON.stringify(notifPrefs) !== JSON.stringify(
-    initialProfile.notification_prefs || defaultNotifs,
-  );
+  const isSocialsDirty = JSON.stringify(socials) !== JSON.stringify(baseSocials);
+  const isNotifsDirty  = JSON.stringify(notifPrefs) !== JSON.stringify(initialProfile.notification_prefs || defaultNotifs);
   const isDirty = isProfileDirty || isSocialsDirty || isNotifsDirty;
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
-  const handleAddSocial = () =>
-    setSocials(p => [...p, { user_id: initialProfile.id, platform: 'linkedin', url: '' }]);
-
-  const handleRemoveSocial = (idx: number) =>
-    setSocials(p => p.filter((_, i) => i !== idx));
-
+  // Handlers
+  const handleAddSocial    = () => setSocials(p => [...p, { user_id: initialProfile.id, platform: 'linkedin', url: '' }]);
+  const handleRemoveSocial = (idx: number) => setSocials(p => p.filter((_, i) => i !== idx));
   const handleSocialChange = (idx: number, field: 'platform' | 'url', val: string) =>
     setSocials(p => { const c = [...p]; c[idx] = { ...c[idx], [field]: val }; return c; });
 
   const handleSave = async () => {
     if (!isDirty || saving) return;
-    setSaving(true);
-    setSaveSuccess(false);
+    setSaving(true); setSaveSuccess(false);
     try {
       const res = await fetch('/api/profile/update', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: fullName, username, bio, tagline, company,
-          job_title: jobTitle, city, country, website,
-          notification_prefs: notifPrefs,
-          social_links: socials.filter(s => s.url.trim().length > 0),
-        }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ full_name: fullName, username, bio, tagline, company, job_title: jobTitle, city, country, website, notification_prefs: notifPrefs, social_links: socials.filter(s => s.url.trim().length > 0) }),
       });
-      if (res.ok) {
-        setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 3000);
-      } else {
-        alert('Failed to save settings.');
-      }
-    } catch {
-      alert('Network error while saving settings.');
-    } finally {
-      setSaving(false);
-    }
+      if (res.ok) { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); }
+      else alert('Failed to save settings.');
+    } catch { alert('Network error while saving settings.'); }
+    finally { setSaving(false); }
   };
 
-  // ── Tab definitions ───────────────────────────────────────────────────────
-  const TAB_ITEMS = [
-    { id: 'profile',       label: 'Public Profile', icon: User },
-    { id: 'ai',            label: 'AI Settings',    icon: Key,  badge: 'AI' },
-    { id: 'notifications', label: 'Notifications',  icon: Bell },
-  ] as const;
+  const currentSection = SECTIONS.find(s => s.id === activeSection) ?? SECTIONS[0];
+  const showSave       = activeSection !== 'ai' && activeSection !== 'security';
+  const saveLabel      = saving ? 'Saving…' : saveSuccess ? '✓ Saved' : 'Save changes';
 
-  const currentTab = TAB_ITEMS.find(t => t.id === activeTab) ?? TAB_ITEMS[0];
-  const showSave   = activeTab !== 'ai';
-  const saveLabel  = saving ? 'Saving…' : saveSuccess ? '✓ Saved' : 'Save changes';
+  // The navbar height CSS variable (set in tokens.css: --h-nav: 64px).
+  // Used for sticky positioning so both elements stay in sync.
+  const STICKY_TOP = 'var(--h-nav, 64px)';
 
-  const saveBtnCls =
-    'inline-flex items-center justify-center px-5 h-9 rounded-full bg-primary text-white ' +
-    'font-semibold text-button-md whitespace-nowrap hover:opacity-90 active:scale-95 ' +
-    'transition-all cursor-pointer shrink-0 ' +
-    'disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none';
+  const saveBtnStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+    padding: '0 20px', height: '36px', borderRadius: '9999px',
+    background: T.primary, color: T.white, border: 'none',
+    fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600,
+    cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+    opacity: (!isDirty || saving) ? 0.35 : 1,
+    pointerEvents: (!isDirty || saving) ? 'none' : 'auto',
+    transition: 'opacity 150ms ease',
+  };
 
   return (
-    <div className="w-full max-w-[1140px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-12 font-sans box-border">
+    <div style={{ fontFamily: T.fontSans, boxSizing: 'border-box' }}
+         className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-12">
 
-      {/* ── Page Header ─────────────────────────────────────────────────── */}
-      <div className="mb-6 sm:mb-8 pb-5 border-b border-hairline">
-        <h1 className="text-2xl sm:text-[1.75rem] font-bold text-ink tracking-tight leading-tight">
+      {/* ── Page header ─────────────────────────────────────────────────── */}
+      <div style={{ marginBottom: '32px', paddingBottom: '20px', borderBottom: `1px solid ${T.hairline}` }}>
+        <h1 style={{ fontFamily: T.fontSans, fontSize: '1.75rem', fontWeight: 700, color: T.ink, letterSpacing: '-0.02em', lineHeight: 1.2, margin: 0 }}>
           Settings
         </h1>
-        <p className="text-body-sm text-steel mt-1">
+        <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, color: T.steel, marginTop: '4px' }}>
           Manage your public profile, social links, AI settings, and notifications.
-        </p>
+        </span>
       </div>
 
-      {/* ── Mobile & Tablet Section Selector (<1024px) ─────────────────── */}
-      <div className="lg:hidden mb-6 relative z-20 w-full max-w-[820px] mx-auto">
+      {/* ── Mobile section selector (<1024px) ───────────────────────────── */}
+      <div className="lg:hidden" style={{ marginBottom: '24px', position: 'relative', zIndex: 20 }}>
         <button
           type="button"
           onClick={() => setMobileNavOpen(p => !p)}
           aria-expanded={mobileNavOpen}
           aria-haspopup="listbox"
-          aria-label="Select settings section"
-          className={
-            'w-full flex items-center justify-between gap-3 bg-white border rounded-xl ' +
-            'px-4 py-3 shadow-subtle hover:border-hairline-strong transition-colors ' +
-            'min-h-[48px] cursor-pointer text-left ' +
-            (mobileNavOpen ? 'border-primary' : 'border-hairline')
-          }
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: '12px', background: T.canvas, border: `1px solid ${mobileNavOpen ? T.primary : T.hairline}`,
+            borderRadius: '12px', padding: '12px 16px', boxShadow: T.shadowSubtle,
+            cursor: 'pointer', minHeight: '48px', fontFamily: T.fontSans,
+            transition: 'border-color 150ms ease',
+          }}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            {React.createElement(currentTab.icon, { className: 'w-4 h-4 text-primary shrink-0' })}
-            <span className="text-body-sm font-semibold text-ink truncate">
-              {currentTab.label}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            {React.createElement(currentSection.icon, { style: { width: '16px', height: '16px', color: T.primary, flexShrink: 0 } })}
+            <span style={{ fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {currentSection.label}
             </span>
-            {'badge' in currentTab && currentTab.badge && (
-              <span className="text-micro font-bold bg-brand-blue text-white px-2 py-0.5 rounded-full shrink-0 leading-none">
-                {currentTab.badge}
-              </span>
-            )}
           </div>
-          <div className="flex items-center gap-1.5 shrink-0 text-steel">
-            <span className="text-caption font-medium hidden sm:inline">Change Section</span>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform duration-150 ${
-                mobileNavOpen ? 'rotate-180 text-primary' : ''
-              }`}
-            />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0, color: T.steel }}>
+            <span className="hidden sm:inline" style={{ fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 500 }}>Change Section</span>
+            <ChevronDown style={{ width: '16px', height: '16px', transition: 'transform 150ms ease', transform: mobileNavOpen ? 'rotate(180deg)' : 'none', color: mobileNavOpen ? T.primary : T.steel }} />
           </div>
         </button>
 
         {mobileNavOpen && (
           <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setMobileNavOpen(false)}
-              aria-hidden="true"
-            />
-            <div
-              role="listbox"
-              className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-hairline rounded-xl shadow-modal p-1.5 z-30"
-            >
-              {TAB_ITEMS.map(tab => {
-                const TabIcon = tab.icon;
-                const active  = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    role="option"
-                    aria-selected={active}
-                    onClick={() => { setActiveTab(tab.id as any); setMobileNavOpen(false); }}
-                    className={
-                      'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-body-sm ' +
-                      'font-medium transition-colors cursor-pointer text-left min-h-[44px] ' +
-                      (active ? 'bg-primary text-white font-semibold' : 'text-ink hover:bg-surface')
-                    }
-                  >
-                    <TabIcon className={`w-4 h-4 shrink-0 ${active ? 'text-white' : 'text-steel'}`} />
-                    <span className="flex-1">{tab.label}</span>
-                    {'badge' in tab && tab.badge && (
-                      <span className={
-                        'text-micro font-bold px-2 py-0.5 rounded-full leading-none ' +
-                        (active ? 'bg-white/20 text-white' : 'bg-brand-blue/10 text-brand-blue')
-                      }>
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+            <div className="fixed inset-0" style={{ zIndex: 10 }} onClick={() => setMobileNavOpen(false)} aria-hidden="true" />
+            <div role="listbox" style={{
+              position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
+              background: T.canvas, border: `1px solid ${T.hairline}`,
+              borderRadius: '12px', boxShadow: T.shadowModal, padding: '6px', zIndex: 30,
+            }}>
+              {CATEGORIES.map((group, gi) => (
+                <div key={group.label}>
+                  {gi > 0 && <div style={{ height: '1px', background: T.hairline, margin: '4px 6px' }} />}
+                  <div style={{ padding: '8px 12px 4px', fontFamily: T.fontSans, fontSize: '10px', fontWeight: 700, color: T.stone, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    {group.label}
+                  </div>
+                  {group.items.map(section => {
+                    const Icon   = section.icon;
+                    const active = activeSection === section.id;
+                    return (
+                      <button key={section.id} role="option" aria-selected={active}
+                        onClick={() => { setActiveSection(section.id); setMobileNavOpen(false); }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '10px 12px', borderRadius: '8px', border: 'none',
+                          background: active ? T.primary : 'transparent',
+                          cursor: 'pointer', minHeight: '44px', fontFamily: T.fontSans,
+                          fontSize: T.fsSm, fontWeight: active ? 600 : 500,
+                          color: active ? T.white : T.ink, textAlign: 'left',
+                          transition: 'background 150ms ease, color 150ms ease',
+                        }}
+                      >
+                        <Icon style={{ width: '16px', height: '16px', flexShrink: 0, color: active ? T.white : T.steel }} />
+                        <span style={{ flex: 1 }}>{section.label}</span>
+                        {section.badge && (
+                          <span style={{ fontFamily: T.fontSans, fontSize: T.fsMicro, fontWeight: 700, padding: '2px 8px', borderRadius: '9999px', lineHeight: 1.5, background: active ? 'rgba(255,255,255,0.2)' : T.brandBlue + '1a', color: active ? T.white : T.brandBlue }}>
+                            {section.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </>
         )}
       </div>
 
-      {/* ── Main Two-Column Layout (Flexbox: Left Sidebar + Right Card) ────── */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
+      {/* ── Main two-column layout ───────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row items-start" style={{ gap: '32px' }}>
 
-        {/* Left Desktop Sidebar (≥1024px) */}
+        {/* ── Desktop sidebar ─────────────────────────────────────────── */}
         <nav
           aria-label="Settings navigation"
-          className="hidden lg:block w-[240px] shrink-0 sticky top-[80px] self-start"
+          className="hidden lg:block"
+          style={{ width: '240px', flexShrink: 0, position: 'sticky', top: STICKY_TOP, alignSelf: 'flex-start' }}
         >
-          <div className="bg-white border border-hairline rounded-xl shadow-subtle overflow-hidden">
-            <div className="px-4 py-3 border-b border-hairline bg-surface/50">
-              <span className="text-micro font-bold text-steel uppercase tracking-widest">
-                Settings
-              </span>
-            </div>
-            <div className="p-2 flex flex-col gap-1">
-              {TAB_ITEMS.map(tab => {
-                const TabIcon = tab.icon;
-                const active  = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={
-                      'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg ' +
-                      'text-body-sm font-medium transition-all cursor-pointer text-left group ' +
-                      (active
-                        ? 'bg-primary text-white font-semibold shadow-subtle'
-                        : 'text-steel hover:text-ink hover:bg-surface')
-                    }
-                  >
-                    <TabIcon
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        active ? 'text-white' : 'text-steel group-hover:text-ink'
-                      }`}
-                    />
-                    <span className="flex-1 truncate">{tab.label}</span>
-                    {'badge' in tab && tab.badge && (
-                      <span className={
-                        'text-micro font-bold px-2 py-0.5 rounded-full leading-none shrink-0 ' +
-                        (active
-                          ? 'bg-white/25 text-white'
-                          : 'bg-brand-blue/10 text-brand-blue')
-                      }>
-                        {tab.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          <div style={{
+            background: T.canvas, border: `1px solid ${T.hairline}`,
+            borderRadius: '12px', boxShadow: T.shadowSubtle, overflow: 'hidden',
+          }}>
+            {CATEGORIES.map((group, gi) => (
+              <div key={group.label}>
+                {/* Category header */}
+                <div style={{
+                  padding: '10px 16px 8px',
+                  borderTop: gi > 0 ? `1px solid ${T.hairline}` : 'none',
+                  background: T.surface,
+                }}>
+                  <span style={{ fontFamily: T.fontSans, fontSize: '10px', fontWeight: 700, color: T.stone, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    {group.label}
+                  </span>
+                </div>
+
+                {/* Nav items */}
+                <div style={{ padding: '4px 8px 6px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {group.items.map(section => {
+                    const Icon    = section.icon;
+                    const active  = activeSection === section.id;
+                    const danger  = section.id === 'security';
+                    const bgColor = active ? (danger ? T.red600 : T.primary) : 'transparent';
+                    const fgColor = active ? T.white : (danger ? T.red600 : T.steel);
+                    const hoverBg = danger ? T.red50 : T.surface;
+
+                    return (
+                      <button
+                        key={section.id}
+                        type="button"
+                        onClick={() => setActiveSection(section.id)}
+                        onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                        onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+                          padding: '9px 12px', borderRadius: '8px', border: 'none',
+                          background: bgColor, cursor: 'pointer',
+                          fontFamily: T.fontSans, fontSize: T.fsSm,
+                          fontWeight: active ? 600 : 500, color: fgColor,
+                          textAlign: 'left', transition: 'background 150ms ease, color 150ms ease',
+                          boxShadow: active ? T.shadowSubtle : 'none',
+                        }}
+                      >
+                        <Icon style={{ width: '16px', height: '16px', flexShrink: 0, color: active ? T.white : (danger ? T.red500 : T.steel), transition: 'color 150ms ease' }} />
+                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {section.label}
+                        </span>
+                        {section.badge && (
+                          <span style={{ fontFamily: T.fontSans, fontSize: T.fsMicro, fontWeight: 700, padding: '2px 7px', borderRadius: '9999px', lineHeight: 1.5, flexShrink: 0, background: active ? 'rgba(255,255,255,0.2)' : T.brandBlue + '1a', color: active ? T.white : T.brandBlue }}>
+                            {section.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Upgrade nudge card — contextual action area below sidebar */}
+          <div style={{
+            marginTop: '16px', padding: '16px', background: T.surface,
+            border: `1px solid ${T.hairline}`, borderRadius: '12px',
+            boxShadow: T.shadowSubtle,
+          }}>
+            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink, marginBottom: '4px' }}>
+              Upgrade your profile
+            </span>
+            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, color: T.steel, lineHeight: 1.5, marginBottom: '12px' }}>
+              Add a cover photo and featured articles to stand out.
+            </span>
+            <a href="/dashboard/profile" style={{ display: 'inline-block', fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 600, color: T.primary, textDecoration: 'none', borderBottom: `1px solid ${T.hairlineStrong}`, paddingBottom: '1px', lineHeight: 1 }}>
+              Edit public profile →
+            </a>
           </div>
         </nav>
 
-        {/* Right Main Content Card */}
-        <div className="flex-1 min-w-0 w-full max-w-full lg:max-w-[850px] mx-auto lg:mx-0">
-          <div className="bg-white border border-hairline rounded-2xl shadow-subtle">
+        {/* ── Right content column ─────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 w-full" style={{ maxWidth: '720px' }}>
 
-            {/* Sticky Card Header */}
-            <div
-              className={
-                'sticky top-[64px] z-10 bg-white rounded-t-2xl border-b border-hairline ' +
-                'px-6 sm:px-8 h-14 flex items-center justify-between gap-4'
-              }
-            >
-              <div className="flex items-center gap-2.5 min-w-0">
-                {React.createElement(currentTab.icon, {
-                  className: 'w-[18px] h-[18px] text-primary shrink-0',
-                })}
-                <span className="text-body-sm font-semibold text-ink truncate">
-                  {currentTab.label}
-                </span>
-              </div>
-
-              {showSave && (
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!isDirty || saving}
-                  className={`hidden sm:inline-flex ${saveBtnCls}`}
-                >
-                  {saveLabel}
-                </button>
-              )}
+          {/* Desktop save bar — appears above card when dirty */}
+          {showSave && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '16px', padding: '0 20px', height: '48px', marginBottom: '12px',
+              background: isDirty ? T.primary : T.surface,
+              borderRadius: '12px',
+              border: `1px solid ${isDirty ? 'transparent' : T.hairline}`,
+              boxShadow: isDirty ? T.shadowCard : 'none',
+              transition: 'background 200ms ease, box-shadow 200ms ease',
+            }} className="hidden sm:flex">
+              <span style={{ fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 500, color: isDirty ? 'rgba(255,255,255,0.7)' : T.steel }}>
+                {saveSuccess ? '✓ Changes saved' : isDirty ? 'You have unsaved changes' : currentSection.label}
+              </span>
+              <button type="button" onClick={handleSave} disabled={!isDirty || saving} style={saveBtnStyle}>
+                {saveLabel}
+              </button>
             </div>
+          )}
 
-            {/* Form Body */}
-            <div className="px-6 sm:px-8 py-8">
+          {/* Section cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-              {activeTab === 'profile' && (
-                <>
+            {activeSection === 'profile' && (
+              <SectionCard>
+                <SectionHeader section={SECTIONS[0]} />
+                <div style={{ padding: '24px 32px' }}>
                   <ProfileTab
                     fullName={fullName}   setFullName={setFullName}
                     username={username}   setUsername={setUsername}
@@ -324,58 +538,70 @@ export default function SettingsManager({
                     country={country}     setCountry={setCountry}
                     website={website}     setWebsite={setWebsite}
                   />
+                </div>
+              </SectionCard>
+            )}
 
-                  <div className="mt-8 pt-8 border-t border-hairline">
-                    <div className="mb-5">
-                      <h2 className="text-body-md font-semibold text-ink">
-                        Social Links
-                      </h2>
-                      <p className="text-caption text-steel mt-0.5">
-                        Connect your public profiles across social and developer networks.
-                      </p>
-                    </div>
-                    <SocialTab
-                      socials={socials}
-                      onAddSocial={handleAddSocial}
-                      onRemoveSocial={handleRemoveSocial}
-                      onSocialChange={handleSocialChange}
-                    />
-                  </div>
-                </>
-              )}
+            {activeSection === 'social' && (
+              <SectionCard>
+                <SectionHeader section={SECTIONS[1]} />
+                <div style={{ padding: '24px 32px' }}>
+                  <SocialTab
+                    socials={socials}
+                    onAddSocial={handleAddSocial}
+                    onRemoveSocial={handleRemoveSocial}
+                    onSocialChange={handleSocialChange}
+                  />
+                </div>
+              </SectionCard>
+            )}
 
-              {activeTab === 'ai' && <AISettingsForm embedded={true} />}
+            {activeSection === 'ai' && (
+              <SectionCard>
+                <SectionHeader section={SECTIONS[2]} />
+                <div style={{ padding: '24px 32px' }}>
+                  <AISettingsForm embedded={true} />
+                </div>
+              </SectionCard>
+            )}
 
-              {activeTab === 'notifications' && (
-                <NotificationsTab
-                  notifPrefs={notifPrefs}
-                  setNotifPrefs={setNotifPrefs}
-                />
-              )}
+            {activeSection === 'notifications' && (
+              <SectionCard>
+                <SectionHeader section={SECTIONS[3]} />
+                <div style={{ padding: '0 32px' }}>
+                  <NotificationsTab notifPrefs={notifPrefs} setNotifPrefs={setNotifPrefs} />
+                </div>
+              </SectionCard>
+            )}
 
-            </div>
+            {activeSection === 'security' && (
+              <SectionCard danger>
+                <SectionHeader section={SECTIONS[4]} danger />
+                <SecuritySection />
+              </SectionCard>
+            )}
+
           </div>
         </div>
-
       </div>
 
-      {/* ── Mobile Sticky Save-Bar (<640px) ─────────────────────────────── */}
+      {/* ── Mobile sticky save bar ───────────────────────────────────────── */}
       {showSave && (
-        <div className="sm:hidden fixed bottom-0 inset-x-0 z-50 bg-white/95 backdrop-blur-md border-t border-hairline px-4 py-3 flex items-center justify-between gap-3 shadow-modal">
-          <span className="text-caption font-medium text-steel">
+        <div className="sm:hidden" style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+          background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)',
+          borderTop: `1px solid ${T.hairline}`, padding: '12px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          gap: '12px', boxShadow: T.shadowModal,
+        }}>
+          <span style={{ fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 500, color: T.steel }}>
             {saveSuccess ? '✓ Saved!' : isDirty ? 'Unsaved changes' : 'All changes saved'}
           </span>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={!isDirty || saving}
-            className={saveBtnCls}
-          >
+          <button type="button" onClick={handleSave} disabled={!isDirty || saving} style={saveBtnStyle}>
             {saveLabel}
           </button>
         </div>
       )}
-
     </div>
   );
 }

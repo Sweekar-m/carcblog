@@ -2,7 +2,21 @@ import React from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import type { SocialLink } from '@/lib/profile';
 
-/* ── Platform options ─────────────────────────────────────────────────────── */
+const T = {
+  ink:      '#0f172a',
+  steel:    '#64748b',
+  stone:    '#94a3b8',
+  hairline: '#e2e8f0',
+  canvas:   '#ffffff',
+  surface:  '#f8fafc',
+  primary:  '#0f172a',
+  red100:   '#fee2e2',
+  red500:   '#ef4444',
+  fontSans: "'DM Sans', Inter, system-ui, sans-serif",
+  fsSm:     '0.875rem',
+  fsXs:     '0.8125rem',
+};
+
 const PLATFORMS = [
   { value: 'linkedin',  label: 'LinkedIn'    },
   { value: 'x',         label: 'X / Twitter' },
@@ -21,89 +35,73 @@ interface SocialTabProps {
   onSocialChange: (idx: number, field: 'platform' | 'url', val: string) => void;
 }
 
-export const SocialTab: React.FC<SocialTabProps> = ({
-  socials,
-  onAddSocial,
-  onRemoveSocial,
-  onSocialChange,
-}) => (
-  <div className="flex flex-col gap-3">
+const controlBase: React.CSSProperties = {
+  height: '44px', borderRadius: '8px',
+  border: `1px solid ${T.hairline}`, background: T.canvas,
+  color: T.ink, fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 400,
+  outline: 'none', boxSizing: 'border-box', transition: 'border-color 150ms ease, box-shadow 150ms ease',
+};
+
+export const SocialTab: React.FC<SocialTabProps> = ({ socials, onAddSocial, onRemoveSocial, onSocialChange }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 
     {socials.map((link, idx) => (
-      /*
-       * Desktop: single flex row — [Platform select 152px] [URL input flex-1] [Delete 44px]
-       * All three controls share h-11 (44px) so they align on a common baseline.
-       *
-       * Mobile: stacked column — platform on top, URL below, delete on the right of URL row.
-       */
-      <div key={idx} className="flex flex-col sm:flex-row gap-2">
-
+      <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
         {/* Platform select */}
         <select
           value={link.platform}
           onChange={e => onSocialChange(idx, 'platform', e.target.value)}
           aria-label="Social platform"
-          className={
-            'h-11 px-3 w-full sm:w-[152px] sm:shrink-0 rounded-lg border border-hairline bg-white ' +
-            'text-ink text-body-sm font-sans cursor-pointer transition-colors ' +
-            'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10'
-          }
+          style={{ ...controlBase, width: '148px', flexShrink: 0, padding: '0 10px', cursor: 'pointer' }}
+          onFocus={e => { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,23,42,0.08)'; }}
+          onBlur={e =>  { e.currentTarget.style.borderColor = T.hairline; e.currentTarget.style.boxShadow = 'none'; }}
         >
-          {PLATFORMS.map(p => (
-            <option key={p.value} value={p.value}>{p.label}</option>
-          ))}
+          {PLATFORMS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
         </select>
 
-        {/* URL input + delete button — share a row on mobile */}
-        <div className="flex gap-2 flex-1 min-w-0">
-          <input
-            type="url"
-            value={link.url}
-            onChange={e => onSocialChange(idx, 'url', e.target.value)}
-            placeholder="https://..."
-            aria-label="Profile URL"
-            className={
-              'flex-1 min-w-0 h-11 px-3.5 rounded-lg border border-hairline bg-white ' +
-              'text-ink text-body-sm font-sans placeholder:text-stone transition-colors ' +
-              'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10'
-            }
-          />
+        {/* URL input */}
+        <input
+          type="url" value={link.url} placeholder="https://..."
+          aria-label="Profile URL"
+          onChange={e => onSocialChange(idx, 'url', e.target.value)}
+          style={{ ...controlBase, flex: 1, minWidth: 0, padding: '0 14px' }}
+          onFocus={e => { e.currentTarget.style.borderColor = T.primary; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,23,42,0.08)'; }}
+          onBlur={e =>  { e.currentTarget.style.borderColor = T.hairline; e.currentTarget.style.boxShadow = 'none'; }}
+        />
 
-          {/* Delete button — same h-11 height as controls */}
-          <button
-            type="button"
-            onClick={() => onRemoveSocial(idx)}
-            aria-label="Remove social link"
-            title="Remove"
-            className={
-              'h-11 w-11 flex items-center justify-center shrink-0 rounded-lg ' +
-              'border border-hairline text-steel transition-all cursor-pointer ' +
-              'hover:text-red-500 hover:border-red-200 hover:bg-red-50 ' +
-              'focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400'
-            }
-          >
-            <Trash2 className="w-4 h-4" aria-hidden="true" />
-          </button>
-        </div>
-
+        {/* Remove button */}
+        <button
+          type="button" onClick={() => onRemoveSocial(idx)}
+          aria-label="Remove social link" title="Remove"
+          style={{
+            width: '44px', height: '44px', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', flexShrink: 0, borderRadius: '8px',
+            border: `1px solid ${T.hairline}`, background: T.canvas, color: T.steel,
+            cursor: 'pointer', transition: 'color 150ms ease, border-color 150ms ease, background 150ms ease',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = T.red500; (e.currentTarget as HTMLButtonElement).style.borderColor = T.red100; (e.currentTarget as HTMLButtonElement).style.background = '#fef2f2'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = T.steel; (e.currentTarget as HTMLButtonElement).style.borderColor = T.hairline; (e.currentTarget as HTMLButtonElement).style.background = T.canvas; }}
+        >
+          <Trash2 style={{ width: '15px', height: '15px' }} aria-hidden="true" />
+        </button>
       </div>
     ))}
 
     {/* Add link button */}
     <button
-      type="button"
-      onClick={onAddSocial}
-      className={
-        'mt-1 inline-flex items-center gap-2 px-4 h-10 rounded-lg border border-dashed ' +
-        'border-hairline-strong bg-transparent text-steel font-medium text-body-sm ' +
-        'hover:text-ink hover:border-primary hover:bg-surface transition-all cursor-pointer ' +
-        'w-full sm:w-auto justify-center sm:justify-start ' +
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary'
-      }
+      type="button" onClick={onAddSocial}
+      style={{
+        marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '8px',
+        padding: '0 16px', height: '40px', borderRadius: '8px', width: '100%',
+        border: `1px dashed ${T.stone}`, background: 'transparent',
+        fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 500, color: T.steel,
+        cursor: 'pointer', justifyContent: 'center', transition: 'color 150ms ease, border-color 150ms ease, background 150ms ease',
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = T.ink; (e.currentTarget as HTMLButtonElement).style.borderColor = T.primary; (e.currentTarget as HTMLButtonElement).style.background = T.surface; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = T.steel; (e.currentTarget as HTMLButtonElement).style.borderColor = T.stone; (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
     >
-      <Plus className="w-4 h-4" aria-hidden="true" />
-      Add link
+      <Plus style={{ width: '16px', height: '16px' }} aria-hidden="true" />
+      Add social link
     </button>
-
   </div>
 );
