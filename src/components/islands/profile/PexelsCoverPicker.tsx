@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, X, Check, Loader2, Image } from 'lucide-react';
+import { Search, X, Check, Loader2, Image as ImageIcon, Upload, Link as LinkIcon, Sparkles } from 'lucide-react';
 
 interface PexelsPhoto {
   id: number;
@@ -19,6 +19,15 @@ interface PexelsCoverPickerProps {
   currentCoverUrl?: string | null;
 }
 
+const PRESET_BANNERS = [
+  { id: 'dark-minimal', title: 'Dark Minimal', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80' },
+  { id: 'tech-skyline', title: 'Tech Skyline', url: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=1200&q=80' },
+  { id: 'abstract-gradient', title: 'Electric Gradient', url: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=1200&q=80' },
+  { id: 'volcanic-coral', title: 'Volcanic Coral', url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80' },
+  { id: 'emerald-flow', title: 'Emerald Flow', url: 'https://images.unsplash.com/photo-1604076913837-52ab5629fba9?w=1200&q=80' },
+  { id: 'deep-violet', title: 'Deep Violet', url: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=1200&q=80' },
+];
+
 const SUGGESTED_QUERIES = [
   'startup', 'technology', 'innovation', 'city skyline', 'abstract',
   'mountains', 'dark minimal', 'architecture', 'creative', 'future',
@@ -30,12 +39,17 @@ export default function PexelsCoverPicker({
   onSelect,
   currentCoverUrl,
 }: PexelsCoverPickerProps) {
+  const [activeTab, setActiveTab] = useState<'upload' | 'presets' | 'pexels'>('upload');
   const [query, setQuery] = useState('');
   const [photos, setPhotos] = useState<PexelsPhoto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,11 +58,10 @@ export default function PexelsCoverPicker({
       setQuery('');
       setPhotos([]);
       setError(null);
-      setSelectedId(null);
-      setTimeout(() => inputRef.current?.focus(), 100);
-      searchPhotos('startup innovation');
+      setSelectedUrl(currentCoverUrl || null);
+      setCustomUrlInput(currentCoverUrl || '');
     }
-  }, [isOpen]);
+  }, [isOpen, currentCoverUrl]);
 
   const searchPhotos = useCallback(async (q: string) => {
     if (!q.trim()) return;
@@ -60,7 +73,7 @@ export default function PexelsCoverPicker({
       const data = await res.json();
       setPhotos(data.photos || []);
     } catch {
-      setError('Could not load photos. Please try again.');
+      setError('Could not load Pexels photos. Try uploading a photo or selecting a preset banner.');
       setPhotos([]);
     } finally {
       setLoading(false);
@@ -76,31 +89,58 @@ export default function PexelsCoverPicker({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && query.trim()) {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      searchPhotos(query);
-    }
-    if (e.key === 'Escape') onClose();
-  };
-
-  const handleSelect = async (photo: PexelsPhoto) => {
-    setSelectedId(photo.id);
+  const handleApplyUrl = async (urlToSave: string) => {
+    if (!urlToSave.trim()) return;
+    setSelectedUrl(urlToSave);
     setSaving(true);
     try {
       const res = await fetch('/api/profile/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cover_url: photo.src.large }),
+        body: JSON.stringify({ cover_url: urlToSave }),
       });
       if (!res.ok) throw new Error('Save failed');
-      onSelect(photo.src.large);
+      onSelect(urlToSave);
       onClose();
     } catch {
       setError('Failed to save cover photo. Please try again.');
-      setSelectedId(null);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json().catch(() => ({}));
+
+      let finalUrl = '';
+      if (res.ok && data.url) {
+        finalUrl = data.url;
+      } else {
+        // Fallback to Data URL
+        finalUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (evt) => resolve(evt.target?.result as string || '');
+          reader.readAsDataURL(file);
+        });
+      }
+
+      if (finalUrl) {
+        setCustomUrlInput(finalUrl);
+        await handleApplyUrl(finalUrl);
+      }
+    } catch (err: any) {
+      setError('Upload failed. Please try pasting an image URL.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -143,6 +183,15 @@ export default function PexelsCoverPicker({
         padding: '24px',
       }}
     >
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={handleFileUpload}
+      />
+
       <div
         onClick={e => e.stopPropagation()}
         style={{
@@ -159,7 +208,7 @@ export default function PexelsCoverPicker({
       >
         {/* Header */}
         <div style={{
-          padding: '24px 28px 20px',
+          padding: '24px 28px 16px',
           borderBottom: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
@@ -169,10 +218,10 @@ export default function PexelsCoverPicker({
         }}>
           <div>
             <h2 style={{ fontFamily: 'var(--font-sans)', fontSize: '18px', fontWeight: 700, color: '#0F172A', margin: 0, letterSpacing: '-0.01em' }}>
-              Choose a Cover Photo
+              Choose a Cover Banner
             </h2>
             <p style={{ fontFamily: 'var(--font-sans)', fontSize: '13px', color: '#64748B', margin: '3px 0 0 0' }}>
-              Search millions of free high-quality photos · Powered by Pexels
+              Upload your own banner, pick from presets, or search Pexels photos.
             </p>
           </div>
           <button
@@ -191,149 +240,241 @@ export default function PexelsCoverPicker({
           </button>
         </div>
 
-        {/* Search */}
-        <div style={{ padding: '16px 28px 12px', flexShrink: 0 }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={handleQueryChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Search photos… e.g. startup, technology, innovation"
-              style={{
-                width: '100%',
-                height: '40px',
-                paddingLeft: '40px',
-                paddingRight: '16px',
-                border: '1px solid #E2E8F0',
-                borderRadius: '8px',
-                fontFamily: 'var(--font-sans)',
-                fontSize: '14px',
-                color: '#0F172A',
-                background: '#F8FAFC',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-          {/* Suggestion chips */}
-          <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
-            {SUGGESTED_QUERIES.map(q => (
+        {/* Navigation Tabs */}
+        <div style={{ padding: '0 28px', borderBottom: '1px solid #E2E8F0', display: 'flex', gap: '8px', background: '#F8FAFC' }}>
+          {[
+            { id: 'upload' as const, label: 'Upload Photo / URL', icon: Upload },
+            { id: 'presets' as const, label: 'Preset Banners', icon: Sparkles },
+            { id: 'pexels' as const, label: 'Search Pexels', icon: Search },
+          ].map(({ id, label, icon: Icon }) => {
+            const active = activeTab === id;
+            return (
               <button
-                key={q}
-                onClick={() => { setQuery(q); searchPhotos(q); }}
+                key={id}
+                type="button"
+                onClick={() => {
+                  setActiveTab(id);
+                  if (id === 'pexels' && photos.length === 0) {
+                    searchPhotos('startup innovation');
+                  }
+                }}
                 style={{
-                  padding: '3px 12px',
-                  borderRadius: '9999px',
-                  border: '1px solid #E2E8F0',
-                  background: query === q ? '#0F172A' : '#F8FAFC',
-                  color: query === q ? '#FFFFFF' : '#475569',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  fontFamily: 'var(--font-sans)',
-                  cursor: 'pointer',
-                  transition: 'all 150ms ease',
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '12px 16px', border: 'none', borderBottom: active ? '2px solid #0F172A' : '2px solid transparent',
+                  background: 'transparent', color: active ? '#0F172A' : '#64748B',
+                  fontFamily: 'var(--font-sans)', fontSize: '13px', fontWeight: active ? 700 : 500,
+                  cursor: 'pointer', transition: 'all 150ms ease',
                 }}
               >
-                {q}
+                <Icon size={14} style={{ color: active ? '#0F172A' : '#64748B' }} />
+                {label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Photo Grid */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 28px 24px' }}>
+        {/* Tab Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
           {error && (
-            <div style={{ padding: '12px 16px', background: '#FEF2F2', borderRadius: '8px', color: '#DC2626', fontSize: '13px', fontFamily: 'var(--font-sans)', marginBottom: '12px' }}>
+            <div style={{ padding: '12px 16px', background: '#FEF2F2', borderRadius: '8px', color: '#DC2626', fontSize: '13px', fontFamily: 'var(--font-sans)', marginBottom: '16px' }}>
               {error}
             </div>
           )}
 
-          {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} style={{
-                  aspectRatio: '16/9',
-                  borderRadius: '10px',
-                  background: '#F1F5F9',
-                  animation: 'pexels-shimmer 1.4s ease-in-out infinite',
-                }} />
-              ))}
-            </div>
-          ) : photos.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-              {photos.map(photo => {
-                const isSelected = selectedId === photo.id;
-                return (
-                  <button
-                    key={photo.id}
-                    onClick={() => !saving && handleSelect(photo)}
-                    disabled={saving}
-                    title={`Photo by ${photo.photographer}`}
+          {/* TAB 1: UPLOAD PHOTO / URL */}
+          {activeTab === 'upload' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* File upload box */}
+              <div
+                onClick={() => !uploading && fileInputRef.current?.click()}
+                style={{
+                  border: '2px dashed #CBD5E1',
+                  borderRadius: '16px',
+                  padding: '36px 24px',
+                  textAlign: 'center',
+                  background: '#F8FAFC',
+                  cursor: uploading ? 'wait' : 'pointer',
+                  transition: 'all 150ms ease',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = '#0F172A')}
+                onMouseLeave={e => (e.currentTarget.style.borderColor = '#CBD5E1')}
+              >
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: '#FFFFFF', border: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                  {uploading ? <Loader2 size={20} className="animate-spin" color="#0F172A" /> : <Upload size={20} color="#0F172A" />}
+                </div>
+                <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: 700, color: '#0F172A', fontFamily: 'var(--font-sans)' }}>
+                  {uploading ? 'Uploading Photo...' : 'Click to Upload Custom Cover Photo'}
+                </h4>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748B', fontFamily: 'var(--font-sans)' }}>
+                  Supports PNG, JPG, WebP up to 5 MB
+                </p>
+              </div>
+
+              {/* URL paste input */}
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#0F172A', fontFamily: 'var(--font-sans)', marginBottom: '6px' }}>
+                  Or Paste Banner Image URL
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="url"
+                    value={customUrlInput}
+                    onChange={e => setCustomUrlInput(e.target.value)}
+                    placeholder="https://example.com/cover.jpg"
                     style={{
-                      position: 'relative',
-                      aspectRatio: '16/9',
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      border: isSelected ? '3px solid #0F172A' : '2px solid transparent',
-                      cursor: saving ? 'wait' : 'pointer',
-                      padding: 0,
-                      background: '#F1F5F9',
-                      transition: 'border-color 150ms ease, transform 150ms ease',
+                      flex: 1, height: '44px', padding: '0 14px', borderRadius: '8px',
+                      border: '1px solid #E2E8F0', fontSize: '14px', fontFamily: 'var(--font-sans)',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleApplyUrl(customUrlInput)}
+                    disabled={saving || !customUrlInput.trim()}
+                    style={{
+                      padding: '0 20px', height: '44px', borderRadius: '8px', border: 'none',
+                      background: '#0F172A', color: '#FFFFFF', fontSize: '13px', fontWeight: 600,
+                      fontFamily: 'var(--font-sans)', cursor: 'pointer', whiteSpace: 'nowrap',
+                      opacity: (!customUrlInput.trim() || saving) ? 0.4 : 1,
                     }}
                   >
-                    <img
-                      src={photo.src.medium}
-                      alt={photo.alt || `Photo by ${photo.photographer}`}
-                      loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                    {/* Selection overlay */}
+                    {saving ? 'Saving...' : 'Apply URL'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: PRESET BANNERS */}
+          {activeTab === 'presets' && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+              {PRESET_BANNERS.map(preset => {
+                const isSelected = selectedUrl === preset.url;
+                return (
+                  <button
+                    key={preset.id}
+                    type="button"
+                    onClick={() => handleApplyUrl(preset.url)}
+                    disabled={saving}
+                    style={{
+                      position: 'relative',
+                      height: '110px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      border: isSelected ? '3px solid #0F172A' : '1px solid #E2E8F0',
+                      cursor: 'pointer',
+                      padding: 0,
+                      background: `url(${preset.url}) center/cover no-repeat`,
+                      textAlign: 'left',
+                      transition: 'transform 150ms ease, border-color 150ms ease',
+                    }}
+                  >
                     <div style={{
                       position: 'absolute', inset: 0,
-                      background: isSelected ? 'rgba(15,23,42,0.40)' : 'transparent',
-                      transition: 'background 150ms ease',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: 'linear-gradient(transparent, rgba(15,23,42,0.75))',
+                      padding: '10px 12px',
+                      display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
                     }}>
+                      <span style={{ color: '#FFFFFF', fontSize: '13px', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>
+                        {preset.title}
+                      </span>
                       {isSelected && (
-                        <div style={{
-                          width: '32px', height: '32px',
-                          borderRadius: '50%',
-                          background: '#0F172A',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>
-                          {saving
-                            ? <Loader2 size={16} color="#FFFFFF" style={{ animation: 'pexels-spin 0.8s linear infinite' }} />
-                            : <Check size={16} color="#FFFFFF" />
-                          }
-                        </div>
+                        <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#0F172A', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <Check size={13} color="#FFFFFF" />
+                        </span>
                       )}
-                    </div>
-                    {/* Photographer credit */}
-                    <div style={{
-                      position: 'absolute', bottom: 0, left: 0, right: 0,
-                      padding: '6px 8px 4px',
-                      background: 'linear-gradient(transparent, rgba(0,0,0,0.45))',
-                      color: 'rgba(255,255,255,0.75)',
-                      fontSize: '10px',
-                      fontFamily: 'var(--font-sans)',
-                      textAlign: 'right',
-                    }}>
-                      {photo.photographer}
                     </div>
                   </button>
                 );
               })}
             </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '48px 24px', color: '#94A3B8', fontFamily: 'var(--font-sans)' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                <Image size={22} color="#CBD5E1" />
+          )}
+
+          {/* TAB 3: PEXELS SEARCH */}
+          {activeTab === 'pexels' && (
+            <div>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ position: 'relative' }}>
+                  <Search size={15} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8', pointerEvents: 'none' }} />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={handleQueryChange}
+                    placeholder="Search photos… e.g. startup, technology, innovation"
+                    style={{
+                      width: '100%',
+                      height: '40px',
+                      paddingLeft: '40px',
+                      paddingRight: '16px',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '8px',
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: '14px',
+                      color: '#0F172A',
+                      background: '#F8FAFC',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '6px', marginTop: '10px', flexWrap: 'wrap' }}>
+                  {SUGGESTED_QUERIES.map(q => (
+                    <button
+                      key={q}
+                      onClick={() => { setQuery(q); searchPhotos(q); }}
+                      style={{
+                        padding: '3px 12px',
+                        borderRadius: '9999px',
+                        border: '1px solid #E2E8F0',
+                        background: query === q ? '#0F172A' : '#F8FAFC',
+                        color: query === q ? '#FFFFFF' : '#475569',
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        fontFamily: 'var(--font-sans)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <p style={{ margin: 0, fontSize: '14px', fontWeight: 500, color: '#64748B' }}>Search for a photo above</p>
-              <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#94A3B8' }}>Try "startup", "technology", or "city"</p>
+
+              {loading ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                  {Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} style={{ aspectRatio: '16/9', borderRadius: '10px', background: '#F1F5F9', animation: 'pexels-shimmer 1.4s ease-in-out infinite' }} />
+                  ))}
+                </div>
+              ) : photos.length > 0 ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                  {photos.map(photo => (
+                    <button
+                      key={photo.id}
+                      onClick={() => handleApplyUrl(photo.src.large)}
+                      disabled={saving}
+                      title={`Photo by ${photo.photographer}`}
+                      style={{
+                        position: 'relative',
+                        aspectRatio: '16/9',
+                        borderRadius: '10px',
+                        overflow: 'hidden',
+                        border: selectedUrl === photo.src.large ? '3px solid #0F172A' : '2px solid transparent',
+                        cursor: saving ? 'wait' : 'pointer',
+                        padding: 0,
+                        background: '#F1F5F9',
+                      }}
+                    >
+                      <img src={photo.src.medium} alt={photo.alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div style={{ textAlign: 'center', padding: '36px 24px', color: '#94A3B8', fontFamily: 'var(--font-sans)' }}>
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 500, color: '#64748B' }}>Search for a photo above</p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -368,21 +509,10 @@ export default function PexelsCoverPicker({
             </button>
           ) : <div />}
           <p style={{ fontSize: '11px', color: '#94A3B8', fontFamily: 'var(--font-sans)', margin: 0 }}>
-            All photos by Pexels contributors · Free to use
+            CarcBlog Creator Cover Banners
           </p>
         </div>
       </div>
-
-      <style>{`
-        @keyframes pexels-shimmer {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
-        }
-        @keyframes pexels-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

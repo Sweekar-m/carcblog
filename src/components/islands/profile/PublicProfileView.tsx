@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import type { ExtendedProfile, SocialLink } from '@/lib/profile';
 import type { SanityArticle } from '@/types/sanity';
+import { safeImageUrl } from '@/lib/sanity';
 import PexelsCoverPicker from './PexelsCoverPicker';
 
 interface PublicProfileViewProps {
@@ -954,9 +955,14 @@ export default function PublicProfileView({
                     justifyContent: 'space-between',
                   }}
                 >
-                  {getCoverImageUrl(article.coverImage) && (
+                  {safeImageUrl(article.coverImage, article.body) && (
                     <div style={{ height: '130px', width: '100%', overflow: 'hidden' }}>
-                      <img src={getCoverImageUrl(article.coverImage)} alt={article.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img
+                        src={safeImageUrl(article.coverImage, article.body)}
+                        alt={article.title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => { (e.currentTarget.parentElement as HTMLElement).style.display = 'none'; }}
+                      />
                     </div>
                   )}
                   <div style={{ padding: '16px' }}>
@@ -1037,11 +1043,14 @@ export default function PublicProfileView({
                   >
                     {/* Cover image */}
                     <div style={{ height: '220px', borderRadius: '12px', overflow: 'hidden', background: S.surface }}>
-                      {featuredArticle.coverImage ? (
+                      {safeImageUrl(featuredArticle.coverImage, featuredArticle.body) ? (
                         <img
-                          src={typeof featuredArticle.coverImage === 'string' ? featuredArticle.coverImage : (featuredArticle.coverImage as any)?.asset?.url}
+                          src={safeImageUrl(featuredArticle.coverImage, featuredArticle.body)}
                           alt={featuredArticle.title}
                           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
                         />
                       ) : (
                         <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #0F172A 0%, #0EA5E9 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
@@ -1161,11 +1170,14 @@ export default function PublicProfileView({
                     >
                       {/* Cover Image + Category Tag */}
                       <div style={{ height: '170px', position: 'relative', overflow: 'hidden', background: S.surface }}>
-                        {article.coverImage ? (
+                        {safeImageUrl(article.coverImage, article.body) ? (
                           <img
-                            src={typeof article.coverImage === 'string' ? article.coverImage : (article.coverImage as any)?.asset?.url}
+                            src={safeImageUrl(article.coverImage, article.body)}
                             alt={article.title}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            onError={(e) => {
+                              (e.currentTarget as HTMLElement).style.display = 'none';
+                            }}
                           />
                         ) : (
                           <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

@@ -34,8 +34,7 @@ const slugStr = typeof slug === 'string' ? slug : (slug as any)?.current ?? '';
           class="card-img"
           loading="lazy"
           style="aspect-ratio: 16/10; object-fit: cover;"
-          referrerpolicy="no-referrer"
-          onerror="this.style.display='none';"
+          onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'card-placeholder\'><div class=\'placeholder-orb placeholder-orb-a\'></div><div class=\'placeholder-orb placeholder-orb-b\'></div></div>';"
         />
       ) : (
         /* Atmospheric orb placeholder — never dark gradient */

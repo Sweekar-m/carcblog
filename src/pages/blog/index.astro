@@ -12,7 +12,7 @@ const articleData = articles.map(article => ({
   authorName: article.author?.name ?? "Unknown",
   authorImage: safeImageUrl(article.author?.image) ?? null,
   slug: typeof article.slug === 'string' ? article.slug : (article.slug as any)?.current ?? '',
-  coverImage: safeImageUrl(article.coverImage) ?? null
+  coverImage: safeImageUrl(article.coverImage, article.body) ?? null
 }));
 
 
