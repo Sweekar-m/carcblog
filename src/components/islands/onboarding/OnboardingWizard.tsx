@@ -1,14 +1,10 @@
 import React from 'react';
-import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useOnboarding } from '@/features/onboarding/hooks/useOnboarding';
 import type { OnboardingUserProps } from '@/features/onboarding/types';
 import { ProgressBar } from '@/features/onboarding/components/ProgressBar';
 import { StepProfile } from '@/features/onboarding/components/StepProfile';
-import { StepProfessional } from '@/features/onboarding/components/StepProfessional';
-import { StepSocial } from '@/features/onboarding/components/StepSocial';
-import { StepTopics } from '@/features/onboarding/components/StepTopics';
-import { StepCreators } from '@/features/onboarding/components/StepCreators';
-import { StepNotifications } from '@/features/onboarding/components/StepNotifications';
+import { StepPersonalize } from '@/features/onboarding/components/StepPersonalize';
 import { StepSummary } from '@/features/onboarding/components/StepSummary';
 
 interface OnboardingWizardProps {
@@ -38,26 +34,13 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
     setCountry,
     city,
     setCity,
-    company,
-    setCompany,
     jobTitle,
-    setJobTitle,
-    yearsExp,
-    setYearsExp,
-    industry,
-    setIndustry,
-    skillsInput,
-    setSkillsInput,
+    company,
     socialLinks,
-    addSocialLink,
-    removeSocialLink,
-    updateSocialLink,
     selectedTopics,
     toggleTopic,
     followedIds,
     toggleFollow,
-    notifPrefs,
-    setNotifPrefs,
     calculateCompletionScore,
     handleNextStep,
     handlePrevStep,
@@ -67,7 +50,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 24px' }}>
       {/* Step Progress Bar */}
-      <ProgressBar currentStep={step} totalSteps={7} onStepClick={setStep} />
+      <ProgressBar currentStep={step} totalSteps={3} onStepClick={setStep} />
 
       {/* Main Form Card */}
       <div style={{ background: '#ffffff', border: '1px solid var(--color-hairline, #E2E8F0)', borderRadius: '20px', padding: '36px', boxShadow: 'var(--shadow-card)' }}>
@@ -81,8 +64,6 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
             setUsername={setUsername}
             avatarUrl={avatarUrl}
             setAvatarUrl={setAvatarUrl}
-            coverUrl={coverUrl}
-            setCoverUrl={setCoverUrl}
             bio={bio}
             setBio={setBio}
             tagline={tagline}
@@ -95,42 +76,15 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
         )}
 
         {step === 2 && (
-          <StepProfessional
-            jobTitle={jobTitle}
-            setJobTitle={setJobTitle}
-            company={company}
-            setCompany={setCompany}
-            industry={industry}
-            setIndustry={setIndustry}
-            yearsExp={yearsExp}
-            setYearsExp={setYearsExp}
-            skillsInput={skillsInput}
-            setSkillsInput={setSkillsInput}
+          <StepPersonalize
+            selectedTopics={selectedTopics}
+            onToggleTopic={toggleTopic}
+            followedIds={followedIds}
+            onToggleFollow={toggleFollow}
           />
         )}
 
         {step === 3 && (
-          <StepSocial
-            socialLinks={socialLinks}
-            onAddSocial={addSocialLink}
-            onRemoveSocial={removeSocialLink}
-            onSocialChange={updateSocialLink}
-          />
-        )}
-
-        {step === 4 && (
-          <StepTopics selectedTopics={selectedTopics} onToggleTopic={toggleTopic} />
-        )}
-
-        {step === 5 && (
-          <StepCreators followedIds={followedIds} onToggleFollow={toggleFollow} />
-        )}
-
-        {step === 6 && (
-          <StepNotifications notifPrefs={notifPrefs} setNotifPrefs={setNotifPrefs} />
-        )}
-
-        {step === 7 && (
           <StepSummary
             role={role}
             fullName={fullName}
@@ -175,7 +129,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
             <div />
           )}
 
-          {step < 7 ? (
+          {step < 3 ? (
             <button
               type="button"
               onClick={handleNextStep}
@@ -205,19 +159,25 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                padding: '12px 28px',
+                padding: '10px 28px',
                 borderRadius: '9999px',
                 border: 'none',
-                background: 'linear-gradient(90deg, #0ea5e9, #7c3aed)',
+                background: 'var(--color-primary, #0F172A)',
                 color: '#ffffff',
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: 700,
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.7 : 1,
               }}
             >
-              <Sparkles style={{ width: '18px', height: '18px' }} />
-              {loading ? 'Saving Profile...' : 'Complete & Launch Dashboard'}
+              {loading ? (
+                'Saving Profile...'
+              ) : (
+                <>
+                  Complete Setup & Launch
+                  <CheckCircle2 style={{ width: '16px', height: '16px' }} />
+                </>
+              )}
             </button>
           )}
         </div>

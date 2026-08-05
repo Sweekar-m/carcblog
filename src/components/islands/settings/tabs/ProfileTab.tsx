@@ -24,6 +24,8 @@ interface ProfileTabProps {
   city:       string; setCity:      (v: string) => void;
   country:    string; setCountry:   (v: string) => void;
   website:    string; setWebsite:   (v: string) => void;
+  avatarUrl:  string; setAvatarUrl: (v: string) => void;
+  coverUrl:   string; setCoverUrl:  (v: string) => void;
 }
 
 // Focus handlers — JS-applied since CSS focus-visible requires the class to exist
@@ -42,8 +44,69 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({
   company, setCompany, jobTitle, setJobTitle,
   city, setCity, country, setCountry,
   website, setWebsite,
+  avatarUrl, setAvatarUrl,
+  coverUrl, setCoverUrl,
 }) => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+    {/* ── Photos ── */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <span style={{ fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink }}>Photos</span>
+
+      {/* Profile picture */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Preview circle */}
+        <div style={{
+          width: '56px', height: '56px', borderRadius: '50%', flexShrink: 0,
+          border: `2px solid ${T.hairline}`, overflow: 'hidden',
+          background: T.surface, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {avatarUrl
+            ? <img src={avatarUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <span style={{ fontFamily: T.fontSans, fontSize: '1.25rem', fontWeight: 700, color: T.stone }}>?</span>
+          }
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label htmlFor="avatarUrl" style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 600, color: T.ink, marginBottom: '6px' }}>
+            Profile picture URL
+          </label>
+          <input
+            id="avatarUrl" type="url" value={avatarUrl}
+            onChange={e => setAvatarUrl(e.target.value)}
+            onFocus={onFocus} onBlur={onBlur}
+            placeholder="https://example.com/photo.jpg"
+            style={inputStyle} className="w-full block"
+          />
+        </div>
+      </div>
+
+      {/* Cover photo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Preview strip */}
+        <div style={{
+          width: '56px', height: '36px', borderRadius: '8px', flexShrink: 0,
+          border: `2px solid ${T.hairline}`, overflow: 'hidden',
+          background: 'linear-gradient(135deg, #0f172a, #0066ff)',
+          backgroundImage: coverUrl ? `url(${coverUrl})` : undefined,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+        }} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <label htmlFor="coverUrl" style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 600, color: T.ink, marginBottom: '6px' }}>
+            Cover photo URL
+          </label>
+          <input
+            id="coverUrl" type="url" value={coverUrl}
+            onChange={e => setCoverUrl(e.target.value)}
+            onFocus={onFocus} onBlur={onBlur}
+            placeholder="https://example.com/cover.jpg"
+            style={inputStyle} className="w-full block"
+          />
+        </div>
+      </div>
+    </div>
+
+    {/* Divider before identity fields */}
+    <div style={{ borderTop: `1px solid ${T.hairline}` }} />
 
     {/* Row 1 — Full Name + Username */}
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>

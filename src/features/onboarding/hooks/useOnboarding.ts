@@ -94,7 +94,7 @@ export function useOnboarding(initialUser: OnboardingUserProps) {
       alert('Please enter your Full Name to continue.');
       return;
     }
-    setStep((prev) => Math.min(7, prev + 1));
+    setStep((prev) => Math.min(3, prev + 1));
   }, [step, fullName]);
 
   const handlePrevStep = useCallback(() => {

@@ -256,7 +256,9 @@ export default function SettingsManager({
   const [jobTitle, setJobTitle] = useState(initialProfile.job_title || '');
   const [city,     setCity]     = useState(initialProfile.city      || '');
   const [country,  setCountry]  = useState(initialProfile.country   || '');
-  const [website,  setWebsite]  = useState(initialProfile.website   || '');
+  const [website,   setWebsite]   = useState(initialProfile.website    || '');
+  const [avatarUrl, setAvatarUrl] = useState(initialProfile.avatar_url || '');
+  const [coverUrl,  setCoverUrl]  = useState(initialProfile.cover_url  || '');
 
   // Social links
   const defaultSocials: SocialLink[] = [{ user_id: initialProfile.id, platform: 'x', url: '' }];
@@ -276,7 +278,8 @@ export default function SettingsManager({
     bio !== (initialProfile.bio || '') || tagline !== (initialProfile.tagline || '') ||
     company !== (initialProfile.company || '') || jobTitle !== (initialProfile.job_title || '') ||
     city !== (initialProfile.city || '') || country !== (initialProfile.country || '') ||
-    website !== (initialProfile.website || '');
+    website !== (initialProfile.website || '') ||
+    avatarUrl !== (initialProfile.avatar_url || '') || coverUrl !== (initialProfile.cover_url || '');
   const baseSocials    = initialSocials.length > 0 ? initialSocials : defaultSocials;
   const isSocialsDirty = JSON.stringify(socials) !== JSON.stringify(baseSocials);
   const isNotifsDirty  = JSON.stringify(notifPrefs) !== JSON.stringify(initialProfile.notification_prefs || defaultNotifs);
@@ -294,7 +297,7 @@ export default function SettingsManager({
     try {
       const res = await fetch('/api/profile/update', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ full_name: fullName, username, bio, tagline, company, job_title: jobTitle, city, country, website, notification_prefs: notifPrefs, social_links: socials.filter(s => s.url.trim().length > 0) }),
+        body: JSON.stringify({ full_name: fullName, username, bio, tagline, company, job_title: jobTitle, city, country, website, avatar_url: avatarUrl || null, cover_url: coverUrl || null, notification_prefs: notifPrefs, social_links: socials.filter(s => s.url.trim().length > 0) }),
       });
       if (res.ok) { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); }
       else alert('Failed to save settings.');
@@ -323,7 +326,7 @@ export default function SettingsManager({
 
   return (
     <div style={{ fontFamily: T.fontSans, boxSizing: 'border-box' }}
-         className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-28 sm:pb-12">
+         className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12">
 
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: '32px', paddingBottom: '20px', borderBottom: `1px solid ${T.hairline}` }}>
@@ -479,26 +482,10 @@ export default function SettingsManager({
             ))}
           </div>
 
-          {/* Upgrade nudge card — contextual action area below sidebar */}
-          <div style={{
-            marginTop: '16px', padding: '16px', background: T.surface,
-            border: `1px solid ${T.hairline}`, borderRadius: '12px',
-            boxShadow: T.shadowSubtle,
-          }}>
-            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsSm, fontWeight: 600, color: T.ink, marginBottom: '4px' }}>
-              Upgrade your profile
-            </span>
-            <span style={{ display: 'block', fontFamily: T.fontSans, fontSize: T.fsXs, color: T.steel, lineHeight: 1.5, marginBottom: '12px' }}>
-              Add a cover photo and featured articles to stand out.
-            </span>
-            <a href="/dashboard/profile" style={{ display: 'inline-block', fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 600, color: T.primary, textDecoration: 'none', borderBottom: `1px solid ${T.hairlineStrong}`, paddingBottom: '1px', lineHeight: 1 }}>
-              Edit public profile →
-            </a>
-          </div>
         </nav>
 
         {/* ── Right content column ─────────────────────────────────────── */}
-        <div className="flex-1 min-w-0 w-full" style={{ maxWidth: '720px' }}>
+        <div className="flex-1 min-w-0 w-full">
 
           {/* Desktop save bar — appears above card when dirty */}
           {showSave && (
@@ -528,15 +515,17 @@ export default function SettingsManager({
                 <SectionHeader section={SECTIONS[0]} />
                 <div style={{ padding: '24px 32px' }}>
                   <ProfileTab
-                    fullName={fullName}   setFullName={setFullName}
-                    username={username}   setUsername={setUsername}
-                    tagline={tagline}     setTagline={setTagline}
-                    bio={bio}             setBio={setBio}
-                    company={company}     setCompany={setCompany}
-                    jobTitle={jobTitle}   setJobTitle={setJobTitle}
-                    city={city}           setCity={setCity}
-                    country={country}     setCountry={setCountry}
-                    website={website}     setWebsite={setWebsite}
+                    fullName={fullName}     setFullName={setFullName}
+                    username={username}     setUsername={setUsername}
+                    tagline={tagline}       setTagline={setTagline}
+                    bio={bio}               setBio={setBio}
+                    company={company}       setCompany={setCompany}
+                    jobTitle={jobTitle}     setJobTitle={setJobTitle}
+                    city={city}             setCity={setCity}
+                    country={country}       setCountry={setCountry}
+                    website={website}       setWebsite={setWebsite}
+                    avatarUrl={avatarUrl}   setAvatarUrl={setAvatarUrl}
+                    coverUrl={coverUrl}     setCoverUrl={setCoverUrl}
                   />
                 </div>
               </SectionCard>
@@ -585,23 +574,6 @@ export default function SettingsManager({
         </div>
       </div>
 
-      {/* ── Mobile sticky save bar ───────────────────────────────────────── */}
-      {showSave && (
-        <div className="sm:hidden" style={{
-          position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
-          background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)',
-          borderTop: `1px solid ${T.hairline}`, padding: '12px 16px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          gap: '12px', boxShadow: T.shadowModal,
-        }}>
-          <span style={{ fontFamily: T.fontSans, fontSize: T.fsXs, fontWeight: 500, color: T.steel }}>
-            {saveSuccess ? '✓ Saved!' : isDirty ? 'Unsaved changes' : 'All changes saved'}
-          </span>
-          <button type="button" onClick={handleSave} disabled={!isDirty || saving} style={saveBtnStyle}>
-            {saveLabel}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
